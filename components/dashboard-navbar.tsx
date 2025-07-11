@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from "@/components/ui/button"
-import { signOut } from '@/auth';
+import { logout } from '@/lib/actions';
 
 
 export default async function DashboardNavbar() {
@@ -34,10 +34,7 @@ export default async function DashboardNavbar() {
             </li>
             <li>
               <form
-                action={async () => {
-                  'use server';
-                  await signOut({ redirectTo: '/' });
-                }}
+                action={logout}
               ><Button
                 variant='destructive'
                 className='cursor-pointer'

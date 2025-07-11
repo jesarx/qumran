@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFormState } from 'react-dom';
 import {
-  updatePublisherAction,
-  deletePublisherAction,
-  getPublisherAction
+  updateAuthorAction,
+  deleteAuthorAction,
+  getAuthorAction
 } from '@/lib/actions';
-import { Publisher } from '@/lib/queries';
+import { Author } from '@/lib/queries';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -18,56 +18,56 @@ const initialState = {
   error: undefined
 };
 
-export default function EditPublisherForm({ publisherId }: { publisherId: number }) {
+export default function EditAuthorForm({ authorId }: { authorId: number }) {
   const router = useRouter();
-  const [state, formAction] = useFormState(updatePublisherAction, initialState);
-  const [publisher, setPublisher] = useState<Publisher | null>(null);
+  const [state, formAction] = useFormState(updateAuthorAction, initialState);
+  const [author, setAuthor] = useState<Author | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Load publisher
+  // Load author
   useEffect(() => {
-    async function loadPublisher() {
+    async function loadAuthor() {
       try {
-        const publisherData = await getPublisherAction(publisherId);
-        if (publisherData) {
-          setPublisher(publisherData);
+        const authorData = await getAuthorAction(authorId);
+        if (authorData) {
+          setAuthor(authorData);
         } else {
-          router.push('/dashboard/publishers');
+          router.push('/dashboard/authors');
         }
       } catch (error) {
-        console.error('Failed to load publisher:', error);
-        router.push('/dashboard/publishers');
+        console.error('Failed to load author:', error);
+        router.push('/dashboard/authors');
       } finally {
         setIsLoading(false);
       }
     }
-    loadPublisher();
-  }, [publisherId, router]);
+    loadAuthor();
+  }, [authorId, router]);
 
   // Handle successful update
   useEffect(() => {
     if (state.success) {
-      router.push('/dashboard/publishers');
+      router.push('/dashboard/authors');
     }
   }, [state.success, router]);
 
   // Handle delete
   const handleDelete = async () => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar esta editorial?')) {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar este autor?')) {
       return;
     }
 
     setIsDeleting(true);
     try {
-      await deletePublisherAction(publisherId);
+      await deleteAuthorAction(authorId);
     } catch (error: any) {
-      alert(error.message || 'Error al eliminar la editorial');
+      alert(error.message || 'Error al eliminar el autor');
       setIsDeleting(false);
     }
   };
 
-  if (isLoading || !publisher) {
+  if (isLoading || !author) {
     return (
       <div className="w-full max-w-2xl mx-auto p-6">
         <p>Cargando...</p>
@@ -77,7 +77,7 @@ export default function EditPublisherForm({ publisherId }: { publisherId: number
 
   return (
     <div className="w-full max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6">Editar Editorial</h1>
+      <h1 className="text-2xl font-bold mb-6">Editar Autor</h1>
 
       {state.error && (
         <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
@@ -86,29 +86,41 @@ export default function EditPublisherForm({ publisherId }: { publisherId: number
       )}
 
       <form action={formAction} className="space-y-6">
-        <input type="hidden" name="id" value={publisherId} />
+        <input type="hidden" name="id" value={authorId} />
 
-        {/* Publisher ID (readonly) */}
+        {/* Author ID (readonly) */}
         <div>
-          <Label htmlFor="publisherId">ID de la Editorial</Label>
+          <Label htmlFor="authorId">ID del Autor</Label>
           <Input
-            id="publisherId"
+            id="authorId"
             type="text"
-            value={publisherId}
+            value={authorId}
             disabled
             className="mt-1 bg-gray-100"
           />
         </div>
 
-        {/* Name */}
+        {/* First Name */}
         <div>
-          <Label htmlFor="name">Nombre *</Label>
+          <Label htmlFor="firstName">Nombre</Label>
           <Input
-            id="name"
-            name="name"
+            id="firstName"
+            name="firstName"
+            type="text"
+            defaultValue={author.first_name || ''}
+            className="mt-1"
+          />
+        </div>
+
+        {/* Last Name */}
+        <div>
+          <Label htmlFor="lastName">Apellido *</Label>
+          <Input
+            id="lastName"
+            name="lastName"
             type="text"
             required
-            defaultValue={publisher.name}
+            defaultValue={author.last_name}
             className="mt-1"
           />
         </div>
@@ -121,7 +133,7 @@ export default function EditPublisherForm({ publisherId }: { publisherId: number
             onClick={handleDelete}
             disabled={isDeleting}
           >
-            {isDeleting ? 'Eliminando...' : 'Eliminar Editorial'}
+            {isDeleting ? 'Eliminando...' : 'Eliminar Autor'}
           </Button>
 
           <div className="flex gap-4">

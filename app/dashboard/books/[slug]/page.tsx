@@ -1,4 +1,4 @@
-import EditBookForm from '@/components/EditBookForm'; // Adjust the path as needed
+import EditBookForm from '@/components/edit-book-form'; // Adjust the path as needed
 
 import { auth } from '@/auth';
 

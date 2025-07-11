@@ -4,79 +4,51 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-
+} from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { useActionState } from 'react';
 import { authenticate } from '@/lib/actions';
 import { useSearchParams } from 'next/navigation';
+import { FcGoogle } from 'react-icons/fc'; // You'll need to install react-icons
 
 export default function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
-  const [errorMessage, formAction, isPending] = useActionState(
-    authenticate,
-    undefined,
-  );
+  const error = searchParams.get('error');
+
+  const handleGoogleLogin = async () => {
+    await authenticate('google', callbackUrl);
+  };
 
   return (
     <Card className="w-[350px]">
       <CardHeader>
-        <CardTitle>Dashboard</CardTitle>
-        <CardDescription>Por favor, ingresa tus claves</CardDescription>
+        <CardTitle>Iniciar Sesión</CardTitle>
+        <CardDescription>Accede al panel de administración</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction}>
-          <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                name="email"
-                placeholder="Ingresa tu email"
-                required
-
-              />
+        <div className="grid w-full items-center gap-4">
+          {error && (
+            <div className="p-3 text-sm text-red-500 bg-red-50 rounded">
+              Error al iniciar sesión. Por favor intenta de nuevo.
             </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                name="password"
-                placeholder="Ingresa tu Contraseña"
-                required
-                minLength={6}
+          )}
 
-
-              />
-            </div>
-          </div>
-          <input type="hidden" name="redirectTo" value={callbackUrl} />
-          <Button className="mt-4 w-full mt-8" aria-disabled={isPending}>
-            Ingresar
-          </Button>
-        </form>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        {errorMessage && (
-          <div
-            className="flex h-3 items-end space-x-1"
-            aria-live="polite"
-            aria-atomic="true"
+          <Button
+            onClick={handleGoogleLogin}
+            variant="outline"
+            className="w-full"
           >
-            <p className="text-sm text-red-500">{errorMessage}</p>
-          </div>
-        )}
+            <FcGoogle className="mr-2 h-4 w-4" />
+            Continuar con Google
+          </Button>
 
-      </CardFooter>
+          <p className="text-xs text-center text-gray-500 mt-4">
+            Solo usuarios autorizados pueden acceder al panel de administración.
+          </p>
+        </div>
+      </CardContent>
     </Card>
-
   );
 }

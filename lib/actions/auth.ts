@@ -1,16 +1,14 @@
 'use server';
 
-import { signIn } from '@/auth';
+import { signIn, signOut } from '@/auth';
 import { AuthError } from 'next-auth';
 
-// ...
-
 export async function authenticate(
-  prevState: string | undefined,
-  formData: FormData,
+  provider: string = 'google',
+  callbackUrl: string = '/dashboard'
 ) {
   try {
-    await signIn('credentials', formData);
+    await signIn(provider, { redirectTo: callbackUrl });
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -24,3 +22,6 @@ export async function authenticate(
   }
 }
 
+export async function logout() {
+  await signOut({ redirectTo: '/' });
+}
