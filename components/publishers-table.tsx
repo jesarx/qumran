@@ -5,69 +5,54 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Publisher } from "@/lib/definitions"
-
-import { fetchPublishers } from "@/lib/data";
-import PaginationComp from "./pagination";
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Publisher } from "@/lib/queries";
 
+interface PublishersTableProps {
+  publishers: Publisher[];
+  showActions?: boolean;
+}
 
-export default async function PublishersTable({
-  name,
-  currentPage,
-  sort,
-  location,
-}: {
-  name: string;
-  currentPage: number;
-  sort: string;
-  location: string;
-}) {
-  const { publishers: publishers, metadata } = await fetchPublishers({ name: name, page: currentPage, sort: sort, });
-  currentPage = metadata.current_page;
+export default function PublishersTable({ publishers = [], showActions = false }: PublishersTableProps) {
+  // Ensure publishers is always an array
+  const publishersList = Array.isArray(publishers) ? publishers : [];
 
   return (
-    <div>
-      <Table>
-        <TableHeader>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Nombre</TableHead>
+          <TableHead>Número de Libros</TableHead>
+          {showActions && <TableHead className="text-right">Acciones</TableHead>}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {publishersList.length === 0 ? (
           <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Libros</TableHead>
-            {location === "dashboard" && (
-              <TableHead className="text-right">Actions</TableHead>
-            )}
+            <TableCell colSpan={showActions ? 3 : 2} className="text-center">
+              No se encontraron editoriales
+            </TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {publishers.map((publisher: Publisher, i: number) => (
-            <TableRow key={i}>
-              <TableCell>
-                <Link href={'/publishers/' + publisher.slug}>
-                  {publisher.name}
-                </Link>
-              </TableCell>
-              <TableCell>
-                {publisher.books}
-              </TableCell>
-              {location === "dashboard" && (
+        ) : (
+          publishersList.map((publisher) => (
+            <TableRow key={publisher.id}>
+              <TableCell className="font-medium">{publisher.name}</TableCell>
+              <TableCell>{publisher.book_count || 0}</TableCell>
+              {showActions && (
                 <TableCell className="text-right">
                   <Link href={`/dashboard/publishers/${publisher.id}`}>
-                    <Button className="text-xs h-6 mr-2 cursor-pointer">Editar</Button>
+                    <Button size="sm" variant="outline">
+                      Editar
+                    </Button>
                   </Link>
                 </TableCell>
               )}
             </TableRow>
-
-          ))}
-
-        </TableBody>
-      </Table>
-
-      <PaginationComp metadata={metadata} object="editoriales" />
-    </div>
+          ))
+        )}
+      </TableBody>
+    </Table>
   );
 }
-
-

@@ -1,14 +1,19 @@
-import EditAuthorForm from '@/components/edit-author'; // Adjust the path as needed
-import { auth } from '@/auth';
+import EditAuthorForm from '@/components/edit-author-form';
 
-export default async function EditPublisherPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const session = await auth();
-  const token = session?.user?.token || "default-token";
+export default function EditAuthorPage({ params }: { params: { slug: string } }) {
+  const authorId = parseInt(params.slug);
+
+  if (isNaN(authorId)) {
+    return (
+      <div className="container mx-auto py-8">
+        <p className="text-red-600">ID de autor inválido</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8">
-      <EditAuthorForm authorId={parseInt(id)} token={token} />
+      <EditAuthorForm authorId={authorId} />
     </div>
   );
 }

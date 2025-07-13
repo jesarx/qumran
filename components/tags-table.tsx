@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -6,39 +5,40 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Tags } from "@/lib/definitions"
-
-import { fetchTags } from "@/lib/data";
+} from "@/components/ui/table";
 import Link from "next/link";
+import { Category } from "@/lib/queries";
 
+interface CategoriesTableProps {
+  categories: Category[];
+}
 
-export default async function TagsTable() {
-  const { tags } = await fetchTags();
+export default function CategoriesTable({ categories }: CategoriesTableProps) {
   return (
-    <div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Libros</TableHead>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Nombre</TableHead>
+          <TableHead>Número de Libros</TableHead>
+          <TableHead>Ver Libros</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {categories.map((category) => (
+          <TableRow key={category.id}>
+            <TableCell className="font-medium">{category.name}</TableCell>
+            <TableCell>{category.book_count || 0}</TableCell>
+            <TableCell>
+              <Link
+                href={`/books?categorySlug=${category.slug}`}
+                className="text-blue-600 hover:underline"
+              >
+                Ver libros →
+              </Link>
+            </TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {tags.map((tag: Tags, i: number) => (
-            <TableRow key={i}>
-              <TableCell>
-                <Link href={'/books?tags=' + tag.name}>
-                  {tag.name}
-                </Link>
-              </TableCell>
-              <TableCell>
-                {tag.books}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

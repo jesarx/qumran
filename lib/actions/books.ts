@@ -198,9 +198,12 @@ export async function searchBookByISBN(isbn: string): Promise<any> {
     // Clean ISBN by removing hyphens or spaces
     const cleanIsbn = isbn.replace(/[-\s]/g, '');
 
-    // Fetch book data from Open Library API
+    // Your Google Books API key
+    const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
+
+    // Fetch book data from Google Books API
     const response = await fetch(
-      `https://openlibrary.org/api/books?bibkeys=ISBN:${cleanIsbn}&format=json&jscmd=data`
+      `https://www.googleapis.com/books/v1/volumes?q=isbn:${cleanIsbn}&key=${apiKey}`
     );
 
     if (!response.ok) {
@@ -208,22 +211,21 @@ export async function searchBookByISBN(isbn: string): Promise<any> {
     }
 
     const data = await response.json();
-    const bookKey = `ISBN:${cleanIsbn}`;
 
-    if (!data[bookKey]) {
+    if (!data.items || data.items.length === 0) {
       return null;
     }
 
-    const bookData = data[bookKey];
+    const book = data.items[0].volumeInfo;
 
-    // Extract and format the data
     return {
-      title: bookData.title || '',
-      authors: bookData.authors?.map((author: any) => author.name) || [],
-      publisher: bookData.publishers?.[0]?.name || ''
+      title: book.title || '',
+      authors: book.authors || [],
+      publisher: book.publisher || '',
     };
   } catch (error) {
     console.error('Failed to search book by ISBN:', error);
     return null;
   }
 }
+

@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFormState } from 'react-dom';
 import {
   updatePublisherAction,
   deletePublisherAction,
@@ -20,7 +19,7 @@ const initialState = {
 
 export default function EditPublisherForm({ publisherId }: { publisherId: number }) {
   const router = useRouter();
-  const [state, formAction] = useFormState(updatePublisherAction, initialState);
+  const [state, formAction] = useActionState(updatePublisherAction, initialState);
   const [publisher, setPublisher] = useState<Publisher | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);

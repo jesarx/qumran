@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFormState } from 'react-dom';
 import {
   updateAuthorAction,
   deleteAuthorAction,
@@ -20,7 +19,7 @@ const initialState = {
 
 export default function EditAuthorForm({ authorId }: { authorId: number }) {
   const router = useRouter();
-  const [state, formAction] = useFormState(updateAuthorAction, initialState);
+  const [state, formAction] = useActionState(updateAuthorAction, initialState);
   const [author, setAuthor] = useState<Author | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);

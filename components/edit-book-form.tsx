@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFormState } from 'react-dom';
 import {
   updateBookAction,
   deleteBookAction,
@@ -28,7 +27,7 @@ const initialState = {
 
 export default function EditBookForm({ bookId }: { bookId: number }) {
   const router = useRouter();
-  const [state, formAction] = useFormState(updateBookAction, initialState);
+  const [state, formAction] = useActionState(updateBookAction, initialState);
   const [book, setBook] = useState<Book | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);

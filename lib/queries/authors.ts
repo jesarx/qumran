@@ -123,12 +123,23 @@ export async function findOrCreateAuthor(
   lastName: string
 ): Promise<Author> {
   // First try to find existing author
-  const existing = await queryOne<Author>(
-    `SELECT * FROM authors 
-     WHERE LOWER(last_name) = LOWER($1) 
-     AND (($2 IS NULL AND first_name IS NULL) OR LOWER(first_name) = LOWER($2))`,
-    [lastName, firstName]
-  );
+  let existing: Author | null;
+
+  if (firstName) {
+    existing = await queryOne<Author>(
+      `SELECT * FROM authors 
+       WHERE LOWER(last_name) = LOWER($1) 
+       AND LOWER(first_name) = LOWER($2)`,
+      [lastName, firstName]
+    );
+  } else {
+    existing = await queryOne<Author>(
+      `SELECT * FROM authors 
+       WHERE LOWER(last_name) = LOWER($1) 
+       AND first_name IS NULL`,
+      [lastName]
+    );
+  }
 
   if (existing) {
     return existing;

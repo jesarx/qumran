@@ -1,15 +1,19 @@
-import EditBookForm from '@/components/edit-book-form'; // Adjust the path as needed
+import EditBookForm from '@/components/edit-book-form';
 
-import { auth } from '@/auth';
+export default function EditBookPage({ params }: { params: { slug: string } }) {
+  const bookId = parseInt(params.slug);
 
-export default async function EditBookPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const session = await auth();
-  const token = session?.user?.token || "default-token";
+  if (isNaN(bookId)) {
+    return (
+      <div className="container mx-auto py-8">
+        <p className="text-red-600">ID de libro inválido</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8">
-      <EditBookForm slug={slug} token={token} />
+      <EditBookForm bookId={bookId} />
     </div>
   );
 }

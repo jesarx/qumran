@@ -1,40 +1,73 @@
-import Search from "@/components/search";
-import { Button } from "@/components/ui/button";
-import BooksTableDashboard from "@/components/books-table-dashboard"
-import { PlusIcon } from "lucide-react";
-import Link from "next/link";
+import { getBooksAction, getCategoriesAction } from '@/lib/actions';
+import BooksTable from '@/components/books-table';
+import BookFilters from '@/components/book-filters';
+import PaginationComp from '@/components/pagination';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { PlusIcon } from 'lucide-react';
 
+export default async function DashboardBooksPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
 
+  const title = typeof params.title === 'string' ? params.title : '';
+  const categorySlug = typeof params.categorySlug === 'string' ? params.categorySlug : '';
+  const sort = typeof params.sort === 'string' ? params.sort : '';
+  const page = typeof params.page === 'string' ? parseInt(params.page) : 1;
 
-export default async function DashboardBooksPage(
-  props: {
-    searchParams?: Promise<{
-      title?: string;
-      page?: string;
-    }>;
-  }
-) {
-  const searchParams = await props.searchParams;
-  const title = searchParams?.title || '';
-  const currentPage = Number(searchParams?.page) || 1;
+  const [booksData, categories] = await Promise.all([
+    getBooksAction({
+      title,
+      categorySlug,
+      sort: sort as any,
+      page,
+      limit: 20,
+    }),
+    getCategoriesAction(),
+  ]);
 
+  const { books, total, totalPages } = booksData;
 
   return (
-    <div className="mx-auto md:w-3/4 flex-col justify-center items-center p-4 bg-gray-100">
-      <div className="flex justify-between mb-5">
-        <Search />
-        <Link href="/dashboard/books/new" className="shadow-sm">
-          <Button className="shadow-sm cursor-pointer">
+    <div className="mx-auto max-w-7xl p-4">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Gestión de Libros</h1>
+          <p className="text-muted-foreground mt-2">
+            {total} {total === 1 ? 'libro' : 'libros'} en total
+          </p>
+        </div>
+        <Link href="/dashboard/books/new">
+          <Button>
             <PlusIcon className="mr-2 h-4 w-4" />
-            Añadir libro
+            Agregar libro
           </Button>
         </Link>
       </div>
 
-      <div className="w-full rounded-xl p-4 bg-white shadow-[inset_0_2px_8px_rgba(0,0,0,0.15)]">
+      <div className="bg-card rounded-lg shadow-sm p-6">
+        <BookFilters categories={categories} />
 
-        <BooksTableDashboard title={title} currentPage={currentPage} />
+        <BooksTable books={books} showActions={true} />
+
+        {totalPages > 1 && (
+          <div className="mt-6">
+            <PaginationComp
+              metadata={{
+                current_page: page,
+                page_size: books.length,
+                first_page: 1,
+                last_page: totalPages,
+                total_records: total,
+              }}
+              object="libros"
+            />
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }

@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFormState } from 'react-dom';
 import { createBookAction, searchBookByISBN, getCategoriesAction } from '@/lib/actions';
 import { Category } from '@/lib/queries';
 import { Label } from '@/components/ui/label';
@@ -15,6 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Camera, X } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+// Dynamically import the scanner to avoid SSR issues
+const BarcodeScanner = dynamic(
+  () => import('@/components/barcode-scanner'),
+  { ssr: false }
+);
 
 const initialState = {
   success: false,
@@ -24,9 +31,10 @@ const initialState = {
 
 export default function NewBookForm() {
   const router = useRouter();
-  const [state, formAction] = useFormState(createBookAction, initialState);
+  const [state, formAction] = useActionState(createBookAction, initialState);
   const [isSearchingISBN, setIsSearchingISBN] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [showScanner, setShowScanner] = useState(false);
 
   // Form fields
   const [isbn, setIsbn] = useState('');
@@ -58,15 +66,23 @@ export default function NewBookForm() {
     }
   }, [state.success, state.bookId, router]);
 
+  // Handle barcode scan
+  const handleBarcodeScan = async (scannedIsbn: string) => {
+    setShowScanner(false);
+    setIsbn(scannedIsbn);
+    await handleISBNSearch(scannedIsbn);
+  };
+
   // Search book by ISBN
-  const handleISBNSearch = async () => {
-    if (!isbn) {
+  const handleISBNSearch = async (isbnToSearch?: string) => {
+    const searchIsbn = isbnToSearch || isbn;
+    if (!searchIsbn) {
       return;
     }
 
     setIsSearchingISBN(true);
     try {
-      const bookData = await searchBookByISBN(isbn);
+      const bookData = await searchBookByISBN(searchIsbn);
 
       if (bookData) {
         // Auto-fill form fields
@@ -100,7 +116,6 @@ export default function NewBookForm() {
 
         // Try to match category based on subjects
         if (bookData.subjects && bookData.subjects.length > 0) {
-          // Simple matching logic - you might want to improve this
           const subject = bookData.subjects[0].toLowerCase();
           const matchedCategory = categories.find(cat =>
             subject.includes(cat.name.toLowerCase()) ||
@@ -131,6 +146,22 @@ export default function NewBookForm() {
         </div>
       )}
 
+      {showScanner && (
+        <div className="fixed inset-0 z-50 bg-black">
+          <div className="relative h-full">
+            <Button
+              type="button"
+              onClick={() => setShowScanner(false)}
+              className="absolute top-4 right-4 z-10 bg-white text-black hover:bg-gray-200"
+              size="icon"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            <BarcodeScanner onScan={handleBarcodeScan} />
+          </div>
+        </div>
+      )}
+
       <form action={formAction} className="space-y-6">
         {/* ISBN with search */}
         <div>
@@ -147,7 +178,17 @@ export default function NewBookForm() {
             />
             <Button
               type="button"
-              onClick={handleISBNSearch}
+              onClick={() => setShowScanner(true)}
+              variant="outline"
+              size="icon"
+              title="Escanear código de barras"
+              className="sm:hidden" // Only show on small screens
+            >
+              <Camera className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              onClick={() => handleISBNSearch()}
               disabled={isSearchingISBN || !isbn}
               variant="outline"
             >
@@ -156,6 +197,7 @@ export default function NewBookForm() {
           </div>
           <p className="text-sm text-gray-500 mt-1">
             Ingresa el ISBN para buscar información del libro automáticamente
+            <span className="sm:hidden"> o usa la cámara para escanear el código de barras</span>
           </p>
         </div>
 

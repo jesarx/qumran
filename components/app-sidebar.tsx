@@ -1,6 +1,5 @@
-import { Home, Scroll, Users, Library, LayoutList, BookHeart, MessageCircleHeartIcon } from "lucide-react"
-import LogoP from '@/public/images/logo.png'
-
+import { Home, BookOpen, Users, Building2, LayoutList } from "lucide-react";
+import LogoP from '@/public/images/logo.png';
 
 import {
   Sidebar,
@@ -11,16 +10,15 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import Image from "next/image"
-import Search from "@/components/search"
+} from "@/components/ui/sidebar";
+import Image from "next/image";
 
-// Menu items.
-const items = [
+// Menu items
+const publicItems = [
   {
-    title: "Inicio",
+    title: "Libros",
     url: "/books",
-    icon: Home,
+    icon: BookOpen,
   },
   {
     title: "Autores",
@@ -30,51 +28,73 @@ const items = [
   {
     title: "Editoriales",
     url: "/publishers",
-    icon: Library,
+    icon: Building2,
   },
   {
     title: "Categorías",
     url: "/tags",
     icon: LayoutList,
   },
+];
+
+const adminItems = [
   {
-    title: "Manifiesto",
-    url: "/manifest",
-    icon: Scroll,
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: Home,
   },
   {
-    title: "Otras bibliotecas",
-    url: "#",
-    icon: BookHeart,
+    title: "Gestionar Libros",
+    url: "/dashboard/books",
+    icon: BookOpen,
   },
   {
-    title: "Contacto",
-    url: "/contact",
-    icon: MessageCircleHeartIcon,
+    title: "Gestionar Autores",
+    url: "/dashboard/authors",
+    icon: Users,
   },
-]
+  {
+    title: "Gestionar Editoriales",
+    url: "/dashboard/publishers",
+    icon: Building2,
+  },
+];
 
 export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarContent>
-        <Image
-          src={LogoP}
-          alt="Pirateca logo"
-          className="w-3/4 mx-auto my-8"
+        <div className="px-6 py-8">
+          <Image
+            src={LogoP}
+            alt="Qumran logo"
+            className="w-full mx-auto"
+          />
+        </div>
 
-        />
         <SidebarGroup>
-          <SidebarGroupLabel>Buscar</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <Search />
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navegación</SidebarGroupLabel>
+          <SidebarGroupLabel>Navegación Pública</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {publicItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Administración</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {adminItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <a href={item.url}>
@@ -89,6 +109,5 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }
-

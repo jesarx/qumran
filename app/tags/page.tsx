@@ -1,19 +1,21 @@
-import TagsTable from "@/components/tags-table";
+import { getCategoriesAction } from '@/lib/actions';
+import CategoriesTable from '@/components/tags-table';
 
-
-export default async function DashboardAuthorsPage(
-) {
+export default async function CategoriesPage() {
+  const categories = await getCategoriesAction();
 
   return (
-    <div className="mx-auto md:w-3/4 flex-col justify-center items-center p-4 bg-gray-100">
-      <div className="flex justify-between mb-3">
-        <h1 className="text-2xl font-bold mb-2 text-gray-800">Categorías</h1>
+    <div className="mx-auto max-w-7xl p-4 bg-background min-h-screen">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-foreground">Categorías</h1>
+        <p className="text-muted-foreground mt-2">
+          Explora los libros por categoría
+        </p>
       </div>
 
-      <div className="w-full rounded-xl p-4 bg-white shadow-[inset_0_2px_8px_rgba(0,0,0,0.15)]">
-
-        <TagsTable />
+      <div className="bg-card rounded-lg shadow-sm p-6">
+        <CategoriesTable categories={categories} />
       </div>
     </div>
-  )
+  );
 }

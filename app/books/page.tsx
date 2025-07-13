@@ -1,42 +1,62 @@
-import LatestBooksCards from "@/components/latest-books-cards";
-import LatestPosts from "@/components/lastest-posts";
+import { getBooksAction, getCategoriesAction } from '@/lib/actions';
+import BooksTable from '@/components/books-table';
+import BookFilters from '@/components/book-filters';
+import PaginationComp from '@/components/pagination';
 
-export default async function Home(
-  props: {
-    searchParams?: Promise<{
-      title?: string;
-      authslug?: string;
-      pubslug?: string;
-      tags?: string;
-      page?: string;
-      sort?: string;
-    }>;
-  }
-) {
-  const searchParams = await props.searchParams;
-  const title = searchParams?.title || '';
-  const authslug = searchParams?.authslug || '';
-  const pubslug = searchParams?.pubslug || '';
-  const tags = searchParams?.tags || '';
-  const sort = searchParams?.sort || '';
-  const currentPage = Number(searchParams?.page) || 1;
+export default async function BooksPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
 
+  const title = typeof params.title === 'string' ? params.title : '';
+  const categorySlug = typeof params.categorySlug === 'string' ? params.categorySlug : '';
+  const sort = typeof params.sort === 'string' ? params.sort : '';
+  const page = typeof params.page === 'string' ? parseInt(params.page) : 1;
+
+  const [booksData, categories] = await Promise.all([
+    getBooksAction({
+      title,
+      categorySlug,
+      sort: sort as any,
+      page,
+      limit: 20,
+    }),
+    getCategoriesAction(),
+  ]);
+
+  const { books, total, totalPages } = booksData;
 
   return (
-
-    <div className="flex-col justify-center items-center p-4 bg-gray-100">
-      <h1 className="text-xl font-bold mb-2 text-gray-800">Anuncios</h1>
-      <div className="flex flex-col md:flex-row mb-6">
-        <LatestPosts />
+    <div className="mx-auto max-w-7xl p-4 bg-background min-h-screen min-w-3/4">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-foreground">Biblioteca</h1>
+        <p className="text-muted-foreground mt-2">
+          {total} {total === 1 ? 'libro' : 'libros'} en total
+        </p>
       </div>
 
-      <div
-        className="w-full rounded-xl p-4 bg-white
-        shadow-[inset_0_2px_8px_rgba(0,0,0,0.15)]"
-      >
-        <LatestBooksCards title={title} authslug={authslug} pubslug={pubslug} tags={tags} currentPage={currentPage} sort={sort} />
+      <div className="bg-card rounded-lg shadow-sm p-6">
+        <BookFilters categories={categories} />
+
+        <BooksTable books={books} />
+
+        {totalPages > 1 && (
+          <div className="mt-6">
+            <PaginationComp
+              metadata={{
+                current_page: page,
+                page_size: books.length,
+                first_page: 1,
+                last_page: totalPages,
+                total_records: total,
+              }}
+              object="libros"
+            />
+          </div>
+        )}
       </div>
     </div>
-
   );
 }

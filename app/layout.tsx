@@ -36,16 +36,13 @@ export default async function RootLayout({
   const isAuthenticated = !!session?.user
 
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="en" className="dark">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}>
         <SidebarProvider>
           <AppSidebar />
 
-          <main className="w-full flex flex-col bg-gray-100">
+          <main className="w-full flex flex-col bg-background">
 
-            {isAuthenticated && <DashboardNavbar />}
             <SidebarTrigger />
             {children}
             <Footer />

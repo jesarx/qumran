@@ -1,33 +1,32 @@
-import AuthorsTable from "@/components/authors-table";
-import OrderBy from "@/components/order-by";
+import { getAuthorsAction } from '@/lib/actions';
+import AuthorsTable from '@/components/authors-table';
+import SimpleSearch from '@/components/simple-search';
 
+export default async function AuthorsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams || {};
+  const name = typeof params.name === 'string' ? params.name : '';
 
-export default async function DashboardAuthorsPage(
-  props: {
-    searchParams?: Promise<{
-      name?: string;
-      page?: string;
-      sort?: string;
-    }>;
-  }
-) {
-  const searchParams = await props.searchParams;
-  const name = searchParams?.name || '';
-  const sort = searchParams?.sort || '';
-  const currentPage = Number(searchParams?.page) || 1;
+  const authors = await getAuthorsAction(name);
+
+  console.log('Authors page data:', {
+    authorsReceived: Array.isArray(authors),
+    count: authors?.length
+  });
 
   return (
-    <div className="mx-auto md:w-3/4 flex-col justify-center items-center p-4 bg-gray-100">
-      <div className="flex justify-between mb-3">
-        <h1 className="text-2xl font-bold mb-2 text-gray-800">Autores</h1>
-        <OrderBy />
+    <div className="mx-auto max-w-7xl p-4 bg-background min-h-screen">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-foreground mb-4">Autores</h1>
+        <SimpleSearch placeholder="Buscar por nombre..." />
       </div>
 
-      <div className="w-full rounded-xl p-4 bg-white shadow-[inset_0_2px_8px_rgba(0,0,0,0.15)]">
-
-        <AuthorsTable name={name} currentPage={currentPage} location="public" sort={sort} />
+      <div className="bg-card rounded-lg shadow-sm p-6">
+        <AuthorsTable authors={authors || []} showActions={false} />
       </div>
     </div>
-  )
+  );
 }
-
