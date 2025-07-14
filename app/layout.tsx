@@ -20,10 +20,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Pirateca.com',
-    default: 'Pirateca.com'
+    template: '%s | qumran.cc',
+    default: 'qumran.cc'
   },
-  description: "Los libros no se roban, ¡se expropian!",
+  description: "biblioteca personal de eduardo partida",
 };
 
 export default async function RootLayout({

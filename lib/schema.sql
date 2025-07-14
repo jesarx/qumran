@@ -1,97 +1,35 @@
--- Create database (run this separately if needed)
--- CREATE DATABASE qumran;
+--
+-- PostgreSQL Database Schema
+-- Book Library Management System
+--
 
--- Drop tables if they exist (for clean setup)
-DROP TABLE IF EXISTS books CASCADE;
-DROP TABLE IF EXISTS authors CASCADE;
-DROP TABLE IF EXISTS publishers CASCADE;
-DROP TABLE IF EXISTS categories CASCADE;
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
 
--- Create authors table
-CREATE TABLE authors (
-    id SERIAL PRIMARY KEY,
-    first_name VARCHAR(255),
-    last_name VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+--
+-- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
+--
 
--- Create publishers table
-CREATE TABLE publishers (
-    id SERIAL PRIMARY KEY,
-    "name" VARCHAR(255) UNIQUE NOT NULL,
-    slug VARCHAR(255) UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+CREATE SCHEMA IF NOT EXISTS public;
 
--- Create categories table
-CREATE TABLE categories (
-    id SERIAL PRIMARY KEY,
-    "name" VARCHAR(255) UNIQUE NOT NULL,
-    slug VARCHAR(255) UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+--
+-- Helper Functions
+--
 
--- Create books table
-CREATE TABLE books (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(500) NOT NULL,
-    isbn VARCHAR(20), -- Removed UNIQUE constraint temporarily
-    author1_id INTEGER NOT NULL REFERENCES authors(id) ON DELETE RESTRICT,
-    author2_id INTEGER REFERENCES authors(id) ON DELETE RESTRICT,
-    publisher_id INTEGER NOT NULL REFERENCES publishers(id) ON DELETE RESTRICT,
-    category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE RESTRICT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    -- Add constraint to check ISBN format if provided
-    CONSTRAINT isbn_format_check CHECK (
-        isbn IS NULL OR 
-        (LENGTH(REGEXP_REPLACE(isbn, '[^0-9]', '', 'g')) IN (10, 13))
-    )
-);
-
--- Create unique index on ISBN, but only for non-null values
--- This allows multiple books without ISBN (NULL values)
-CREATE UNIQUE INDEX idx_books_isbn_unique ON books(isbn) WHERE isbn IS NOT NULL;
-
--- Create other indexes for better performance
-CREATE INDEX idx_books_author1_id ON books(author1_id);
-CREATE INDEX idx_books_author2_id ON books(author2_id);
-CREATE INDEX idx_books_publisher_id ON books(publisher_id);
-CREATE INDEX idx_books_category_id ON books(category_id);
-CREATE INDEX idx_books_title ON books(title);
-CREATE INDEX idx_books_isbn ON books(isbn);
-CREATE INDEX idx_authors_slug ON authors(slug);
-CREATE INDEX idx_publishers_slug ON publishers(slug);
-CREATE INDEX idx_categories_slug ON categories(slug);
-
--- Create update trigger for updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
-CREATE TRIGGER update_authors_updated_at BEFORE UPDATE ON authors
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_publishers_updated_at BEFORE UPDATE ON publishers
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_categories_updated_at BEFORE UPDATE ON categories
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_books_updated_at BEFORE UPDATE ON books
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- Function to normalize ISBN (remove hyphens and spaces)
-CREATE OR REPLACE FUNCTION normalize_isbn(isbn_input VARCHAR)
-RETURNS VARCHAR AS $$
+-- Function to normalize ISBN by removing non-numeric characters
+CREATE OR REPLACE FUNCTION public.normalize_isbn(isbn_input character varying) 
+RETURNS character varying
+LANGUAGE plpgsql
+AS $$
 BEGIN
     IF isbn_input IS NULL OR isbn_input = '' THEN
         RETURN NULL;
@@ -99,53 +37,154 @@ BEGIN
     
     RETURN REGEXP_REPLACE(isbn_input, '[^0-9]', '', 'g');
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
--- Trigger to automatically normalize ISBN on insert/update
-CREATE OR REPLACE FUNCTION normalize_isbn_trigger()
-RETURNS TRIGGER AS $$
+-- Trigger function to normalize ISBN on insert/update
+CREATE OR REPLACE FUNCTION public.normalize_isbn_trigger() 
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
 BEGIN
     NEW.isbn = normalize_isbn(NEW.isbn);
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
+-- Trigger function to update the updated_at timestamp
+CREATE OR REPLACE FUNCTION public.update_updated_at_column() 
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$;
+
+--
+-- Tables
+--
+
+-- Authors table
+CREATE TABLE public.authors (
+    id SERIAL PRIMARY KEY,
+    first_name character varying(255),
+    last_name character varying(255) NOT NULL,
+    slug character varying(255) NOT NULL UNIQUE,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Categories table
+CREATE TABLE public.categories (
+    id SERIAL PRIMARY KEY,
+    name character varying(255) NOT NULL UNIQUE,
+    slug character varying(255) NOT NULL UNIQUE,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Publishers table
+CREATE TABLE public.publishers (
+    id SERIAL PRIMARY KEY,
+    name character varying(255) NOT NULL UNIQUE,
+    slug character varying(255) NOT NULL UNIQUE,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Locations table
+CREATE TABLE public.locations (
+    id SERIAL PRIMARY KEY,
+    name character varying(255) NOT NULL UNIQUE,
+    slug character varying(255) NOT NULL UNIQUE,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Books table
+CREATE TABLE public.books (
+    id SERIAL PRIMARY KEY,
+    title character varying(500) NOT NULL,
+    isbn character varying(20),
+    author1_id integer NOT NULL,
+    author2_id integer,
+    publisher_id integer NOT NULL,
+    category_id integer NOT NULL,
+    location_id integer,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Constraints
+    CONSTRAINT isbn_format_check CHECK (
+        (isbn IS NULL) OR 
+        (length(regexp_replace((isbn)::text, '[^0-9]'::text, ''::text, 'g'::text)) = ANY (ARRAY[10, 13]))
+    ),
+    
+    -- Foreign Keys
+    CONSTRAINT books_author1_id_fkey FOREIGN KEY (author1_id) REFERENCES public.authors(id) ON DELETE RESTRICT,
+    CONSTRAINT books_author2_id_fkey FOREIGN KEY (author2_id) REFERENCES public.authors(id) ON DELETE RESTRICT,
+    CONSTRAINT books_publisher_id_fkey FOREIGN KEY (publisher_id) REFERENCES public.publishers(id) ON DELETE RESTRICT,
+    CONSTRAINT books_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.categories(id) ON DELETE RESTRICT,
+    CONSTRAINT books_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id) ON DELETE RESTRICT
+);
+
+--
+-- Indexes
+--
+
+-- Authors indexes
+CREATE INDEX idx_authors_slug ON public.authors USING btree (slug);
+
+-- Categories indexes
+CREATE INDEX idx_categories_slug ON public.categories USING btree (slug);
+
+-- Publishers indexes
+CREATE INDEX idx_publishers_slug ON public.publishers USING btree (slug);
+
+-- Locations indexes
+CREATE INDEX idx_locations_slug ON public.locations USING btree (slug);
+
+-- Books indexes
+CREATE INDEX idx_books_title ON public.books USING btree (title);
+CREATE INDEX idx_books_isbn ON public.books USING btree (isbn);
+CREATE UNIQUE INDEX idx_books_isbn_unique ON public.books USING btree (isbn) WHERE (isbn IS NOT NULL);
+CREATE INDEX idx_books_author1_id ON public.books USING btree (author1_id);
+CREATE INDEX idx_books_author2_id ON public.books USING btree (author2_id);
+CREATE INDEX idx_books_publisher_id ON public.books USING btree (publisher_id);
+CREATE INDEX idx_books_category_id ON public.books USING btree (category_id);
+CREATE INDEX idx_books_location_id ON public.books USING btree (location_id);
+
+--
+-- Triggers
+--
+
+-- Triggers to automatically update updated_at timestamps
+CREATE TRIGGER update_authors_updated_at 
+    BEFORE UPDATE ON public.authors 
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER update_categories_updated_at 
+    BEFORE UPDATE ON public.categories 
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER update_publishers_updated_at 
+    BEFORE UPDATE ON public.publishers 
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER update_locations_updated_at 
+    BEFORE UPDATE ON public.locations 
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER update_books_updated_at 
+    BEFORE UPDATE ON public.books 
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- Triggers to normalize ISBN on insert/update
 CREATE TRIGGER normalize_isbn_before_insert 
-    BEFORE INSERT ON books
-    FOR EACH ROW EXECUTE FUNCTION normalize_isbn_trigger();
+    BEFORE INSERT ON public.books 
+    FOR EACH ROW EXECUTE FUNCTION public.normalize_isbn_trigger();
 
 CREATE TRIGGER normalize_isbn_before_update 
-    BEFORE UPDATE ON books
-    FOR EACH ROW EXECUTE FUNCTION normalize_isbn_trigger();
-
--- Insert some initial categories
-INSERT INTO categories ("name", slug) VALUES
-    ('Filosofía', 'filosofia'),
-    ('Narrativa', 'narrativa'),
-    ('Música', 'musica'),
-    ('Teatro', 'teatro'),
-    ('Poesía', 'poesia'),
-    ('Religión', 'religion'),
-    ('Arte', 'arte'),
-    ('Consulta', 'consulta');
-
--- Optional: Add some sample data to test the ISBN constraints
-/*
--- This should work (books with ISBN)
-INSERT INTO authors (first_name, last_name, slug) VALUES ('Test', 'Author', 'test-author');
-INSERT INTO publishers (name, slug) VALUES ('Test Publisher', 'test-publisher');
-
--- Books with ISBN
-INSERT INTO books (title, isbn, author1_id, publisher_id, category_id) VALUES 
-    ('Test Book 1', '978-3-16-148410-0', 1, 1, 1),
-    ('Test Book 2', '9781234567890', 1, 1, 1);
-
--- Books without ISBN (should work - multiple allowed)
-INSERT INTO books (title, isbn, author1_id, publisher_id, category_id) VALUES 
-    ('Test Book 3', NULL, 1, 1, 1),
-    ('Test Book 4', NULL, 1, 1, 1);
-
--- This should fail (duplicate ISBN)
--- INSERT INTO books (title, isbn, author1_id, publisher_id, category_id) VALUES 
---     ('Test Book 5', '978-3-16-148410-0', 1, 1, 1);
-*/
+    BEFORE UPDATE ON public.books 
+    FOR EACH ROW EXECUTE FUNCTION public.normalize_isbn_trigger();
