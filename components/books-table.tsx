@@ -51,7 +51,7 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
               </TableCell>
               <TableCell>{book.publisher_name}</TableCell>
               <TableCell>{book.category_name}</TableCell>
-              <TableCell>{book.location_name}</TableCell>
+              <TableCell>{book.location_name || 'Sin ubicación'}</TableCell>
               <TableCell className="text-sm">{book.isbn || '-'}</TableCell>
               {showActions && (
                 <TableCell className="text-right">

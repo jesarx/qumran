@@ -168,7 +168,11 @@ export async function AppSidebar() {
         <div className="flex items-center justify-between px-2 py-2">
           <div className="flex flex-col">
             <span className="text-xs text-sidebar-foreground/70">
-              Qumran v0.1β
+              <a href="https://github.com/jesarx/qumran">Qumran</a>
+            </span>
+
+            <span className="text-xs text-sidebar-foreground/70">
+              por <a href="https://edpartida.com/">eduardo partida</a>
             </span>
           </div>
           <ThemeToggle />

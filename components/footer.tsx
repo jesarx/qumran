@@ -6,7 +6,7 @@ export default function Footer() {
           Ningún derecho reservado
         </p>
         <p className="text-center text-xs text-muted-foreground">
-          Qumran 0.1β fue derarrollado por eduardo partida
+          <a href="https://github.com/jesarx/qumran">Qumran</a>  fue derarrollado por <a href="https://edpartida.com/">eduardo partida</a>
         </p>
       </div>
     </footer>

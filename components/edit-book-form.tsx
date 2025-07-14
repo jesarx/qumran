@@ -253,7 +253,7 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
               </Label>
               <Select
                 name="locationId"
-                defaultValue={book.location_id.toString()}
+                defaultValue={book.location_id?.toString() || ''}
                 required
               >
                 <SelectTrigger>

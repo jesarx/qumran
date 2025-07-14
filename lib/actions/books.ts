@@ -35,6 +35,7 @@ const CreateBookSchema = z.object({
   author2LastName: z.string().trim().optional().transform(val => val || null),
   publisherName: z.string().trim().min(1, 'Publisher is required'),
   categoryId: z.number().min(1, 'Category is required'),
+  locationId: z.number().min(1, 'Location is required'),
 });
 
 const UpdateBookSchema = z.object({
@@ -51,6 +52,7 @@ const UpdateBookSchema = z.object({
     return cleanIsbn.length === 10 || cleanIsbn.length === 13;
   }, 'ISBN must be 10 or 13 digits'),
   categoryId: z.number().min(1, 'Category is required'),
+  locationId: z.number().min(1, 'Location is required'),
 });
 
 // Helper function to normalize ISBN
@@ -93,6 +95,7 @@ export async function createBookAction(
       author2LastName: formData.get('author2LastName'),
       publisherName: formData.get('publisherName'),
       categoryId: Number(formData.get('categoryId')),
+      locationId: Number(formData.get('locationId')),
     });
 
     // Check if ISBN already exists (only if ISBN is provided)
@@ -133,6 +136,7 @@ export async function createBookAction(
       author2_id: author2Id,
       publisher_id: publisher.id,
       category_id: validatedFields.categoryId,
+      location_id: validatedFields.locationId,
     });
 
     revalidatePath('/books');
@@ -166,7 +170,7 @@ export async function createBookAction(
   }
 }
 
-// Update book (only title, ISBN, and category)
+// Update book (title, ISBN, category, and location)
 export async function updateBookAction(
   prevState: any,
   formData: FormData
@@ -177,6 +181,7 @@ export async function updateBookAction(
       title: formData.get('title'),
       isbn: formData.get('isbn'),
       categoryId: Number(formData.get('categoryId')),
+      locationId: Number(formData.get('locationId')),
     });
 
     // Check if ISBN already exists (only if ISBN is provided and excluding current book)
@@ -194,6 +199,7 @@ export async function updateBookAction(
       title: validatedFields.title,
       isbn: validatedFields.isbn,
       category_id: validatedFields.categoryId,
+      location_id: validatedFields.locationId,
     });
 
     revalidatePath('/books');
