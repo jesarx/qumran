@@ -1,36 +1,157 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Qumran
 
-## Getting Started
+Sistema de gestión de biblioteca personal desarrollado con Next.js 14, TypeScript y PostgreSQL.
 
-First, run the development server:
+## 📚 Descripción
 
+Qumran es una aplicación web diseñada para organizar, catalogar y administrar colecciones de libros de manera eficiente. Permite llevar un control detallado de autores, editoriales, categorías y ubicaciones físicas de los libros.
+
+El nombre "Qumran" hace referencia al sitio arqueológico donde se descubrieron los famosos Manuscritos del Mar Muerto, simbolizando la preservación y organización del conocimiento a lo largo del tiempo.
+
+## ✨ Características
+
+- **Catalogación Completa**: Gestión de títulos, autores, editoriales, ISBN y categorías
+- **Búsqueda Avanzada**: Filtros por título, autor, editorial, categoría y ubicación
+- **Ubicaciones Físicas**: Control de dónde se encuentran físicamente los libros
+- **Escáner de Código de Barras**: Búsqueda automática de información mediante ISBN
+- **Interfaz Responsiva**: Diseño adaptado para escritorio y dispositivos móviles  
+- **Tema Oscuro/Claro**: Soporte para modo oscuro y claro según preferencia
+- **Autenticación**: Sistema de login con Google OAuth
+- **Panel de Administración**: Gestión completa de la biblioteca
+
+## 🛠️ Tecnologías
+
+### Frontend
+- **Next.js 14** con App Router
+- **React 18** con TypeScript
+- **Tailwind CSS** para estilos
+- **Radix UI** para componentes
+- **Lucide React** para iconos
+
+### Backend
+- **Next.js API Routes** y Server Actions
+- **PostgreSQL** como base de datos
+- **pg** para conexión directa a PostgreSQL
+- **NextAuth.js** para autenticación
+
+### Herramientas
+- **ZXing** para escaneo de códigos de barras
+- **Open Library API** para búsqueda de información de libros
+- **Vercel** para deployment
+
+## 📋 Requisitos
+
+- Node.js 18 o superior
+- PostgreSQL 14 o superior
+- npm o yarn
+
+## 🚀 Instalación
+
+1. **Clonar el repositorio**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/jesarx/qumran.git
+cd qumran
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Instalar dependencias**
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Configurar variables de entorno**
+```bash
+cp .env.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Editar `.env.local` con tus configuraciones:
+```env
+# Database
+DATABASE_URL="postgresql://usuario:contraseña@localhost:5432/qumran"
 
-## Learn More
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="tu_secret_aqui"
 
-To learn more about Next.js, take a look at the following resources:
+# Google OAuth
+GOOGLE_CLIENT_ID="tu_google_client_id"
+GOOGLE_CLIENT_SECRET="tu_google_client_secret"
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. **Configurar base de datos**
+```bash
+# Ejecutar el script SQL para crear las tablas
+psql -d qumran -f database/schema.sql
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. **Ejecutar en desarrollo**
+```bash
+npm run dev
+```
 
-## Deploy on Vercel
+La aplicación estará disponible en `http://localhost:3000`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📁 Estructura del Proyecto
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+qumran/
+├── app/                    # App Router de Next.js
+│   ├── about/             # Página "Acerca de"
+│   ├── authors/           # Páginas de autores
+│   ├── books/             # Páginas de libros
+│   ├── dashboard/         # Panel de administración
+│   └── ...
+├── components/            # Componentes React
+│   ├── ui/               # Componentes de UI base
+│   └── ...
+├── lib/                   # Utilidades y configuraciones
+│   ├── actions.ts        # Server Actions
+│   ├── queries.ts        # Consultas a base de datos
+│   └── ...
+├── database/             # Scripts de base de datos
+│   └── schema.sql        # Esquema de la base de datos
+└── ...
+```
+
+## 🔧 Scripts Disponibles
+
+- `npm run dev` - Ejecutar en modo desarrollo
+- `npm run build` - Construir para producción  
+- `npm run start` - Ejecutar en modo producción
+- `npm run lint` - Ejecutar ESLint
+- `npm run type-check` - Verificar tipos de TypeScript
+
+## 📖 Uso
+
+### Navegación Pública
+- **Libros**: Explorar la colección completa con filtros avanzados
+- **Autores**: Ver todos los autores y sus obras
+- **Editoriales**: Listado de editoriales con sus publicaciones
+- **Categorías**: Explorar libros por categoría
+- **Acerca de**: Información sobre el proyecto
+
+### Panel de Administración
+Requiere autenticación con Google OAuth:
+- **Dashboard**: Estadísticas generales de la biblioteca
+- **Gestión de Libros**: Agregar, editar y eliminar libros
+- **Gestión de Autores**: Administrar información de autores
+- **Gestión de Editoriales**: Controlar editoriales
+- **Gestión de Ubicaciones**: Organizar ubicaciones físicas
+
+### Agregar Libros
+1. Acceder al panel de administración
+2. Ir a "Gestionar Libros" → "Agregar libro"
+3. Escanear código de barras o ingresar ISBN manualmente
+4. Completar información adicional
+5. Asignar categoría y ubicación
+
+## 📝 Licencia
+
+Este proyecto es de código abierto. Puedes usarlo, modificarlo y distribuirlo libremente.
+
+## 👨‍💻 Desarrollador
+
+**Eduardo Partida**
+- Sitio web: [edpartida.com](https://edpartida.com)
+- Email: [edpartida@proton.me](mailto:edpartida@proton.me)
+- GitHub: [@jesarx](https://github.com/jesarx)
+

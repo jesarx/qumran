@@ -1,4 +1,4 @@
-import { Home, BookOpen, Users, Building2, LayoutList, MapPin, LogIn, LogOut } from "lucide-react";
+import { Home, BookOpen, Users, Building2, LayoutList, MapPin, LogIn, LogOut, Info, LibraryBig } from "lucide-react";
 import ThemeToggle from '@/components/theme-toggle';
 import { auth } from "@/auth";
 import { logout } from '@/lib/actions';
@@ -29,12 +29,17 @@ const publicItems = [
   {
     title: "Editoriales",
     url: "/publishers",
-    icon: Building2,
+    icon: LibraryBig,
   },
   {
     title: "Categorías",
     url: "/tags",
     icon: LayoutList,
+  },
+  {
+    title: "Acerca de",
+    url: "/about",
+    icon: Info,
   },
 ];
 
@@ -57,7 +62,7 @@ const adminItems = [
   {
     title: "Gestionar Editoriales",
     url: "/dashboard/publishers",
-    icon: Building2,
+    icon: LibraryBig,
   },
   {
     title: "Gestionar Ubicaciones",

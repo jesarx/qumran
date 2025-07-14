@@ -15,36 +15,52 @@ import {
   Book,
   BookFilters
 } from '@/lib/queries';
-import { getDefaultLocation } from '@/lib/queries/locations';
 
 // Validation schemas
 const CreateBookSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
-  isbn: z.string().trim().optional().nullable(),
-  author1FirstName: z.string().trim().nullable(),
+  isbn: z.string().trim().optional().transform(val => {
+    // Convert empty string to null, keep valid ISBNs
+    if (!val || val === '') return null;
+    return val;
+  }).refine(val => {
+    // If ISBN is provided, it should be valid length (10 or 13 digits)
+    if (val === null) return true;
+    const cleanIsbn = val.replace(/[-\s]/g, '');
+    return cleanIsbn.length === 10 || cleanIsbn.length === 13;
+  }, 'ISBN must be 10 or 13 digits'),
+  author1FirstName: z.string().trim().optional().transform(val => val || null),
   author1LastName: z.string().trim().min(1, 'Author last name is required'),
-  author2FirstName: z.string().trim().optional().nullable(),
-  author2LastName: z.string().trim().optional().nullable(),
+  author2FirstName: z.string().trim().optional().transform(val => val || null),
+  author2LastName: z.string().trim().optional().transform(val => val || null),
   publisherName: z.string().trim().min(1, 'Publisher is required'),
   categoryId: z.number().min(1, 'Category is required'),
-  locationId: z.number().min(1, 'Location is required'),
 });
 
 const UpdateBookSchema = z.object({
   id: z.number(),
   title: z.string().trim().min(1, 'Title is required'),
-  isbn: z.string().trim().optional().nullable(),
+  isbn: z.string().trim().optional().transform(val => {
+    // Convert empty string to null, keep valid ISBNs
+    if (!val || val === '') return null;
+    return val;
+  }).refine(val => {
+    // If ISBN is provided, it should be valid length (10 or 13 digits)
+    if (val === null) return true;
+    const cleanIsbn = val.replace(/[-\s]/g, '');
+    return cleanIsbn.length === 10 || cleanIsbn.length === 13;
+  }, 'ISBN must be 10 or 13 digits'),
   categoryId: z.number().min(1, 'Category is required'),
-  locationId: z.number().min(1, 'Location is required'),
 });
+
+// Helper function to normalize ISBN
+function normalizeIsbn(isbn: string): string {
+  return isbn.replace(/[-\s]/g, '');
+}
 
 // Get books with filters
 export async function getBooksAction(filters: BookFilters = {}) {
   try {
-    // Set default sort to author if no sort is specified
-    if (!filters.sort) {
-      filters.sort = 'author';
-    }
     return await getBooks(filters);
   } catch (error) {
     console.error('Failed to fetch books:', error);
@@ -68,31 +84,26 @@ export async function createBookAction(
   formData: FormData
 ): Promise<{ success: boolean; error?: string; bookId?: number }> {
   try {
-    // Get default location if not provided
-    let locationId = Number(formData.get('locationId'));
-    if (!locationId || isNaN(locationId)) {
-      const defaultLocation = await getDefaultLocation();
-      locationId = defaultLocation?.id || 1; // Fallback to 1 if no default found
-    }
-
     const validatedFields = CreateBookSchema.parse({
       title: formData.get('title'),
-      isbn: formData.get('isbn') || null,
-      author1FirstName: formData.get('author1FirstName') || null,
+      isbn: formData.get('isbn'),
+      author1FirstName: formData.get('author1FirstName'),
       author1LastName: formData.get('author1LastName'),
-      author2FirstName: formData.get('author2FirstName') || null,
-      author2LastName: formData.get('author2LastName') || null,
+      author2FirstName: formData.get('author2FirstName'),
+      author2LastName: formData.get('author2LastName'),
       publisherName: formData.get('publisherName'),
       categoryId: Number(formData.get('categoryId')),
-      locationId: locationId,
     });
 
-    // Check if ISBN already exists
-    if (validatedFields.isbn && await isbnExists(validatedFields.isbn)) {
-      return {
-        success: false,
-        error: 'A book with this ISBN already exists'
-      };
+    // Check if ISBN already exists (only if ISBN is provided)
+    if (validatedFields.isbn) {
+      const normalizedIsbn = normalizeIsbn(validatedFields.isbn);
+      if (await isbnExists(normalizedIsbn)) {
+        return {
+          success: false,
+          error: 'Ya existe un libro con este ISBN en la base de datos'
+        };
+      }
     }
 
     // Find or create author 1
@@ -122,7 +133,6 @@ export async function createBookAction(
       author2_id: author2Id,
       publisher_id: publisher.id,
       category_id: validatedFields.categoryId,
-      location_id: validatedFields.locationId,
     });
 
     revalidatePath('/books');
@@ -138,14 +148,25 @@ export async function createBookAction(
     }
 
     console.error('Failed to create book:', error);
+
+    // Handle database constraint errors
+    if (error instanceof Error) {
+      if (error.message.includes('unique constraint') || error.message.includes('duplicate key')) {
+        return {
+          success: false,
+          error: 'Ya existe un libro con este ISBN en la base de datos'
+        };
+      }
+    }
+
     return {
       success: false,
-      error: 'Failed to create book'
+      error: 'Error al crear el libro. Por favor, intenta de nuevo.'
     };
   }
 }
 
-// Update book (title, ISBN, category, and location)
+// Update book (only title, ISBN, and category)
 export async function updateBookAction(
   prevState: any,
   formData: FormData
@@ -154,24 +175,25 @@ export async function updateBookAction(
     const validatedFields = UpdateBookSchema.parse({
       id: Number(formData.get('id')),
       title: formData.get('title'),
-      isbn: formData.get('isbn') || null,
+      isbn: formData.get('isbn'),
       categoryId: Number(formData.get('categoryId')),
-      locationId: Number(formData.get('locationId')),
     });
 
-    // Check if ISBN already exists (excluding current book)
-    if (validatedFields.isbn && await isbnExists(validatedFields.isbn, validatedFields.id)) {
-      return {
-        success: false,
-        error: 'A book with this ISBN already exists'
-      };
+    // Check if ISBN already exists (only if ISBN is provided and excluding current book)
+    if (validatedFields.isbn) {
+      const normalizedIsbn = normalizeIsbn(validatedFields.isbn);
+      if (await isbnExists(normalizedIsbn, validatedFields.id)) {
+        return {
+          success: false,
+          error: 'Ya existe otro libro con este ISBN en la base de datos'
+        };
+      }
     }
 
     await updateBook(validatedFields.id, {
       title: validatedFields.title,
       isbn: validatedFields.isbn,
       category_id: validatedFields.categoryId,
-      location_id: validatedFields.locationId,
     });
 
     revalidatePath('/books');
@@ -188,9 +210,20 @@ export async function updateBookAction(
     }
 
     console.error('Failed to update book:', error);
+
+    // Handle database constraint errors
+    if (error instanceof Error) {
+      if (error.message.includes('unique constraint') || error.message.includes('duplicate key')) {
+        return {
+          success: false,
+          error: 'Ya existe otro libro con este ISBN en la base de datos'
+        };
+      }
+    }
+
     return {
       success: false,
-      error: 'Failed to update book'
+      error: 'Error al actualizar el libro. Por favor, intenta de nuevo.'
     };
   }
 }
@@ -214,10 +247,20 @@ export async function deleteBookAction(id: number): Promise<void> {
 export async function searchBookByISBN(isbn: string): Promise<any> {
   try {
     // Clean ISBN by removing hyphens or spaces
-    const cleanIsbn = isbn.replace(/[-\s]/g, '');
+    const cleanIsbn = normalizeIsbn(isbn);
+
+    // Validate ISBN length
+    if (cleanIsbn.length !== 10 && cleanIsbn.length !== 13) {
+      return null;
+    }
 
     // Your Google Books API key
     const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
+
+    if (!apiKey) {
+      console.warn('Google Books API key not configured');
+      return null;
+    }
 
     // Fetch book data from Google Books API
     const response = await fetch(
@@ -225,7 +268,7 @@ export async function searchBookByISBN(isbn: string): Promise<any> {
     );
 
     if (!response.ok) {
-      throw new Error('Failed to fetch book data');
+      throw new Error('Failed to fetch book data from Google Books API');
     }
 
     const data = await response.json();
