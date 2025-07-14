@@ -11,6 +11,9 @@ import { Publisher } from '@/lib/queries';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Trash2, Save, ArrowLeft } from 'lucide-react';
 
 const initialState = {
   success: false,
@@ -69,74 +72,109 @@ export default function EditPublisherForm({ publisherId }: { publisherId: number
   if (isLoading || !publisher) {
     return (
       <div className="w-full max-w-2xl mx-auto p-6">
-        <p>Cargando...</p>
+        <Card>
+          <CardContent className="p-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-4 bg-muted rounded w-1/4"></div>
+              <div className="h-10 bg-muted rounded"></div>
+              <div className="h-4 bg-muted rounded w-1/4"></div>
+              <div className="h-10 bg-muted rounded"></div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6">Editar Editorial</h1>
-
-      {state.error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
-          {state.error}
-        </div>
-      )}
-
-      <form action={formAction} className="space-y-6">
-        <input type="hidden" name="id" value={publisherId} />
-
-        {/* Publisher ID (readonly) */}
-        <div>
-          <Label htmlFor="publisherId">ID de la Editorial</Label>
-          <Input
-            id="publisherId"
-            type="text"
-            value={publisherId}
-            disabled
-            className="mt-1 bg-gray-100"
-          />
-        </div>
-
-        {/* Name */}
-        <div>
-          <Label htmlFor="name">Nombre *</Label>
-          <Input
-            id="name"
-            name="name"
-            type="text"
-            required
-            defaultValue={publisher.name}
-            className="mt-1"
-          />
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex justify-between pt-6">
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
-            {isDeleting ? 'Eliminando...' : 'Eliminar Editorial'}
-          </Button>
-
-          <div className="flex gap-4">
+    <div className="w-full max-w-2xl mx-auto p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
+              size="icon"
               onClick={() => router.back()}
+              className="h-8 w-8"
             >
-              Cancelar
+              <ArrowLeft className="h-4 w-4" />
             </Button>
-            <Button type="submit">
-              Guardar Cambios
-            </Button>
-          </div>
-        </div>
-      </form>
+            Editar Editorial
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {state.error && (
+            <Alert variant="destructive">
+              <AlertDescription>
+                {state.error}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <form action={formAction} className="space-y-6">
+            <input type="hidden" name="id" value={publisherId} />
+
+            {/* Publisher ID (readonly) */}
+            <div className="space-y-2">
+              <Label htmlFor="publisherId" className="text-sm font-medium">
+                ID de la Editorial
+              </Label>
+              <Input
+                id="publisherId"
+                type="text"
+                value={publisherId}
+                disabled
+                className="bg-muted"
+              />
+            </div>
+
+            {/* Name */}
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium">
+                Nombre <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                required
+                defaultValue={publisher.name}
+                placeholder="Ingresa el nombre de la editorial"
+              />
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex justify-between items-center pt-6 border-t border-border">
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                {isDeleting ? 'Eliminando...' : 'Eliminar Editorial'}
+              </Button>
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" className="flex items-center gap-2">
+                  <Save className="h-4 w-4" />
+                  Guardar Cambios
+                </Button>
+              </div>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

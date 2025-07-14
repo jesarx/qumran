@@ -1,7 +1,7 @@
 import EditPublisherForm from '@/components/edit-publisher-form';
 
-export default function EditPublisherPage({ params }: { params: { slug: string } }) {
-  const publisherId = parseInt(params.slug);
+export default function EditPublisherPage({ params }: { params: { id: string } }) {
+  const publisherId = parseInt(params.id); // Changed from params.slug to params.id
 
   if (isNaN(publisherId)) {
     return (

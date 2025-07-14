@@ -12,6 +12,8 @@ import { Book, Category } from '@/lib/queries';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Select,
   SelectContent,
@@ -19,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Trash2, Save, ArrowLeft, User, Building } from 'lucide-react';
 
 const initialState = {
   success: false,
@@ -86,136 +89,188 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
   if (isLoading || !book) {
     return (
       <div className="w-full max-w-4xl mx-auto p-6">
-        <p>Cargando...</p>
+        <Card>
+          <CardContent className="p-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-4 bg-muted rounded w-1/4"></div>
+              <div className="h-10 bg-muted rounded"></div>
+              <div className="h-4 bg-muted rounded w-1/4"></div>
+              <div className="h-10 bg-muted rounded"></div>
+              <div className="h-20 bg-muted rounded"></div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6">Editar Libro</h1>
-
-      {state.error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
-          {state.error}
-        </div>
-      )}
-
-      <form action={formAction} className="space-y-6">
-        <input type="hidden" name="id" value={bookId} />
-
-        {/* Book ID (readonly) */}
-        <div>
-          <Label htmlFor="bookId">ID del Libro</Label>
-          <Input
-            id="bookId"
-            type="text"
-            value={bookId}
-            disabled
-            className="mt-1 bg-gray-100"
-          />
-        </div>
-
-        {/* ISBN */}
-        <div>
-          <Label htmlFor="isbn">ISBN</Label>
-          <Input
-            id="isbn"
-            name="isbn"
-            type="text"
-            defaultValue={book.isbn || ''}
-            className="mt-1"
-          />
-        </div>
-
-        {/* Title */}
-        <div>
-          <Label htmlFor="title">Título *</Label>
-          <Input
-            id="title"
-            name="title"
-            type="text"
-            required
-            defaultValue={book.title}
-            className="mt-1"
-          />
-        </div>
-
-        {/* Authors (readonly) */}
-        <div className="border-2 border-gray-200 rounded-lg p-4 bg-gray-50">
-          <h3 className="font-semibold mb-3">Autores (no editables)</h3>
-          <div className="space-y-2">
-            <div>
-              <span className="font-medium">Autor Principal:</span>{' '}
-              {book.author1_first_name} {book.author1_last_name}
-            </div>
-            {book.author2_last_name && (
-              <div>
-                <span className="font-medium">Segundo Autor:</span>{' '}
-                {book.author2_first_name} {book.author2_last_name}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Publisher (readonly) */}
-        <div>
-          <Label htmlFor="publisher">Editorial (no editable)</Label>
-          <Input
-            id="publisher"
-            type="text"
-            value={book.publisher_name || ''}
-            disabled
-            className="mt-1 bg-gray-100"
-          />
-        </div>
-
-        {/* Category */}
-        <div>
-          <Label htmlFor="categoryId">Categoría *</Label>
-          <Select
-            name="categoryId"
-            defaultValue={book.category_id.toString()}
-            required
-          >
-            <SelectTrigger className="mt-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id.toString()}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex justify-between pt-6">
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
-            {isDeleting ? 'Eliminando...' : 'Eliminar Libro'}
-          </Button>
-
-          <div className="flex gap-4">
+    <div className="w-full max-w-4xl mx-auto p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
+              size="icon"
               onClick={() => router.back()}
+              className="h-8 w-8"
             >
-              Cancelar
+              <ArrowLeft className="h-4 w-4" />
             </Button>
-            <Button type="submit">
-              Guardar Cambios
-            </Button>
-          </div>
-        </div>
-      </form>
+            Editar Libro
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {state.error && (
+            <Alert variant="destructive">
+              <AlertDescription>
+                {state.error}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <form action={formAction} className="space-y-6">
+            <input type="hidden" name="id" value={bookId} />
+
+            {/* Book ID (readonly) */}
+            <div className="space-y-2">
+              <Label htmlFor="bookId" className="text-sm font-medium">
+                ID del Libro
+              </Label>
+              <Input
+                id="bookId"
+                type="text"
+                value={bookId}
+                disabled
+                className="bg-muted"
+              />
+            </div>
+
+            {/* ISBN */}
+            <div className="space-y-2">
+              <Label htmlFor="isbn" className="text-sm font-medium">
+                ISBN
+              </Label>
+              <Input
+                id="isbn"
+                name="isbn"
+                type="text"
+                defaultValue={book.isbn || ''}
+                placeholder="978-84-376-0494-7"
+              />
+            </div>
+
+            {/* Title */}
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-sm font-medium">
+                Título <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="title"
+                name="title"
+                type="text"
+                required
+                defaultValue={book.title}
+                placeholder="Ingresa el título del libro"
+              />
+            </div>
+
+            {/* Authors (readonly) */}
+            <Card className="bg-muted/30">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Autores (no editables)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">Autor Principal:</span>
+                  <span className="text-sm">
+                    {book.author1_first_name} {book.author1_last_name}
+                  </span>
+                </div>
+                {book.author2_last_name && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Segundo Autor:</span>
+                    <span className="text-sm">
+                      {book.author2_first_name} {book.author2_last_name}
+                    </span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Publisher (readonly) */}
+            <div className="space-y-2">
+              <Label htmlFor="publisher" className="text-sm font-medium flex items-center gap-2">
+                <Building className="h-4 w-4" />
+                Editorial (no editable)
+              </Label>
+              <Input
+                id="publisher"
+                type="text"
+                value={book.publisher_name || ''}
+                disabled
+                className="bg-muted"
+              />
+            </div>
+
+            {/* Category */}
+            <div className="space-y-2">
+              <Label htmlFor="categoryId" className="text-sm font-medium">
+                Categoría <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                name="categoryId"
+                defaultValue={book.category_id.toString()}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex justify-between items-center pt-6 border-t border-border">
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                {isDeleting ? 'Eliminando...' : 'Eliminar Libro'}
+              </Button>
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" className="flex items-center gap-2">
+                  <Save className="h-4 w-4" />
+                  Guardar Cambios
+                </Button>
+              </div>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

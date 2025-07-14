@@ -46,80 +46,125 @@
 }
 
 :root {
-  /* Dark theme colors */
-  --background: 222 47% 11%;      /* Dark blue-grey: #0a0f1c */
-  --foreground: 210 40% 96%;       /* Light grey: #f1f3f5 */
-  --card: 217 33% 17%;             /* Darker card: #1c2333 */
-  --card-foreground: 210 40% 96%;  /* Light grey text */
-  --popover: 217 33% 17%;          /* Same as card */
-  --popover-foreground: 210 40% 96%;
-  --primary: 210 40% 96%;          /* Light grey for primary */
-  --primary-foreground: 222 47% 11%; /* Dark for primary text */
-  --secondary: 217 33% 22%;        /* Slightly lighter grey: #293548 */
-  --secondary-foreground: 210 40% 96%;
-  --muted: 217 33% 22%;            /* Muted background */
-  --muted-foreground: 215 20% 65%; /* Muted text: #8892a0 */
-  --accent: 217 33% 27%;           /* Accent color: #344155 */
-  --accent-foreground: 210 40% 96%;
-  --destructive: 0 84% 60%;        /* Keep red for errors */
-  --destructive-foreground: 210 40% 96%;
-  --border: 217 33% 25%;           /* Border color: #2e3a4d */
-  --input: 217 33% 25%;            /* Input borders */
-  --ring: 215 20% 65%;             /* Focus ring */
-  --radius: 0.625rem;
+  /* Default to dark theme colors - more greyish with better contrast */
+  --background: 220 13% 6%;          /* Dark grey background: #0f1014 */
+  --foreground: 210 11% 91%;         /* Light grey: #e4e4e7 */
+  --card: 220 13% 11%;               /* Lighter card for contrast: #1a1b20 */
+  --card-foreground: 210 11% 91%;    /* Light grey text */
+  --popover: 220 13% 11%;            /* Same as card */
+  --popover-foreground: 210 11% 91%;
+  --primary: 210 40% 55%;            /* Less blue, more grey-blue: #6b7280 */
+  --primary-foreground: 0 0% 98%;    /* White text on primary */
+  --secondary: 220 13% 15%;          /* Dark grey: #24252b */
+  --secondary-foreground: 210 11% 91%;
+  --muted: 220 13% 15%;              /* Muted background */
+  --muted-foreground: 220 9% 60%;    /* Muted text: #94a3b8 */
+  --accent: 220 13% 18%;             /* Accent color: #2d2f36 */
+  --accent-foreground: 210 11% 91%;
+  --destructive: 0 84% 60%;          /* Red for errors */
+  --destructive-foreground: 210 11% 91%;
+  --border: 220 13% 18%;             /* Border color */
+  --input: 220 13% 18%;              /* Input borders */
+  --ring: 210 40% 55%;               /* Focus ring - matches primary */
+  --radius: 0.5rem;
   
-  /* Chart colors */
-  --chart-1: 220 70% 50%;
-  --chart-2: 340 75% 55%;
-  --chart-3: 280 65% 60%;
-  --chart-4: 180 60% 50%;
-  --chart-5: 60 70% 50%;
+  /* Chart colors - less blue, more varied greys */
+  --chart-1: 210 40% 55%;
+  --chart-2: 280 50% 65%;
+  --chart-3: 160 40% 50%;
+  --chart-4: 45 70% 55%;
+  --chart-5: 300 60% 60%;
   
-  /* Sidebar colors */
-  --sidebar: 217 33% 14%;          /* Even darker for sidebar: #161b26 */
-  --sidebar-foreground: 210 40% 96%;
-  --sidebar-primary: 210 40% 96%;
-  --sidebar-primary-foreground: 222 47% 11%;
-  --sidebar-accent: 217 33% 22%;
-  --sidebar-accent-foreground: 210 40% 96%;
-  --sidebar-border: 217 33% 25%;
-  --sidebar-ring: 215 20% 65%;
+  /* Sidebar colors - darker for hierarchy */
+  --sidebar: 220 13% 4%;             /* Even darker for sidebar: #0a0b0e */
+  --sidebar-foreground: 210 11% 91%;
+  --sidebar-primary: 210 40% 55%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 220 13% 15%;
+  --sidebar-accent-foreground: 210 11% 91%;
+  --sidebar-border: 220 13% 15%;
+  --sidebar-ring: 210 40% 55%;
 }
 
 .dark {
-  /* Dark mode is the default, but keeping this for compatibility */
-  --background: 222 47% 11%;
-  --foreground: 210 40% 96%;
-  --card: 217 33% 17%;
-  --card-foreground: 210 40% 96%;
-  --popover: 217 33% 17%;
-  --popover-foreground: 210 40% 96%;
-  --primary: 210 40% 96%;
-  --primary-foreground: 222 47% 11%;
-  --secondary: 217 33% 22%;
-  --secondary-foreground: 210 40% 96%;
-  --muted: 217 33% 22%;
-  --muted-foreground: 215 20% 65%;
-  --accent: 217 33% 27%;
-  --accent-foreground: 210 40% 96%;
+  /* Dark theme colors - more greyish with better contrast */
+  --background: 220 13% 6%;          /* Dark grey background: #0f1014 */
+  --foreground: 210 11% 91%;         /* Light grey: #e4e4e7 */
+  --card: 220 13% 11%;               /* Lighter card for contrast: #1a1b20 */
+  --card-foreground: 210 11% 91%;    /* Light grey text */
+  --popover: 220 13% 11%;            /* Same as card */
+  --popover-foreground: 210 11% 91%;
+  --primary: 210 40% 55%;            /* Less blue, more grey-blue: #6b7280 */
+  --primary-foreground: 0 0% 98%;    /* White text on primary */
+  --secondary: 220 13% 15%;          /* Dark grey: #24252b */
+  --secondary-foreground: 210 11% 91%;
+  --muted: 220 13% 15%;              /* Muted background */
+  --muted-foreground: 220 9% 60%;    /* Muted text: #94a3b8 */
+  --accent: 220 13% 18%;             /* Accent color: #2d2f36 */
+  --accent-foreground: 210 11% 91%;
+  --destructive: 0 84% 60%;          /* Red for errors */
+  --destructive-foreground: 210 11% 91%;
+  --border: 220 13% 18%;             /* Border color */
+  --input: 220 13% 18%;              /* Input borders */
+  --ring: 210 40% 55%;               /* Focus ring - matches primary */
+  --radius: 0.5rem;
+  
+  /* Chart colors - less blue, more varied greys */
+  --chart-1: 210 40% 55%;
+  --chart-2: 280 50% 65%;
+  --chart-3: 160 40% 50%;
+  --chart-4: 45 70% 55%;
+  --chart-5: 300 60% 60%;
+  
+  /* Sidebar colors - darker for hierarchy */
+  --sidebar: 220 13% 4%;             /* Even darker for sidebar: #0a0b0e */
+  --sidebar-foreground: 210 11% 91%;
+  --sidebar-primary: 210 40% 55%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 220 13% 15%;
+  --sidebar-accent-foreground: 210 11% 91%;
+  --sidebar-border: 220 13% 15%;
+  --sidebar-ring: 210 40% 55%;
+}
+
+/* Light theme override when .light class is present */
+.light {
+  --background: 0 0% 100%;
+  --foreground: 222 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 84% 4.9%;
+  --primary: 210 40% 55%;            /* Updated to match new primary */
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 46.9%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222 47% 11%;
   --destructive: 0 84% 60%;
-  --destructive-foreground: 210 40% 96%;
-  --border: 217 33% 25%;
-  --input: 217 33% 25%;
-  --ring: 215 20% 65%;
-  --chart-1: 220 70% 50%;
-  --chart-2: 340 75% 55%;
-  --chart-3: 280 65% 60%;
-  --chart-4: 180 60% 50%;
-  --chart-5: 60 70% 50%;
-  --sidebar: 217 33% 14%;
-  --sidebar-foreground: 210 40% 96%;
-  --sidebar-primary: 210 40% 96%;
-  --sidebar-primary-foreground: 222 47% 11%;
-  --sidebar-accent: 217 33% 22%;
-  --sidebar-accent-foreground: 210 40% 96%;
-  --sidebar-border: 217 33% 25%;
-  --sidebar-ring: 215 20% 65%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 210 40% 55%;               /* Updated to match new primary */
+  
+  /* Chart colors - updated to match new palette */
+  --chart-1: 210 40% 55%;
+  --chart-2: 280 50% 65%;
+  --chart-3: 160 40% 50%;
+  --chart-4: 45 70% 55%;
+  --chart-5: 300 60% 60%;
+  
+  /* Sidebar colors */
+  --sidebar: 0 0% 98%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-primary: 210 40% 55%;    /* Updated to match new primary */
+  --sidebar-primary-foreground: 210 40% 98%;
+  --sidebar-accent: 210 40% 96%;
+  --sidebar-accent-foreground: 222 47% 11%;
+  --sidebar-border: 214 32% 91%;
+  --sidebar-ring: 210 40% 55%;       /* Updated to match new primary */
 }
 
 @layer base {
@@ -127,10 +172,44 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Smooth transitions for theme changes */
+  html {
+    transition: color-scheme 0.3s ease;
+  }
+  
+  * {
+    transition: 
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease,
+      box-shadow 0.2s ease;
   }
 }
 
+/* Custom scrollbar for dark theme */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Barcode scanner animation */
 @keyframes scan {
   0% {
     transform: translateY(0);
@@ -145,4 +224,61 @@
 
 .animate-scan {
   animation: scan 2s ease-in-out infinite;
+}
+
+/* Focus states improvements */
+.focus-visible\:ring-2:focus-visible {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+
+/* Table row hover improvements */
+.dark [data-slot="table-row"]:hover {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+/* Button improvements */
+.dark [data-slot="button"][data-variant="outline"] {
+  border-color: hsl(var(--border));
+  background-color: transparent;
+}
+
+.dark [data-slot="button"][data-variant="outline"]:hover {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+/* Card improvements */
+.dark [data-slot="card"] {
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--card));
+}
+
+/* Input improvements */
+.dark [data-slot="input"]:focus-visible,
+.dark [data-slot="select-trigger"]:focus-visible {
+  border-color: hsl(var(--ring));
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+}
+
+/* Destructive button improvements for both themes */
+.light [data-slot="button"][data-variant="destructive"] {
+  background-color: hsl(0 84% 60%);
+  color: white;
+}
+
+.light [data-slot="button"][data-variant="destructive"]:hover {
+  background-color: hsl(0 84% 55%);
+}
+
+/* Ensure destructive buttons are always red in both themes */
+[data-slot="button"][data-variant="destructive"] {
+  background-color: hsl(0 84% 60%) !important;
+  color: white !important;
+}
+
+[data-slot="button"][data-variant="destructive"]:hover {
+  background-color: hsl(0 84% 55%) !important;
 }

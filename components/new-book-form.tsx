@@ -7,6 +7,8 @@ import { Category } from '@/lib/queries';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Select,
   SelectContent,
@@ -14,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, X } from 'lucide-react';
+import { Camera, X, Search, Save, ArrowLeft, User, Building, BookOpen } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 // Dynamically import the scanner to avoid SSR issues
@@ -137,190 +139,248 @@ export default function NewBookForm() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6">Agregar Nuevo Libro</h1>
-
-      {state.error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
-          {state.error}
-        </div>
-      )}
-
-      {showScanner && (
-        <div className="fixed inset-0 z-50 bg-black">
-          <div className="relative h-full">
+    <div className="w-full max-w-4xl mx-auto p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <Button
               type="button"
-              onClick={() => setShowScanner(false)}
-              className="absolute top-4 right-4 z-10 bg-white text-black hover:bg-gray-200"
+              variant="ghost"
               size="icon"
+              onClick={() => router.back()}
+              className="h-8 w-8"
             >
-              <X className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" />
             </Button>
-            <BarcodeScanner onScan={handleBarcodeScan} />
-          </div>
-        </div>
-      )}
+            <BookOpen className="h-5 w-5" />
+            Agregar Nuevo Libro
+          </CardTitle>
+        </CardHeader>
 
-      <form action={formAction} className="space-y-6">
-        {/* ISBN with search */}
-        <div>
-          <Label htmlFor="isbn">ISBN</Label>
-          <div className="flex gap-2 mt-1">
-            <Input
-              id="isbn"
-              name="isbn"
-              type="text"
-              value={isbn}
-              onChange={(e) => setIsbn(e.target.value)}
-              placeholder="978-84-376-0494-7"
-              className="flex-1"
-            />
-            <Button
-              type="button"
-              onClick={() => setShowScanner(true)}
-              variant="outline"
-              size="icon"
-              title="Escanear código de barras"
-              className="sm:hidden" // Only show on small screens
-            >
-              <Camera className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              onClick={() => handleISBNSearch()}
-              disabled={isSearchingISBN || !isbn}
-              variant="outline"
-            >
-              {isSearchingISBN ? 'Buscando...' : 'Buscar'}
-            </Button>
-          </div>
-          <p className="text-sm text-gray-500 mt-1">
-            Ingresa el ISBN para buscar información del libro automáticamente
-            <span className="sm:hidden"> o usa la cámara para escanear el código de barras</span>
-          </p>
-        </div>
+        <CardContent className="space-y-6">
+          {state.error && (
+            <Alert variant="destructive">
+              <AlertDescription>
+                {state.error}
+              </AlertDescription>
+            </Alert>
+          )}
 
-        {/* Title */}
-        <div>
-          <Label htmlFor="title">Título *</Label>
-          <Input
-            id="title"
-            name="title"
-            type="text"
-            required
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="mt-1"
-          />
-        </div>
-
-        {/* Authors */}
-        <div className="border-2 border-gray-200 rounded-lg p-4 space-y-4">
-          <h3 className="font-semibold">Autor Principal *</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="author1FirstName">Nombre</Label>
-              <Input
-                id="author1FirstName"
-                name="author1FirstName"
-                type="text"
-                value={author1FirstName}
-                onChange={(e) => setAuthor1FirstName(e.target.value)}
-                className="mt-1"
-              />
+          {showScanner && (
+            <div className="fixed inset-0 z-50 bg-black">
+              <div className="relative h-full">
+                <Button
+                  type="button"
+                  onClick={() => setShowScanner(false)}
+                  className="absolute top-4 right-4 z-10 bg-white text-black hover:bg-gray-200"
+                  size="icon"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+                <BarcodeScanner onScan={handleBarcodeScan} />
+              </div>
             </div>
-            <div>
-              <Label htmlFor="author1LastName">Apellido *</Label>
+          )}
+
+          <form action={formAction} className="space-y-6">
+            {/* ISBN with search */}
+            <div className="space-y-2">
+              <Label htmlFor="isbn" className="text-sm font-medium">
+                ISBN
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="isbn"
+                  name="isbn"
+                  type="text"
+                  value={isbn}
+                  onChange={(e) => setIsbn(e.target.value)}
+                  placeholder="978-84-376-0494-7"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  onClick={() => setShowScanner(true)}
+                  variant="outline"
+                  size="icon"
+                  title="Escanear código de barras"
+                  className="md:hidden"
+                >
+                  <Camera className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => handleISBNSearch()}
+                  disabled={isSearchingISBN || !isbn}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <Search className="h-4 w-4" />
+                  {isSearchingISBN ? 'Buscando...' : 'Buscar'}
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Ingresa el ISBN para buscar información del libro automáticamente
+                <span className="md:hidden"> o usa la cámara para escanear el código de barras</span>
+              </p>
+            </div>
+
+            {/* Title */}
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-sm font-medium">
+                Título <span className="text-destructive">*</span>
+              </Label>
               <Input
-                id="author1LastName"
-                name="author1LastName"
+                id="title"
+                name="title"
                 type="text"
                 required
-                value={author1LastName}
-                onChange={(e) => setAuthor1LastName(e.target.value)}
-                className="mt-1"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ingresa el título del libro"
               />
             </div>
-          </div>
 
-          <h3 className="font-semibold pt-4">Segundo Autor (opcional)</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="author2FirstName">Nombre</Label>
+            {/* Authors */}
+            <Card className="bg-muted/30">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Autores
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Primary Author */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    Autor Principal <span className="text-destructive">*</span>
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="author1FirstName" className="text-sm">
+                        Nombre
+                      </Label>
+                      <Input
+                        id="author1FirstName"
+                        name="author1FirstName"
+                        type="text"
+                        value={author1FirstName}
+                        onChange={(e) => setAuthor1FirstName(e.target.value)}
+                        placeholder="Nombre"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="author1LastName" className="text-sm">
+                        Apellido <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="author1LastName"
+                        name="author1LastName"
+                        type="text"
+                        required
+                        value={author1LastName}
+                        onChange={(e) => setAuthor1LastName(e.target.value)}
+                        placeholder="Apellido"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Secondary Author */}
+                <div className="space-y-3 pt-4 border-t border-border">
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    Segundo Autor (opcional)
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="author2FirstName" className="text-sm">
+                        Nombre
+                      </Label>
+                      <Input
+                        id="author2FirstName"
+                        name="author2FirstName"
+                        type="text"
+                        value={author2FirstName}
+                        onChange={(e) => setAuthor2FirstName(e.target.value)}
+                        placeholder="Nombre"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="author2LastName" className="text-sm">
+                        Apellido
+                      </Label>
+                      <Input
+                        id="author2LastName"
+                        name="author2LastName"
+                        type="text"
+                        value={author2LastName}
+                        onChange={(e) => setAuthor2LastName(e.target.value)}
+                        placeholder="Apellido"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Publisher */}
+            <div className="space-y-2">
+              <Label htmlFor="publisherName" className="text-sm font-medium flex items-center gap-2">
+                <Building className="h-4 w-4" />
+                Editorial <span className="text-destructive">*</span>
+              </Label>
               <Input
-                id="author2FirstName"
-                name="author2FirstName"
+                id="publisherName"
+                name="publisherName"
                 type="text"
-                value={author2FirstName}
-                onChange={(e) => setAuthor2FirstName(e.target.value)}
-                className="mt-1"
+                required
+                value={publisherName}
+                onChange={(e) => setPublisherName(e.target.value)}
+                placeholder="Ingresa el nombre de la editorial"
               />
             </div>
-            <div>
-              <Label htmlFor="author2LastName">Apellido</Label>
-              <Input
-                id="author2LastName"
-                name="author2LastName"
-                type="text"
-                value={author2LastName}
-                onChange={(e) => setAuthor2LastName(e.target.value)}
-                className="mt-1"
-              />
+
+            {/* Category */}
+            <div className="space-y-2">
+              <Label htmlFor="categoryId" className="text-sm font-medium">
+                Categoría <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                name="categoryId"
+                value={categoryId}
+                onValueChange={setCategoryId}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </div>
-        </div>
 
-        {/* Publisher */}
-        <div>
-          <Label htmlFor="publisherName">Editorial *</Label>
-          <Input
-            id="publisherName"
-            name="publisherName"
-            type="text"
-            required
-            value={publisherName}
-            onChange={(e) => setPublisherName(e.target.value)}
-            className="mt-1"
-          />
-        </div>
-
-        {/* Category */}
-        <div>
-          <Label htmlFor="categoryId">Categoría *</Label>
-          <Select
-            name="categoryId"
-            value={categoryId}
-            onValueChange={setCategoryId}
-            required
-          >
-            <SelectTrigger className="mt-1">
-              <SelectValue placeholder="Selecciona una categoría" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id.toString()}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex justify-end gap-4 pt-6">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-          >
-            Cancelar
-          </Button>
-          <Button type="submit">
-            Agregar Libro
-          </Button>
-        </div>
-      </form>
+            {/* Action buttons */}
+            <div className="flex justify-end gap-3 pt-6 border-t border-border">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" className="flex items-center gap-2">
+                <Save className="h-4 w-4" />
+                Agregar Libro
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

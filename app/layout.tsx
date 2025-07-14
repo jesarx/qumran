@@ -6,7 +6,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 
 import { auth } from "@/auth"
-import DashboardNavbar from "@/components/dashboard-navbar";
 import Footer from "@/components/footer";
 
 const geistSans = Geist({
@@ -36,20 +35,42 @@ export default async function RootLayout({
   const isAuthenticated = !!session?.user
 
   return (
-    <html lang="en" className="dark">
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('theme') || 'dark';
+                  document.documentElement.classList.remove('dark', 'light');
+                  document.documentElement.classList.add(theme);
+                  document.documentElement.style.colorScheme = theme;
+                } catch (e) {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.style.colorScheme = 'dark';
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}>
         <SidebarProvider>
           <AppSidebar />
 
-          <main className="w-full flex flex-col bg-background">
+          <main className="w-full flex flex-col bg-background min-h-screen">
+            <div className="flex items-center p-2 border-b border-border">
+              <SidebarTrigger />
+            </div>
 
-            <SidebarTrigger />
-            {children}
+            <div className="flex-1">
+              {children}
+            </div>
+
             <Footer />
-
           </main>
         </SidebarProvider>
-
       </body>
     </html>
   );
