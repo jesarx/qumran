@@ -6,9 +6,10 @@ import {
   updateBookAction,
   deleteBookAction,
   getBookAction,
-  getCategoriesAction
+  getCategoriesAction,
+  getLocationsAction
 } from '@/lib/actions';
-import { Book, Category } from '@/lib/queries';
+import { Book, Category, Location } from '@/lib/queries';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Trash2, Save, ArrowLeft, User, Building } from 'lucide-react';
+import { Trash2, Save, ArrowLeft, User, Building, MapPin } from 'lucide-react';
 
 const initialState = {
   success: false,
@@ -33,16 +34,18 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
   const [state, formAction] = useActionState(updateBookAction, initialState);
   const [book, setBook] = useState<Book | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Load book and categories
+  // Load book, categories, and locations
   useEffect(() => {
     async function loadData() {
       try {
-        const [bookData, cats] = await Promise.all([
+        const [bookData, cats, locs] = await Promise.all([
           getBookAction(bookId),
-          getCategoriesAction()
+          getCategoriesAction(),
+          getLocationsAction()
         ]);
 
         if (bookData) {
@@ -52,6 +55,7 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
         }
 
         setCategories(cats);
+        setLocations(locs);
       } catch (error) {
         console.error('Failed to load data:', error);
         router.push('/dashboard/books');
@@ -235,6 +239,30 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id.toString()}>
                       {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Location */}
+            <div className="space-y-2">
+              <Label htmlFor="locationId" className="text-sm font-medium flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Ubicación <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                name="locationId"
+                defaultValue={book.location_id.toString()}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una ubicación" />
+                </SelectTrigger>
+                <SelectContent>
+                  {locations.map((location) => (
+                    <SelectItem key={location.id} value={location.id.toString()}>
+                      {location.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

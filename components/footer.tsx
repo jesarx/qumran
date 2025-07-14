@@ -6,7 +6,7 @@ export default function Footer() {
           Ningún derecho reservado
         </p>
         <p className="text-center text-xs text-muted-foreground">
-          Pirateca está hecho con Qumran 0.1β
+          Qumran 0.1β fue derarrollado por eduardo partida
         </p>
       </div>
     </footer>

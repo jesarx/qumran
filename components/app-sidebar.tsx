@@ -1,4 +1,4 @@
-import { Home, BookOpen, Users, Building2, LayoutList, LogIn, LogOut } from "lucide-react";
+import { Home, BookOpen, Users, Building2, LayoutList, MapPin, LogIn, LogOut } from "lucide-react";
 import ThemeToggle from '@/components/theme-toggle';
 import { auth } from "@/auth";
 import { logout } from '@/lib/actions';
@@ -59,6 +59,11 @@ const adminItems = [
     url: "/dashboard/publishers",
     icon: Building2,
   },
+  {
+    title: "Gestionar Ubicaciones",
+    url: "/dashboard/locations",
+    icon: MapPin,
+  },
 ];
 
 export async function AppSidebar() {
@@ -69,21 +74,29 @@ export async function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         {/* Text-based Logo */}
-        <div className="px-6 py-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-sidebar-primary mb-2 tracking-tight uppercase">
-              Qumran
-            </h1>
-            <p className="text-xs text-sidebar-foreground/70 leading-relaxed font-medium">
-              biblioteca personal de<br />
-              eduardo partida
-            </p>
+        <div className="px-6 py-10">
+          <div className="text-center space-y-4">
+            <div className="relative">
+              <h1 className="text-4xl font-light text-sidebar-primary tracking-[0.2em] uppercase">
+                Qumran
+              </h1>
+              {/* Subtle accent line */}
+              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-px bg-gradient-to-r from-transparent via-sidebar-primary/60 to-transparent"></div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <p className="text-xs text-sidebar-foreground/70 leading-relaxed font-medium">
+                biblioteca personal de<br />
+                eduardo partida
+              </p>
+
+            </div>
           </div>
         </div>
 
         {/* Public Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel>Navegación Pública</SidebarGroupLabel>
+          <SidebarGroupLabel>Navegación</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {publicItems.map((item) => (
@@ -150,10 +163,7 @@ export async function AppSidebar() {
         <div className="flex items-center justify-between px-2 py-2">
           <div className="flex flex-col">
             <span className="text-xs text-sidebar-foreground/70">
-              Pirateca v0.1β
-            </span>
-            <span className="text-xs text-sidebar-foreground/50">
-              Powered by Qumran
+              Qumran v0.1β
             </span>
           </div>
           <ThemeToggle />

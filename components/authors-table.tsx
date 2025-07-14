@@ -25,13 +25,14 @@ export default function AuthorsTable({ authors = [], showActions = false }: Auth
         <TableRow>
           <TableHead>Nombre Completo</TableHead>
           <TableHead>Número de Libros</TableHead>
+          <TableHead>Ver Libros</TableHead>
           {showActions && <TableHead className="text-right">Acciones</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
         {authorsList.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={showActions ? 3 : 2} className="text-center">
+            <TableCell colSpan={showActions ? 4 : 3} className="text-center">
               No se encontraron autores
             </TableCell>
           </TableRow>
@@ -42,6 +43,14 @@ export default function AuthorsTable({ authors = [], showActions = false }: Auth
                 {author.first_name} {author.last_name}
               </TableCell>
               <TableCell>{author.book_count || 0}</TableCell>
+              <TableCell>
+                <Link
+                  href={`/books?authorSlug=${author.slug}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  Ver libros →
+                </Link>
+              </TableCell>
               {showActions && (
                 <TableCell className="text-right">
                   <Link href={`/dashboard/authors/${author.id}`}>

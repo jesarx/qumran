@@ -9,6 +9,7 @@ export interface Book extends QueryResultRow {
   author2_id: number | null;
   publisher_id: number;
   category_id: number;
+  location_id: number;
   created_at: Date;
   updated_at: Date;
   // Joined fields
@@ -22,6 +23,8 @@ export interface Book extends QueryResultRow {
   publisher_slug?: string;
   category_name?: string;
   category_slug?: string;
+  location_name?: string;
+  location_slug?: string;
 }
 
 export interface BookFilters {
@@ -29,9 +32,10 @@ export interface BookFilters {
   authorSlug?: string;
   publisherSlug?: string;
   categorySlug?: string;
+  locationSlug?: string;
   page?: number;
   limit?: number;
-  sort?: 'title' | '-title' | 'created_at' | '-created_at';
+  sort?: 'title' | '-title' | 'created_at' | '-created_at' | 'author' | '-author';
 }
 
 // Get books with all related data
@@ -70,12 +74,17 @@ export async function getBooks(filters: BookFilters = {}): Promise<{
     params.push(filters.categorySlug);
   }
 
+  if (filters.locationSlug) {
+    whereConditions.push(`l.slug = $${++paramCount}`);
+    params.push(filters.locationSlug);
+  }
+
   const whereClause = whereConditions.length > 0
     ? `WHERE ${whereConditions.join(' AND ')}`
     : '';
 
   // Determine sort order
-  let orderBy = 'b.created_at DESC'; // default
+  let orderBy = 'a1.last_name ASC, a1.first_name ASC, b.title ASC'; // default: author name, then title
   switch (filters.sort) {
     case 'title':
       orderBy = 'b.title ASC';
@@ -89,6 +98,12 @@ export async function getBooks(filters: BookFilters = {}): Promise<{
     case '-created_at':
       orderBy = 'b.created_at DESC';
       break;
+    case 'author':
+      orderBy = 'a1.last_name ASC, a1.first_name ASC, b.title ASC';
+      break;
+    case '-author':
+      orderBy = 'a1.last_name DESC, a1.first_name DESC, b.title ASC';
+      break;
   }
 
   // Get total count
@@ -99,6 +114,7 @@ export async function getBooks(filters: BookFilters = {}): Promise<{
     LEFT JOIN authors a2 ON b.author2_id = a2.id
     LEFT JOIN publishers p ON b.publisher_id = p.id
     LEFT JOIN categories c ON b.category_id = c.id
+    LEFT JOIN locations l ON b.location_id = l.id
     ${whereClause}
   `, params);
 
@@ -120,12 +136,15 @@ export async function getBooks(filters: BookFilters = {}): Promise<{
       p.name as publisher_name,
       p.slug as publisher_slug,
       c.name as category_name,
-      c.slug as category_slug
+      c.slug as category_slug,
+      l.name as location_name,
+      l.slug as location_slug
     FROM books b
     LEFT JOIN authors a1 ON b.author1_id = a1.id
     LEFT JOIN authors a2 ON b.author2_id = a2.id
     LEFT JOIN publishers p ON b.publisher_id = p.id
     LEFT JOIN categories c ON b.category_id = c.id
+    LEFT JOIN locations l ON b.location_id = l.id
     ${whereClause}
     ORDER BY ${orderBy}
     LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
@@ -153,12 +172,15 @@ export async function getBookById(id: number): Promise<Book | null> {
       p.name as publisher_name,
       p.slug as publisher_slug,
       c.name as category_name,
-      c.slug as category_slug
+      c.slug as category_slug,
+      l.name as location_name,
+      l.slug as location_slug
     FROM books b
     LEFT JOIN authors a1 ON b.author1_id = a1.id
     LEFT JOIN authors a2 ON b.author2_id = a2.id
     LEFT JOIN publishers p ON b.publisher_id = p.id
     LEFT JOIN categories c ON b.category_id = c.id
+    LEFT JOIN locations l ON b.location_id = l.id
     WHERE b.id = $1
   `, [id]);
 }
@@ -171,10 +193,11 @@ export async function createBook(data: {
   author2_id?: number | null;
   publisher_id: number;
   category_id: number;
+  location_id: number;
 }): Promise<Book> {
   const result = await queryOne<Book>(
-    `INSERT INTO books (title, isbn, author1_id, author2_id, publisher_id, category_id) 
-     VALUES ($1, $2, $3, $4, $5, $6) 
+    `INSERT INTO books (title, isbn, author1_id, author2_id, publisher_id, category_id, location_id) 
+     VALUES ($1, $2, $3, $4, $5, $6, $7) 
      RETURNING *`,
     [
       data.title,
@@ -182,7 +205,8 @@ export async function createBook(data: {
       data.author1_id,
       data.author2_id || null,
       data.publisher_id,
-      data.category_id
+      data.category_id,
+      data.location_id
     ]
   );
 
@@ -209,6 +233,7 @@ export async function updateBook(
     author2_id?: number | null;
     publisher_id?: number;
     category_id?: number;
+    location_id?: number;
   }
 ): Promise<Book> {
   const setClauses: string[] = [];
@@ -243,6 +268,11 @@ export async function updateBook(
   if (data.category_id !== undefined) {
     setClauses.push(`category_id = $${++paramCount}`);
     values.push(data.category_id);
+  }
+
+  if (data.location_id !== undefined) {
+    setClauses.push(`location_id = $${++paramCount}`);
+    values.push(data.location_id);
   }
 
   if (setClauses.length === 0) {

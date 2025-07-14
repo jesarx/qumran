@@ -1,14 +1,15 @@
-import { getBooksAction, getAuthorsAction, getPublishersAction, getCategoriesAction } from '@/lib/actions';
+import { getBooksAction, getAuthorsAction, getPublishersAction, getCategoriesAction, getLocationsAction } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { BookOpen, Users, Building2, LayoutList } from 'lucide-react';
+import { BookOpen, Users, Building2, LayoutList, MapPin } from 'lucide-react';
 
 export default async function DashboardPage() {
-  const [booksData, authors, publishers, categories] = await Promise.all([
+  const [booksData, authors, publishers, categories, locations] = await Promise.all([
     getBooksAction({ limit: 5 }),
     getAuthorsAction(),
     getPublishersAction(),
     getCategoriesAction(),
+    getLocationsAction(),
   ]);
 
   const stats = [
@@ -44,6 +45,14 @@ export default async function DashboardPage() {
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
     },
+    {
+      title: 'Ubicaciones',
+      value: locations.length,
+      icon: MapPin,
+      href: '/dashboard/locations',
+      color: 'text-teal-600',
+      bgColor: 'bg-teal-100',
+    },
   ];
 
   return (
@@ -51,7 +60,7 @@ export default async function DashboardPage() {
       <h1 className="text-3xl font-bold text-foreground mb-8">Dashboard</h1>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         {stats.map((stat) => (
           <Link key={stat.title} href={stat.href}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -85,6 +94,12 @@ export default async function DashboardPage() {
                   <p className="font-medium">{book.title}</p>
                   <p className="text-sm text-muted-foreground">
                     {book.author1_first_name} {book.author1_last_name} • {book.publisher_name}
+                    {book.location_name && (
+                      <span className="ml-2 inline-flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {book.location_name}
+                      </span>
+                    )}
                   </p>
                 </div>
                 <Link

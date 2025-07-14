@@ -24,6 +24,7 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
           <TableHead>Autor(es)</TableHead>
           <TableHead>Editorial</TableHead>
           <TableHead>Categoría</TableHead>
+          <TableHead>Ubicación</TableHead>
           <TableHead>ISBN</TableHead>
           {showActions && <TableHead className="text-right">Acciones</TableHead>}
         </TableRow>
@@ -31,7 +32,7 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
       <TableBody>
         {books.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={showActions ? 6 : 5} className="text-center">
+            <TableCell colSpan={showActions ? 7 : 6} className="text-center">
               No se encontraron libros
             </TableCell>
           </TableRow>
@@ -50,6 +51,7 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
               </TableCell>
               <TableCell>{book.publisher_name}</TableCell>
               <TableCell>{book.category_name}</TableCell>
+              <TableCell>{book.location_name}</TableCell>
               <TableCell className="text-sm">{book.isbn || '-'}</TableCell>
               {showActions && (
                 <TableCell className="text-right">

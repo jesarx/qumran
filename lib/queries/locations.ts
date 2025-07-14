@@ -1,0 +1,119 @@
+import { queryOne, queryMany, query, createSlug } from '@/lib/db';
+import { QueryResultRow } from 'pg';
+
+export interface Location extends QueryResultRow {
+  id: number;
+  name: string;
+  slug: string;
+  created_at: Date;
+  updated_at: Date;
+  book_count?: number;
+}
+
+// Get all locations with book count
+export async function getLocations(searchTerm?: string): Promise<Location[]> {
+  let sql = `
+    SELECT 
+      l.*,
+      COUNT(b.id) as book_count
+    FROM locations l
+    LEFT JOIN books b ON l.id = b.location_id
+  `;
+
+  const params: any[] = [];
+
+  if (searchTerm) {
+    sql += ` WHERE LOWER(l.name) LIKE LOWER($1)`;
+    params.push(`%${searchTerm}%`);
+  }
+
+  sql += ` GROUP BY l.id ORDER BY l.name`;
+
+  return queryMany<Location>(sql, params);
+}
+
+// Get location by ID
+export async function getLocationById(id: number): Promise<Location | null> {
+  return queryOne<Location>(
+    'SELECT * FROM locations WHERE id = $1',
+    [id]
+  );
+}
+
+// Get location by slug
+export async function getLocationBySlug(slug: string): Promise<Location | null> {
+  return queryOne<Location>(
+    'SELECT * FROM locations WHERE slug = $1',
+    [slug]
+  );
+}
+
+// Get default location (Casa)
+export async function getDefaultLocation(): Promise<Location | null> {
+  return queryOne<Location>(
+    'SELECT * FROM locations WHERE slug = $1',
+    ['casa']
+  );
+}
+
+// Create new location
+export async function createLocation(name: string): Promise<Location> {
+  let baseSlug = createSlug(name);
+  let slug = baseSlug;
+  let counter = 1;
+
+  // Check if slug exists and generate unique one
+  while (await getLocationBySlug(slug)) {
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+
+  const result = await queryOne<Location>(
+    `INSERT INTO locations (name, slug) 
+     VALUES ($1, $2) 
+     RETURNING *`,
+    [name, slug]
+  );
+
+  if (!result) {
+    throw new Error('Failed to create location');
+  }
+
+  return result;
+}
+
+// Update location
+export async function updateLocation(
+  id: number,
+  name: string
+): Promise<Location> {
+  const result = await queryOne<Location>(
+    `UPDATE locations 
+     SET name = $1
+     WHERE id = $2
+     RETURNING *`,
+    [name, id]
+  );
+
+  if (!result) {
+    throw new Error('Location not found');
+  }
+
+  return result;
+}
+
+// Delete location (only if no books reference it)
+export async function deleteLocation(id: number): Promise<boolean> {
+  try {
+    await query(
+      'DELETE FROM locations WHERE id = $1',
+      [id]
+    );
+    return true;
+  } catch (error: any) {
+    if (error.code === '23503') { // Foreign key violation
+      throw new Error('Cannot delete location with existing books');
+    }
+    throw error;
+  }
+}

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBookAction, searchBookByISBN, getCategoriesAction } from '@/lib/actions';
-import { Category } from '@/lib/queries';
+import { createBookAction, searchBookByISBN, getCategoriesAction, getLocationsAction } from '@/lib/actions';
+import { Category, Location } from '@/lib/queries';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, X, Search, Save, ArrowLeft, User, Building, BookOpen } from 'lucide-react';
+import { Camera, X, Search, Save, ArrowLeft, User, Building, BookOpen, MapPin } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 // Dynamically import the scanner to avoid SSR issues
@@ -36,6 +36,7 @@ export default function NewBookForm() {
   const [state, formAction] = useActionState(createBookAction, initialState);
   const [isSearchingISBN, setIsSearchingISBN] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [showScanner, setShowScanner] = useState(false);
 
   // Form fields
@@ -47,18 +48,29 @@ export default function NewBookForm() {
   const [author2LastName, setAuthor2LastName] = useState('');
   const [publisherName, setPublisherName] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [locationId, setLocationId] = useState('');
 
-  // Load categories on mount
+  // Load categories and locations on mount
   useEffect(() => {
-    async function loadCategories() {
+    async function loadData() {
       try {
-        const cats = await getCategoriesAction();
+        const [cats, locs] = await Promise.all([
+          getCategoriesAction(),
+          getLocationsAction()
+        ]);
         setCategories(cats);
+        setLocations(locs);
+
+        // Set Casa as default location
+        const casaLocation = locs.find(loc => loc.slug === 'casa');
+        if (casaLocation) {
+          setLocationId(casaLocation.id.toString());
+        }
       } catch (error) {
-        console.error('Failed to load categories:', error);
+        console.error('Failed to load data:', error);
       }
     }
-    loadCategories();
+    loadData();
   }, []);
 
   // Handle successful creation
@@ -358,6 +370,31 @@ export default function NewBookForm() {
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id.toString()}>
                       {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Location */}
+            <div className="space-y-2">
+              <Label htmlFor="locationId" className="text-sm font-medium flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Ubicación <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                name="locationId"
+                value={locationId}
+                onValueChange={setLocationId}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una ubicación" />
+                </SelectTrigger>
+                <SelectContent>
+                  {locations.map((location) => (
+                    <SelectItem key={location.id} value={location.id.toString()}>
+                      {location.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

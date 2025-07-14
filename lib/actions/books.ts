@@ -15,6 +15,7 @@ import {
   Book,
   BookFilters
 } from '@/lib/queries';
+import { getDefaultLocation } from '@/lib/queries/locations';
 
 // Validation schemas
 const CreateBookSchema = z.object({
@@ -26,6 +27,7 @@ const CreateBookSchema = z.object({
   author2LastName: z.string().trim().optional().nullable(),
   publisherName: z.string().trim().min(1, 'Publisher is required'),
   categoryId: z.number().min(1, 'Category is required'),
+  locationId: z.number().min(1, 'Location is required'),
 });
 
 const UpdateBookSchema = z.object({
@@ -33,11 +35,16 @@ const UpdateBookSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
   isbn: z.string().trim().optional().nullable(),
   categoryId: z.number().min(1, 'Category is required'),
+  locationId: z.number().min(1, 'Location is required'),
 });
 
 // Get books with filters
 export async function getBooksAction(filters: BookFilters = {}) {
   try {
+    // Set default sort to author if no sort is specified
+    if (!filters.sort) {
+      filters.sort = 'author';
+    }
     return await getBooks(filters);
   } catch (error) {
     console.error('Failed to fetch books:', error);
@@ -61,6 +68,13 @@ export async function createBookAction(
   formData: FormData
 ): Promise<{ success: boolean; error?: string; bookId?: number }> {
   try {
+    // Get default location if not provided
+    let locationId = Number(formData.get('locationId'));
+    if (!locationId || isNaN(locationId)) {
+      const defaultLocation = await getDefaultLocation();
+      locationId = defaultLocation?.id || 1; // Fallback to 1 if no default found
+    }
+
     const validatedFields = CreateBookSchema.parse({
       title: formData.get('title'),
       isbn: formData.get('isbn') || null,
@@ -70,6 +84,7 @@ export async function createBookAction(
       author2LastName: formData.get('author2LastName') || null,
       publisherName: formData.get('publisherName'),
       categoryId: Number(formData.get('categoryId')),
+      locationId: locationId,
     });
 
     // Check if ISBN already exists
@@ -107,6 +122,7 @@ export async function createBookAction(
       author2_id: author2Id,
       publisher_id: publisher.id,
       category_id: validatedFields.categoryId,
+      location_id: validatedFields.locationId,
     });
 
     revalidatePath('/books');
@@ -129,7 +145,7 @@ export async function createBookAction(
   }
 }
 
-// Update book (only title, ISBN, and category)
+// Update book (title, ISBN, category, and location)
 export async function updateBookAction(
   prevState: any,
   formData: FormData
@@ -140,6 +156,7 @@ export async function updateBookAction(
       title: formData.get('title'),
       isbn: formData.get('isbn') || null,
       categoryId: Number(formData.get('categoryId')),
+      locationId: Number(formData.get('locationId')),
     });
 
     // Check if ISBN already exists (excluding current book)
@@ -154,6 +171,7 @@ export async function updateBookAction(
       title: validatedFields.title,
       isbn: validatedFields.isbn,
       category_id: validatedFields.categoryId,
+      location_id: validatedFields.locationId,
     });
 
     revalidatePath('/books');
@@ -222,10 +240,10 @@ export async function searchBookByISBN(isbn: string): Promise<any> {
       title: book.title || '',
       authors: book.authors || [],
       publisher: book.publisher || '',
+      subjects: book.subjects || [],
     };
   } catch (error) {
     console.error('Failed to search book by ISBN:', error);
     return null;
   }
 }
-
