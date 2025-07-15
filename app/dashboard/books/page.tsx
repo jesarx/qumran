@@ -38,7 +38,7 @@ export default async function DashboardBooksPage({
       authorSlug,
       publisherSlug,
       locationSlug,
-      sort: sort as any,
+      sort: sort as 'title' | '-title' | 'author' | '-author' | 'created_at' | '-created_at' | undefined,
       page,
       limit: 20,
     }),

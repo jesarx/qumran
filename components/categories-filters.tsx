@@ -79,7 +79,7 @@ export default function CategoriesFilters() {
             <div className="text-sm text-muted-foreground">
               <span className="font-medium">Filtros activos:</span>
               <div className="flex flex-wrap gap-2 mt-1">
-                {filterSummary.map((filter, index) => (
+                {filterSummary.map((filter) => (
                   <span
                     key={filter.type}
                     className="inline-flex items-center gap-1 bg-background rounded px-2 py-1 text-xs border"

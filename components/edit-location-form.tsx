@@ -63,7 +63,9 @@ export default function EditLocationForm({ locationId }: { locationId: number })
     setIsDeleting(true);
     try {
       await deleteLocationAction(locationId);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(errorMessage || 'Error al eliminar');
       alert(error.message || 'Error al eliminar la ubicación');
       setIsDeleting(false);
     }

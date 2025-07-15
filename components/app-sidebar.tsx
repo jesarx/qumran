@@ -1,4 +1,4 @@
-import { Home, BookOpen, Users, Building2, LayoutList, MapPin, LogIn, LogOut, Info, LibraryBig, FilePlus } from "lucide-react";
+import { Home, BookOpen, Users, LayoutList, MapPin, LogIn, LogOut, Info, LibraryBig, FilePlus } from "lucide-react";
 import ThemeToggle from '@/components/theme-toggle';
 import { auth } from "@/auth";
 import { logout } from '@/lib/actions';

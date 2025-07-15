@@ -37,7 +37,7 @@ export default function AboutPage() {
               catalogar y administrar colecciones de libros de manera eficiente. Desarrollado
               como una aplicación web moderna, permite llevar un control detallado de autores,
               editoriales, categorías y ubicaciones físicas de los libros.
-              El nombre "Qumran" hace referencia al sitio arqueológico donde se descubrieron
+              El nombre &ldquo;Qumran&ldquo; hace referencia al sitio arqueológico donde se descubrieron
               los famosos Manuscritos del Mar Muerto.
 
             </p>

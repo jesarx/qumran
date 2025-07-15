@@ -35,8 +35,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth()
-  const isAuthenticated = !!session?.user
 
   return (
     <html lang="es" suppressHydrationWarning>
