@@ -1,19 +1,21 @@
 import { getPublishersAction } from '@/lib/actions';
 import PublishersTable from '@/components/publishers-table';
-import SimpleSearch from '@/components/simple-search';
+import PublishersFilters from '@/components/publishers-filters';
 
 export default async function DashboardPublishersPage(
   props: {
     searchParams?: Promise<{
       name?: string;
+      sort?: string;
       page?: string;
     }>;
   }
 ) {
   const searchParams = await props.searchParams;
   const name = searchParams?.name || '';
+  const sort = searchParams?.sort || '';
 
-  const publishers = await getPublishersAction(name);
+  const publishers = await getPublishersAction(name, sort);
 
   return (
     <div className="mx-auto max-w-7xl p-4">
@@ -27,7 +29,7 @@ export default async function DashboardPublishersPage(
       </div>
 
       <div className="mb-4">
-        <SimpleSearch placeholder="Buscar por nombre..." />
+        <PublishersFilters />
       </div>
 
       <div className="bg-card rounded-lg shadow-sm p-6">

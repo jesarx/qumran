@@ -11,8 +11,13 @@ export interface Author extends QueryResultRow {
   book_count?: number;
 }
 
-// Get all authors with book count
-export async function getAuthors(searchTerm?: string): Promise<Author[]> {
+export interface AuthorFilters {
+  searchTerm?: string;
+  sort?: 'name' | '-name' | 'book_count' | '-book_count';
+}
+
+// Get all authors with book count and sorting
+export async function getAuthors(filters: AuthorFilters = {}): Promise<Author[]> {
   let sql = `
     SELECT 
       a.*,
@@ -23,12 +28,31 @@ export async function getAuthors(searchTerm?: string): Promise<Author[]> {
 
   const params: any[] = [];
 
-  if (searchTerm) {
+  if (filters.searchTerm) {
     sql += ` WHERE LOWER(a.first_name || ' ' || a.last_name) LIKE LOWER($1)`;
-    params.push(`%${searchTerm}%`);
+    params.push(`%${filters.searchTerm}%`);
   }
 
-  sql += ` GROUP BY a.id ORDER BY a.last_name, a.first_name`;
+  sql += ` GROUP BY a.id`;
+
+  // Add sorting
+  let orderBy = 'a.last_name ASC, a.first_name ASC'; // default
+  switch (filters.sort) {
+    case 'name':
+      orderBy = 'a.last_name ASC, a.first_name ASC';
+      break;
+    case '-name':
+      orderBy = 'a.last_name DESC, a.first_name DESC';
+      break;
+    case 'book_count':
+      orderBy = 'book_count ASC, a.last_name ASC, a.first_name ASC';
+      break;
+    case '-book_count':
+      orderBy = 'book_count DESC, a.last_name ASC, a.first_name ASC';
+      break;
+  }
+
+  sql += ` ORDER BY ${orderBy}`;
 
   return queryMany<Author>(sql, params);
 }

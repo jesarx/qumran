@@ -408,8 +408,8 @@ export default function NewBookForm() {
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-full p-0 bg-background border border-input shadow-md">
-                          <Command>
+                        <PopoverContent className="w-full p-0" style={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}>
+                          <Command style={{ backgroundColor: 'hsl(var(--popover))' }}>
                             <CommandInput
                               placeholder="Buscar apellido..."
                               value={author1.lastName}
@@ -432,6 +432,7 @@ export default function NewBookForm() {
                                     key={author.id}
                                     value={`${author.last_name} ${author.first_name || ''}`}
                                     onSelect={() => handleAuthorSelect(author, 1)}
+                                    className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                                   >
                                     <Check
                                       className={cn(
@@ -498,8 +499,8 @@ export default function NewBookForm() {
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-full p-0 bg-background border border-input shadow-md">
-                          <Command>
+                        <PopoverContent className="w-full p-0" style={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}>
+                          <Command style={{ backgroundColor: 'hsl(var(--popover))' }}>
                             <CommandInput
                               placeholder="Buscar apellido..."
                               value={author2.lastName}
@@ -522,6 +523,7 @@ export default function NewBookForm() {
                                     key={author.id}
                                     value={`${author.last_name} ${author.first_name || ''}`}
                                     onSelect={() => handleAuthorSelect(author, 2)}
+                                    className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                                   >
                                     <Check
                                       className={cn(

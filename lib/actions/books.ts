@@ -63,7 +63,14 @@ function normalizeIsbn(isbn: string): string {
 // Get books with filters
 export async function getBooksAction(filters: BookFilters = {}) {
   try {
-    return await getBooks(filters);
+    console.log('getBooksAction called with filters:', filters);
+    const result = await getBooks(filters);
+    console.log('getBooksAction result:', {
+      totalBooks: result.total,
+      booksReturned: result.books.length,
+      filters: filters
+    });
+    return result;
   } catch (error) {
     console.error('Failed to fetch books:', error);
     throw new Error('Failed to fetch books');

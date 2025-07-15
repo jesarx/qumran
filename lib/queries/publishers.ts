@@ -10,8 +10,13 @@ export interface Publisher extends QueryResultRow {
   book_count?: number;
 }
 
-// Get all publishers with book count
-export async function getPublishers(searchTerm?: string): Promise<Publisher[]> {
+export interface PublisherFilters {
+  searchTerm?: string;
+  sort?: 'name' | '-name' | 'book_count' | '-book_count';
+}
+
+// Get all publishers with book count and sorting
+export async function getPublishers(filters: PublisherFilters = {}): Promise<Publisher[]> {
   let sql = `
     SELECT 
       p.*,
@@ -22,12 +27,31 @@ export async function getPublishers(searchTerm?: string): Promise<Publisher[]> {
 
   const params: any[] = [];
 
-  if (searchTerm) {
+  if (filters.searchTerm) {
     sql += ` WHERE LOWER(p.name) LIKE LOWER($1)`;
-    params.push(`%${searchTerm}%`);
+    params.push(`%${filters.searchTerm}%`);
   }
 
-  sql += ` GROUP BY p.id ORDER BY p.name`;
+  sql += ` GROUP BY p.id`;
+
+  // Add sorting
+  let orderBy = 'p.name ASC'; // default
+  switch (filters.sort) {
+    case 'name':
+      orderBy = 'p.name ASC';
+      break;
+    case '-name':
+      orderBy = 'p.name DESC';
+      break;
+    case 'book_count':
+      orderBy = 'book_count ASC, p.name ASC';
+      break;
+    case '-book_count':
+      orderBy = 'book_count DESC, p.name ASC';
+      break;
+  }
+
+  sql += ` ORDER BY ${orderBy}`;
 
   return queryMany<Publisher>(sql, params);
 }

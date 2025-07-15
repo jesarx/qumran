@@ -22,10 +22,20 @@ const UpdatePublisherSchema = z.object({
   name: z.string().trim().min(1, 'Publisher name is required'),
 });
 
-// Get all publishers with optional search
-export async function getPublishersAction(searchTerm?: string): Promise<Publisher[]> {
+// Publisher filters interface
+export interface PublisherFilters {
+  searchTerm?: string;
+  sort?: 'name' | '-name' | 'book_count' | '-book_count';
+}
+
+// Get all publishers with optional search and sorting
+export async function getPublishersAction(searchTerm?: string, sort?: string): Promise<Publisher[]> {
   try {
-    return await getPublishers(searchTerm);
+    const filters: PublisherFilters = {
+      searchTerm,
+      sort: sort as PublisherFilters['sort']
+    };
+    return await getPublishers(filters);
   } catch (error) {
     console.error('Failed to fetch publishers:', error);
     throw new Error('Failed to fetch publishers');

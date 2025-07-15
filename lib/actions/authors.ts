@@ -24,10 +24,20 @@ const UpdateAuthorSchema = z.object({
   lastName: z.string().trim().min(1, 'Last name is required'),
 });
 
-// Get all authors with optional search
-export async function getAuthorsAction(searchTerm?: string): Promise<Author[]> {
+// Author filters interface
+export interface AuthorFilters {
+  searchTerm?: string;
+  sort?: 'name' | '-name' | 'book_count' | '-book_count';
+}
+
+// Get all authors with optional search and sorting
+export async function getAuthorsAction(searchTerm?: string, sort?: string): Promise<Author[]> {
   try {
-    return await getAuthors(searchTerm);
+    const filters: AuthorFilters = {
+      searchTerm,
+      sort: sort as AuthorFilters['sort']
+    };
+    return await getAuthors(filters);
   } catch (error) {
     console.error('Failed to fetch authors:', error);
     throw new Error('Failed to fetch authors');

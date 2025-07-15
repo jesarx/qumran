@@ -1,19 +1,21 @@
 import { getAuthorsAction } from '@/lib/actions';
 import AuthorsTable from '@/components/authors-table';
-import SimpleSearch from '@/components/simple-search';
+import AuthorsFilters from '@/components/authors-filters';
 
 export default async function DashboardAuthorsPage(
   props: {
     searchParams?: Promise<{
       name?: string;
+      sort?: string;
       page?: string;
     }>;
   }
 ) {
   const searchParams = await props.searchParams;
   const name = searchParams?.name || '';
+  const sort = searchParams?.sort || '';
 
-  const authors = await getAuthorsAction(name);
+  const authors = await getAuthorsAction(name, sort);
 
   return (
     <div className="mx-auto max-w-7xl p-4">
@@ -27,7 +29,7 @@ export default async function DashboardAuthorsPage(
       </div>
 
       <div className="mb-4">
-        <SimpleSearch placeholder="Buscar por nombre..." />
+        <AuthorsFilters />
       </div>
 
       <div className="bg-card rounded-lg shadow-sm p-6">
