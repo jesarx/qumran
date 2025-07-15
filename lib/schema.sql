@@ -1,6 +1,7 @@
 --
 -- PostgreSQL Database Schema
 -- Book Library Management System
+-- Updated with Enhanced Sorting Functions
 --
 
 SET statement_timeout = 0;
@@ -36,6 +37,107 @@ BEGIN
     END IF;
     
     RETURN REGEXP_REPLACE(isbn_input, '[^0-9]', '', 'g');
+END;
+$$;
+
+-- Function to normalize author last names for sorting
+-- Removes prefixes like "von", "de", "del", "le", etc.
+-- Handles compound prefixes like "de la", "von der", etc.
+CREATE OR REPLACE FUNCTION public.normalize_author_lastname_for_sorting(lastname character varying) 
+RETURNS character varying
+LANGUAGE plpgsql
+AS $
+DECLARE
+    normalized_name character varying;
+    -- Order matters: longer compound prefixes first, then shorter ones
+    prefixes text[] := ARRAY[
+        'de la', 'de las', 'de los', 'del la', 'della', 'von der', 'van der', 'van den', 'van de', 'von dem', 'von den',
+        'de le', 'de l''', 'du de', 'saint', 'sainte', 'ibn', 'bin', 'ben', 'abu',
+        'von', 'van', 'de', 'del', 'di', 'da', 'le', 'la', 'du', 'des', 'den', 'der', 'el', 'al', 
+        'mac', 'mc', 'o''', 'st', 'ste'
+    ];
+    prefix text;
+    temp_name character varying;
+BEGIN
+    IF lastname IS NULL OR lastname = '' THEN
+        RETURN '';
+    END IF;
+    
+    normalized_name := LOWER(TRIM(lastname));
+    
+    -- Keep removing prefixes until no more are found
+    LOOP
+        temp_name := normalized_name;
+        
+        -- Check each prefix
+        FOREACH prefix IN ARRAY prefixes
+        LOOP
+            -- Check if the name starts with the prefix followed by a space
+            IF normalized_name LIKE prefix || ' %' THEN
+                normalized_name := TRIM(SUBSTRING(normalized_name FROM LENGTH(prefix) + 2));
+                EXIT; -- Exit the prefix loop to start over
+            END IF;
+        END LOOP;
+        
+        -- If no prefix was removed, we're done
+        IF temp_name = normalized_name THEN
+            EXIT;
+        END IF;
+    END LOOP;
+    
+    RETURN normalized_name;
+END;
+$;
+
+-- Function to normalize book titles for sorting
+-- Removes articles like "the", "a", "an", "el", "la", "lo", "los", "las", "le", "les", etc.
+CREATE OR REPLACE FUNCTION public.normalize_title_for_sorting(title character varying) 
+RETURNS character varying
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    normalized_title character varying;
+    articles text[] := ARRAY['the', 'a', 'an', 'el', 'la', 'lo', 'los', 'las', 'le', 'les', 'un', 'una', 'uno', 'unas', 'unos', 'der', 'die', 'das', 'den', 'dem', 'des', 'ein', 'eine', 'einer', 'einem', 'eines'];
+    article text;
+BEGIN
+    IF title IS NULL OR title = '' THEN
+        RETURN '';
+    END IF;
+    
+    normalized_title := LOWER(TRIM(title));
+    
+    -- Check each article
+    FOREACH article IN ARRAY articles
+    LOOP
+        -- Check if the title starts with the article followed by a space
+        IF normalized_title LIKE article || ' %' THEN
+            normalized_title := TRIM(SUBSTRING(normalized_title FROM LENGTH(article) + 2));
+            EXIT; -- Exit after finding the first match
+        END IF;
+    END LOOP;
+    
+    RETURN normalized_title;
+END;
+$$;
+
+-- Function to get author sort priority
+-- Returns 1 for "Anónimo", 2 for "VV. AA.", 3 for others
+CREATE OR REPLACE FUNCTION public.get_author_sort_priority(lastname character varying) 
+RETURNS integer
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF lastname IS NULL THEN
+        RETURN 4; -- Unknown authors go last
+    END IF;
+    
+    CASE LOWER(TRIM(lastname))
+        WHEN 'anónimo' THEN RETURN 1;
+        WHEN 'vv. aa.' THEN RETURN 2;
+        WHEN 'vv.aa.' THEN RETURN 2;
+        WHEN 'varios autores' THEN RETURN 2;
+        ELSE RETURN 3;
+    END CASE;
 END;
 $$;
 
@@ -135,6 +237,8 @@ CREATE TABLE public.books (
 
 -- Authors indexes
 CREATE INDEX idx_authors_slug ON public.authors USING btree (slug);
+CREATE INDEX idx_authors_normalized_lastname ON public.authors USING btree (normalize_author_lastname_for_sorting(last_name));
+CREATE INDEX idx_authors_sort_priority ON public.authors USING btree (get_author_sort_priority(last_name));
 
 -- Categories indexes
 CREATE INDEX idx_categories_slug ON public.categories USING btree (slug);
@@ -147,6 +251,7 @@ CREATE INDEX idx_locations_slug ON public.locations USING btree (slug);
 
 -- Books indexes
 CREATE INDEX idx_books_title ON public.books USING btree (title);
+CREATE INDEX idx_books_normalized_title ON public.books USING btree (normalize_title_for_sorting(title));
 CREATE INDEX idx_books_isbn ON public.books USING btree (isbn);
 CREATE UNIQUE INDEX idx_books_isbn_unique ON public.books USING btree (isbn) WHERE (isbn IS NOT NULL);
 CREATE INDEX idx_books_author1_id ON public.books USING btree (author1_id);

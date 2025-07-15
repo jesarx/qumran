@@ -43,7 +43,7 @@ function normalizeIsbn(isbn: string): string {
   return isbn.replace(/[-\s]/g, '');
 }
 
-// Get books with all related data
+// Get books with all related data and enhanced sorting
 export async function getBooks(filters: BookFilters = {}): Promise<{
   books: Book[];
   total: number;
@@ -88,20 +88,36 @@ export async function getBooks(filters: BookFilters = {}): Promise<{
     ? `WHERE ${whereConditions.join(' AND ')}`
     : '';
 
-  // Determine sort order
-  let orderBy = 'a1.last_name ASC, a1.first_name ASC, b.title ASC'; // default: sort by author
+  // Enhanced sort orders with special handling
+  let orderBy = `
+    get_author_sort_priority(a1.last_name) ASC,
+    normalize_author_lastname_for_sorting(a1.last_name) ASC,
+    a1.first_name ASC,
+    normalize_title_for_sorting(b.title) ASC
+  `; // default: sort by author with special priorities
+
   switch (filters.sort) {
     case 'author':
-      orderBy = 'a1.last_name ASC, a1.first_name ASC, b.title ASC';
+      orderBy = `
+        get_author_sort_priority(a1.last_name) ASC,
+        normalize_author_lastname_for_sorting(a1.last_name) ASC,
+        a1.first_name ASC,
+        normalize_title_for_sorting(b.title) ASC
+      `;
       break;
     case '-author':
-      orderBy = 'a1.last_name DESC, a1.first_name DESC, b.title DESC';
+      orderBy = `
+        get_author_sort_priority(a1.last_name) DESC,
+        normalize_author_lastname_for_sorting(a1.last_name) DESC,
+        a1.first_name DESC,
+        normalize_title_for_sorting(b.title) DESC
+      `;
       break;
     case 'title':
-      orderBy = 'b.title ASC';
+      orderBy = `normalize_title_for_sorting(b.title) ASC`;
       break;
     case '-title':
-      orderBy = 'b.title DESC';
+      orderBy = `normalize_title_for_sorting(b.title) DESC`;
       break;
     case 'created_at':
       orderBy = 'b.created_at ASC';

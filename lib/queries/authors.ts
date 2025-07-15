@@ -1,5 +1,3 @@
-// Update this in: lib/queries/authors.ts
-
 import { queryOne, queryMany, query, createSlug } from '@/lib/db';
 import { QueryResultRow } from 'pg';
 
@@ -20,7 +18,7 @@ export interface AuthorFilters {
   limit?: number;
 }
 
-// Get all authors with book count, sorting, and pagination
+// Get all authors with book count, enhanced sorting, and pagination
 export async function getAuthors(filters: AuthorFilters = {}): Promise<{
   authors: Author[];
   total: number;
@@ -60,20 +58,43 @@ export async function getAuthors(filters: AuthorFilters = {}): Promise<{
     GROUP BY a.id
   `;
 
-  // Add sorting
-  let orderBy = 'a.last_name ASC, a.first_name ASC'; // default
+  // Enhanced sorting with special handling
+  let orderBy = `
+    get_author_sort_priority(a.last_name) ASC,
+    normalize_author_lastname_for_sorting(a.last_name) ASC,
+    a.first_name ASC
+  `; // default
+
   switch (filters.sort) {
     case 'name':
-      orderBy = 'a.last_name ASC, a.first_name ASC';
+      orderBy = `
+        get_author_sort_priority(a.last_name) ASC,
+        normalize_author_lastname_for_sorting(a.last_name) ASC,
+        a.first_name ASC
+      `;
       break;
     case '-name':
-      orderBy = 'a.last_name DESC, a.first_name DESC';
+      orderBy = `
+        get_author_sort_priority(a.last_name) DESC,
+        normalize_author_lastname_for_sorting(a.last_name) DESC,
+        a.first_name DESC
+      `;
       break;
     case 'book_count':
-      orderBy = 'book_count ASC, a.last_name ASC, a.first_name ASC';
+      orderBy = `
+        book_count ASC,
+        get_author_sort_priority(a.last_name) ASC,
+        normalize_author_lastname_for_sorting(a.last_name) ASC,
+        a.first_name ASC
+      `;
       break;
     case '-book_count':
-      orderBy = 'book_count DESC, a.last_name ASC, a.first_name ASC';
+      orderBy = `
+        book_count DESC,
+        get_author_sort_priority(a.last_name) ASC,
+        normalize_author_lastname_for_sorting(a.last_name) ASC,
+        a.first_name ASC
+      `;
       break;
   }
 

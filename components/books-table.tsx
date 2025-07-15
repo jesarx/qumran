@@ -19,7 +19,7 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
   return (
     <Table>
       <TableHeader>
-        <TableRow>
+        <TableRow className="font-bold">
           <TableHead>Título</TableHead>
           <TableHead>Autor(es)</TableHead>
           <TableHead>Editorial</TableHead>
@@ -41,11 +41,13 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
             <TableRow key={book.id}>
               <TableCell className="font-medium">{book.title}</TableCell>
               <TableCell>
-                {book.author1_first_name} {book.author1_last_name}
+                {book.author1_last_name}
+                {book.author1_first_name && `, ${book.author1_first_name}`}
                 {book.author2_last_name && (
                   <>
                     <br />
-                    {book.author2_first_name} {book.author2_last_name}
+                    {book.author2_last_name}
+                    {book.author2_first_name && `, ${book.author2_first_name}`}
                   </>
                 )}
               </TableCell>
