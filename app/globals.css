@@ -43,6 +43,17 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  
+  /* Font weight utilities */
+  --font-weight-thin: 100;
+  --font-weight-extralight: 200;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
 }
 
 :root {
@@ -187,6 +198,100 @@
       border-color 0.2s ease,
       color 0.2s ease,
       box-shadow 0.2s ease;
+  }
+}
+
+@layer utilities {
+  /* Font weight utilities using Geist variables */
+  .font-thin {
+    font-family: var(--font-geist-sans);
+    font-weight: var(--font-weight-thin);
+  }
+  
+  .font-extralight {
+    font-family: var(--font-geist-sans);
+    font-weight: var(--font-weight-extralight);
+  }
+  
+  .font-light {
+    font-family: var(--font-geist-sans);
+    font-weight: var(--font-weight-light);
+  }
+  
+  .font-normal {
+    font-family: var(--font-geist-sans);
+    font-weight: var(--font-weight-normal);
+  }
+  
+  .font-medium {
+    font-family: var(--font-geist-sans);
+    font-weight: var(--font-weight-medium);
+  }
+  
+  .font-semibold {
+    font-family: var(--font-geist-sans);
+    font-weight: var(--font-weight-semibold);
+  }
+  
+  .font-bold {
+    font-family: var(--font-geist-sans);
+    font-weight: var(--font-weight-bold);
+  }
+  
+  .font-extrabold {
+    font-family: var(--font-geist-sans);
+    font-weight: var(--font-weight-extrabold);
+  }
+  
+  .font-black {
+    font-family: var(--font-geist-sans);
+    font-weight: var(--font-weight-black);
+  }
+  
+  /* Font mono weight utilities */
+  .font-mono-thin {
+    font-family: var(--font-geist-mono);
+    font-weight: var(--font-weight-thin);
+  }
+  
+  .font-mono-extralight {
+    font-family: var(--font-geist-mono);
+    font-weight: var(--font-weight-extralight);
+  }
+  
+  .font-mono-light {
+    font-family: var(--font-geist-mono);
+    font-weight: var(--font-weight-light);
+  }
+  
+  .font-mono-normal {
+    font-family: var(--font-geist-mono);
+    font-weight: var(--font-weight-normal);
+  }
+  
+  .font-mono-medium {
+    font-family: var(--font-geist-mono);
+    font-weight: var(--font-weight-medium);
+  }
+  
+  .font-mono-semibold {
+    font-family: var(--font-geist-mono);
+    font-weight: var(--font-weight-semibold);
+  }
+  
+  .font-mono-bold {
+    font-family: var(--font-geist-mono);
+    font-weight: var(--font-weight-bold);
+  }
+  
+  .font-mono-extrabold {
+    font-family: var(--font-geist-mono);
+    font-weight: var(--font-weight-extrabold);
+  }
+  
+  .font-mono-black {
+    font-family: var(--font-geist-mono);
+    font-weight: var(--font-weight-black);
   }
 }
 

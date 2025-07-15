@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { BookOpen, Users, Building2, LayoutList, MapPin } from 'lucide-react';
 
 export default async function DashboardPage() {
-  const [booksData, authors, publishers, categories, locations] = await Promise.all([
+  const [booksData, authorsData, publishersData, categories, locations] = await Promise.all([
     getBooksAction({ limit: 5 }),
     getAuthorsAction(),
     getPublishersAction(),
@@ -23,7 +23,7 @@ export default async function DashboardPage() {
     },
     {
       title: 'Autores',
-      value: authors.length,
+      value: authorsData.total, // Use .total instead of .length
       icon: Users,
       href: '/dashboard/authors',
       color: 'text-green-600',
@@ -31,7 +31,7 @@ export default async function DashboardPage() {
     },
     {
       title: 'Editoriales',
-      value: publishers.length,
+      value: publishersData.total, // Use .total instead of .length
       icon: Building2,
       href: '/dashboard/publishers',
       color: 'text-purple-600',

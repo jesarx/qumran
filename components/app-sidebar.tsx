@@ -92,7 +92,7 @@ export async function AppSidebar() {
         <div className="px-6 py-10">
           <div className="text-center space-y-4">
             <div className="relative">
-              <h1 className="text-4xl font-light text-sidebar-primary tracking-[0.2em] uppercase">
+              <h1 className="text-4xl font-thin text-sidebar-primary tracking-[0.2em] uppercase">
                 Qumran
               </h1>
               {/* Subtle accent line */}
