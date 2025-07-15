@@ -1,3 +1,5 @@
+// Update this in: lib/actions/publishers.ts
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -9,7 +11,8 @@ import {
   createPublisher,
   updatePublisher,
   deletePublisher,
-  Publisher
+  Publisher,
+  PublisherFilters
 } from '@/lib/queries';
 
 // Validation schemas
@@ -22,18 +25,23 @@ const UpdatePublisherSchema = z.object({
   name: z.string().trim().min(1, 'Publisher name is required'),
 });
 
-// Publisher filters interface
-export interface PublisherFilters {
-  searchTerm?: string;
-  sort?: 'name' | '-name' | 'book_count' | '-book_count';
-}
-
-// Get all publishers with optional search and sorting
-export async function getPublishersAction(searchTerm?: string, sort?: string): Promise<Publisher[]> {
+// Get all publishers with optional search, sorting, and pagination
+export async function getPublishersAction(
+  searchTerm?: string,
+  sort?: string,
+  page?: number
+): Promise<{
+  publishers: Publisher[];
+  total: number;
+  page: number;
+  totalPages: number;
+}> {
   try {
     const filters: PublisherFilters = {
       searchTerm,
-      sort: sort as PublisherFilters['sort']
+      sort: sort as PublisherFilters['sort'],
+      page: page || 1,
+      limit: 20
     };
     return await getPublishers(filters);
   } catch (error) {

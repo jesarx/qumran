@@ -1,3 +1,5 @@
+// Update this in: lib/actions/authors.ts
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -9,7 +11,8 @@ import {
   createAuthor,
   updateAuthor,
   deleteAuthor,
-  Author
+  Author,
+  AuthorFilters
 } from '@/lib/queries';
 
 // Validation schemas
@@ -24,18 +27,23 @@ const UpdateAuthorSchema = z.object({
   lastName: z.string().trim().min(1, 'Last name is required'),
 });
 
-// Author filters interface
-export interface AuthorFilters {
-  searchTerm?: string;
-  sort?: 'name' | '-name' | 'book_count' | '-book_count';
-}
-
-// Get all authors with optional search and sorting
-export async function getAuthorsAction(searchTerm?: string, sort?: string): Promise<Author[]> {
+// Get all authors with optional search, sorting, and pagination
+export async function getAuthorsAction(
+  searchTerm?: string,
+  sort?: string,
+  page?: number
+): Promise<{
+  authors: Author[];
+  total: number;
+  page: number;
+  totalPages: number;
+}> {
   try {
     const filters: AuthorFilters = {
       searchTerm,
-      sort: sort as AuthorFilters['sort']
+      sort: sort as AuthorFilters['sort'],
+      page: page || 1,
+      limit: 20
     };
     return await getAuthors(filters);
   } catch (error) {

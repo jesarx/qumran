@@ -37,6 +37,11 @@ const publicItems = [
     icon: LayoutList,
   },
   {
+    title: "Ubicaciones",
+    url: "/locations",
+    icon: MapPin,
+  },
+  {
     title: "Acerca de",
     url: "/about",
     icon: Info,

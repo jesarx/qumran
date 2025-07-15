@@ -1,3 +1,5 @@
+// Update this in: lib/queries/locations.ts
+
 import { queryOne, queryMany, query, createSlug } from '@/lib/db';
 import { QueryResultRow } from 'pg';
 
@@ -10,8 +12,13 @@ export interface Location extends QueryResultRow {
   book_count?: number;
 }
 
-// Get all locations with book count
-export async function getLocations(searchTerm?: string): Promise<Location[]> {
+export interface LocationFilters {
+  searchTerm?: string;
+  sort?: 'name' | '-name' | 'book_count' | '-book_count';
+}
+
+// Get all locations with book count and sorting
+export async function getLocations(filters: LocationFilters = {}): Promise<Location[]> {
   let sql = `
     SELECT 
       l.*,
@@ -22,12 +29,31 @@ export async function getLocations(searchTerm?: string): Promise<Location[]> {
 
   const params: any[] = [];
 
-  if (searchTerm) {
+  if (filters.searchTerm) {
     sql += ` WHERE LOWER(l.name) LIKE LOWER($1)`;
-    params.push(`%${searchTerm}%`);
+    params.push(`%${filters.searchTerm}%`);
   }
 
-  sql += ` GROUP BY l.id ORDER BY l.name`;
+  sql += ` GROUP BY l.id`;
+
+  // Add sorting
+  let orderBy = 'l.name ASC'; // default
+  switch (filters.sort) {
+    case 'name':
+      orderBy = 'l.name ASC';
+      break;
+    case '-name':
+      orderBy = 'l.name DESC';
+      break;
+    case 'book_count':
+      orderBy = 'book_count ASC, l.name ASC';
+      break;
+    case '-book_count':
+      orderBy = 'book_count DESC, l.name ASC';
+      break;
+  }
+
+  sql += ` ORDER BY ${orderBy}`;
 
   return queryMany<Location>(sql, params);
 }

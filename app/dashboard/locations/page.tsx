@@ -1,6 +1,8 @@
+// Update this in: app/dashboard/locations/page.tsx
+
 import { getLocationsAction } from '@/lib/actions';
 import LocationsTable from '@/components/locations-table';
-import SimpleSearch from '@/components/simple-search';
+import LocationsFilters from '@/components/locations-filters';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { PlusIcon } from 'lucide-react';
@@ -9,14 +11,16 @@ export default async function DashboardLocationsPage(
   props: {
     searchParams?: Promise<{
       name?: string;
+      sort?: string;
       page?: string;
     }>;
   }
 ) {
   const searchParams = await props.searchParams;
   const name = searchParams?.name || '';
+  const sort = searchParams?.sort || '';
 
-  const locations = await getLocationsAction(name);
+  const locations = await getLocationsAction(name, sort);
 
   return (
     <div className="mx-auto max-w-7xl p-4">
@@ -36,7 +40,7 @@ export default async function DashboardLocationsPage(
       </div>
 
       <div className="mb-4">
-        <SimpleSearch placeholder="Buscar por nombre..." />
+        <LocationsFilters />
       </div>
 
       <div className="bg-card rounded-lg shadow-sm p-6">

@@ -1,6 +1,9 @@
+// Update this in: app/authors/page.tsx
+
 import { getAuthorsAction } from '@/lib/actions';
 import AuthorsTable from '@/components/authors-table';
 import AuthorsFilters from '@/components/authors-filters';
+import PaginationComp from '@/components/pagination';
 
 export default async function AuthorsPage({
   searchParams,
@@ -10,12 +13,17 @@ export default async function AuthorsPage({
   const params = await searchParams || {};
   const name = typeof params.name === 'string' ? params.name : '';
   const sort = typeof params.sort === 'string' ? params.sort : '';
+  const page = typeof params.page === 'string' ? parseInt(params.page) : 1;
 
-  const authors = await getAuthorsAction(name, sort);
+  const authorsData = await getAuthorsAction(name, sort, page);
+  const { authors, total, totalPages } = authorsData;
 
   console.log('Authors page data:', {
     authorsReceived: Array.isArray(authors),
     count: authors?.length,
+    total,
+    currentPage: page,
+    totalPages,
     searchTerm: name,
     sortBy: sort
   });
@@ -25,13 +33,28 @@ export default async function AuthorsPage({
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground mb-4">Autores</h1>
         <p className="text-muted-foreground mb-4">
-          {authors.length} {authors.length === 1 ? 'autor' : 'autores'} en total
+          {total} {total === 1 ? 'autor' : 'autores'} en total
         </p>
         <AuthorsFilters />
       </div>
 
       <div className="bg-card rounded-lg shadow-sm p-6">
         <AuthorsTable authors={authors || []} showActions={false} />
+
+        {totalPages > 1 && (
+          <div className="mt-6">
+            <PaginationComp
+              metadata={{
+                current_page: page,
+                page_size: authors.length,
+                first_page: 1,
+                last_page: totalPages,
+                total_records: total,
+              }}
+              object="autores"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

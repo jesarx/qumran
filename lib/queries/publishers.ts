@@ -1,3 +1,5 @@
+// Update this in: lib/queries/publishers.ts
+
 import { queryOne, queryMany, query, createSlug } from '@/lib/db';
 import { QueryResultRow } from 'pg';
 
@@ -13,26 +15,49 @@ export interface Publisher extends QueryResultRow {
 export interface PublisherFilters {
   searchTerm?: string;
   sort?: 'name' | '-name' | 'book_count' | '-book_count';
+  page?: number;
+  limit?: number;
 }
 
-// Get all publishers with book count and sorting
-export async function getPublishers(filters: PublisherFilters = {}): Promise<Publisher[]> {
+// Get all publishers with book count, sorting, and pagination
+export async function getPublishers(filters: PublisherFilters = {}): Promise<{
+  publishers: Publisher[];
+  total: number;
+  page: number;
+  totalPages: number;
+}> {
+  const page = filters.page || 1;
+  const limit = filters.limit || 20;
+  const offset = (page - 1) * limit;
+
+  let whereCondition = '';
+  const params: any[] = [];
+
+  if (filters.searchTerm) {
+    whereCondition = `WHERE LOWER(p.name) LIKE LOWER($1)`;
+    params.push(`%${filters.searchTerm}%`);
+  }
+
+  // Get total count
+  const countResult = await queryOne<{ count: string }>(`
+    SELECT COUNT(DISTINCT p.id) as count
+    FROM publishers p
+    ${whereCondition}
+  `, params);
+
+  const total = parseInt(countResult?.count || '0');
+  const totalPages = Math.ceil(total / limit);
+
+  // Get paginated results
   let sql = `
     SELECT 
       p.*,
       COUNT(b.id) as book_count
     FROM publishers p
     LEFT JOIN books b ON p.id = b.publisher_id
+    ${whereCondition}
+    GROUP BY p.id
   `;
-
-  const params: any[] = [];
-
-  if (filters.searchTerm) {
-    sql += ` WHERE LOWER(p.name) LIKE LOWER($1)`;
-    params.push(`%${filters.searchTerm}%`);
-  }
-
-  sql += ` GROUP BY p.id`;
 
   // Add sorting
   let orderBy = 'p.name ASC'; // default
@@ -53,7 +78,18 @@ export async function getPublishers(filters: PublisherFilters = {}): Promise<Pub
 
   sql += ` ORDER BY ${orderBy}`;
 
-  return queryMany<Publisher>(sql, params);
+  // Add pagination
+  params.push(limit, offset);
+  sql += ` LIMIT $${params.length - 1} OFFSET $${params.length}`;
+
+  const publishers = await queryMany<Publisher>(sql, params);
+
+  return {
+    publishers,
+    total,
+    page,
+    totalPages
+  };
 }
 
 // Get publisher by ID

@@ -10,13 +10,13 @@ export default function AboutPage() {
         {/* Header */}
         <div className="text-center space-y-6">
           <div className="relative">
-            <h1 className="text-5xl font-light text-foreground tracking-wide">
-              Acerca de Qumran
+            <h1 className="uppercase text-5xl font-light text-foreground tracking-wide">
+              Qumran
             </h1>
             <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent"></div>
           </div>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Sistema de gestión de biblioteca personal desarrollado con tecnologías modernas
+            Sistema de gestión de biblioteca personal.
           </p>
         </div>
 
@@ -37,11 +37,9 @@ export default function AboutPage() {
               catalogar y administrar colecciones de libros de manera eficiente. Desarrollado
               como una aplicación web moderna, permite llevar un control detallado de autores,
               editoriales, categorías y ubicaciones físicas de los libros.
-            </p>
-            <p className="text-foreground leading-relaxed">
               El nombre "Qumran" hace referencia al sitio arqueológico donde se descubrieron
-              los famosos Manuscritos del Mar Muerto, simbolizando la preservación y
-              organización del conocimiento a lo largo del tiempo.
+              los famosos Manuscritos del Mar Muerto.
+
             </p>
           </CardContent>
         </Card>
@@ -77,16 +75,10 @@ export default function AboutPage() {
                     <p className="text-foreground leading-relaxed">
                       Los libros son una parte muy importante de mi cosmología.
                       Lo que está en este sitio web describe una buena parte de mi sistema de pensamiento.
-                    </p>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <Lightbulb className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-foreground leading-relaxed">
-                      Creo que la organización del conocimiento es fundamental para el aprendizaje continuo.
                       Cada libro en esta biblioteca ha contribuido de alguna manera a mi forma de ver el mundo.
                     </p>
                   </div>
+
 
                   <div className="flex items-start gap-3">
                     <Coffee className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />

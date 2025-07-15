@@ -1,3 +1,5 @@
+// Update this in: lib/queries/authors.ts
+
 import { queryOne, queryMany, query, createSlug } from '@/lib/db';
 import { QueryResultRow } from 'pg';
 
@@ -14,26 +16,49 @@ export interface Author extends QueryResultRow {
 export interface AuthorFilters {
   searchTerm?: string;
   sort?: 'name' | '-name' | 'book_count' | '-book_count';
+  page?: number;
+  limit?: number;
 }
 
-// Get all authors with book count and sorting
-export async function getAuthors(filters: AuthorFilters = {}): Promise<Author[]> {
+// Get all authors with book count, sorting, and pagination
+export async function getAuthors(filters: AuthorFilters = {}): Promise<{
+  authors: Author[];
+  total: number;
+  page: number;
+  totalPages: number;
+}> {
+  const page = filters.page || 1;
+  const limit = filters.limit || 20;
+  const offset = (page - 1) * limit;
+
+  let whereCondition = '';
+  const params: any[] = [];
+
+  if (filters.searchTerm) {
+    whereCondition = `WHERE LOWER(a.first_name || ' ' || a.last_name) LIKE LOWER($1)`;
+    params.push(`%${filters.searchTerm}%`);
+  }
+
+  // Get total count
+  const countResult = await queryOne<{ count: string }>(`
+    SELECT COUNT(DISTINCT a.id) as count
+    FROM authors a
+    ${whereCondition}
+  `, params);
+
+  const total = parseInt(countResult?.count || '0');
+  const totalPages = Math.ceil(total / limit);
+
+  // Get paginated results
   let sql = `
     SELECT 
       a.*,
       COUNT(DISTINCT b.id) as book_count
     FROM authors a
     LEFT JOIN books b ON a.id = b.author1_id OR a.id = b.author2_id
+    ${whereCondition}
+    GROUP BY a.id
   `;
-
-  const params: any[] = [];
-
-  if (filters.searchTerm) {
-    sql += ` WHERE LOWER(a.first_name || ' ' || a.last_name) LIKE LOWER($1)`;
-    params.push(`%${filters.searchTerm}%`);
-  }
-
-  sql += ` GROUP BY a.id`;
 
   // Add sorting
   let orderBy = 'a.last_name ASC, a.first_name ASC'; // default
@@ -54,7 +79,18 @@ export async function getAuthors(filters: AuthorFilters = {}): Promise<Author[]>
 
   sql += ` ORDER BY ${orderBy}`;
 
-  return queryMany<Author>(sql, params);
+  // Add pagination
+  params.push(limit, offset);
+  sql += ` LIMIT $${params.length - 1} OFFSET $${params.length}`;
+
+  const authors = await queryMany<Author>(sql, params);
+
+  return {
+    authors,
+    total,
+    page,
+    totalPages
+  };
 }
 
 // Get author by ID

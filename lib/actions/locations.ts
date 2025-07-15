@@ -1,3 +1,5 @@
+// Update this in: lib/actions/locations.ts
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -23,10 +25,20 @@ const UpdateLocationSchema = z.object({
   name: z.string().trim().min(1, 'Location name is required'),
 });
 
-// Get all locations with optional search
-export async function getLocationsAction(searchTerm?: string): Promise<Location[]> {
+// Location filters interface
+export interface LocationFilters {
+  searchTerm?: string;
+  sort?: 'name' | '-name' | 'book_count' | '-book_count';
+}
+
+// Get all locations with optional search and sorting
+export async function getLocationsAction(searchTerm?: string, sort?: string): Promise<Location[]> {
   try {
-    return await getLocations(searchTerm);
+    const filters: LocationFilters = {
+      searchTerm,
+      sort: sort as LocationFilters['sort']
+    };
+    return await getLocations(filters);
   } catch (error) {
     console.error('Failed to fetch locations:', error);
     throw new Error('Failed to fetch locations');
@@ -65,6 +77,7 @@ export async function createLocationAction(
 
     await createLocation(validatedFields.name);
 
+    revalidatePath('/locations');
     revalidatePath('/dashboard/locations');
 
     return { success: true };
@@ -97,6 +110,7 @@ export async function updateLocationAction(
 
     await updateLocation(validatedFields.id, validatedFields.name);
 
+    revalidatePath('/locations');
     revalidatePath('/dashboard/locations');
     revalidatePath(`/dashboard/locations/${validatedFields.id}`);
 
@@ -122,6 +136,7 @@ export async function deleteLocationAction(id: number): Promise<void> {
   try {
     await deleteLocation(id);
 
+    revalidatePath('/locations');
     revalidatePath('/dashboard/locations');
   } catch (error: any) {
     if (error.message.includes('Cannot delete location with existing books')) {
