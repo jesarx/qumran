@@ -2,6 +2,7 @@
 
 export interface BookMetadata {
   current_page: number;
+  first_page: number;
   last_page: number;
   page_size: number;
   total_records: number;
@@ -58,7 +59,7 @@ export interface BookFilters extends BaseFilters {
 }
 
 // API Response types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -69,7 +70,7 @@ export interface ApiResponse<T = any> {
 export interface FormState {
   success: boolean;
   error?: string;
-  data?: any;
+  data?: unknown;
 }
 
 // Database row types (for type safety with query results)

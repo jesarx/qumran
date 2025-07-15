@@ -15,6 +15,12 @@ import {
   AuthorFilters
 } from '@/lib/queries';
 
+// Form state type
+interface ActionState {
+  success: boolean;
+  error?: string;
+}
+
 // Validation schemas
 const CreateAuthorSchema = z.object({
   firstName: z.string().trim().nullable(),
@@ -64,9 +70,9 @@ export async function getAuthorAction(id: number): Promise<Author | null> {
 
 // Create author
 export async function createAuthorAction(
-  prevState: any,
+  prevState: ActionState,
   formData: FormData
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionState> {
   try {
     const validatedFields = CreateAuthorSchema.parse({
       firstName: formData.get('firstName') || null,
@@ -97,9 +103,9 @@ export async function createAuthorAction(
 
 // Update author
 export async function updateAuthorAction(
-  prevState: any,
+  prevState: ActionState,
   formData: FormData
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionState> {
   try {
     const validatedFields = UpdateAuthorSchema.parse({
       id: Number(formData.get('id')),
@@ -141,8 +147,8 @@ export async function deleteAuthorAction(id: number): Promise<void> {
 
     revalidatePath('/authors');
     revalidatePath('/dashboard/authors');
-  } catch (error: any) {
-    if (error.message.includes('Cannot delete author with existing books')) {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes('Cannot delete author with existing books')) {
       throw new Error('No se puede eliminar un autor que tiene libros asociados');
     }
 

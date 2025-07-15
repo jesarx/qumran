@@ -27,7 +27,7 @@ export async function getCategories(filters: CategoryFilters = {}): Promise<Cate
     LEFT JOIN books b ON c.id = b.category_id
   `;
 
-  const params: any[] = [];
+  const params: unknown[] = [];
 
   if (filters.searchTerm) {
     sql += ` WHERE LOWER(c.name) LIKE LOWER($1)`;

@@ -16,6 +16,26 @@ import {
   BookFilters
 } from '@/lib/queries';
 
+// Form state types
+interface BookActionState {
+  success: boolean;
+  error?: string;
+  bookId?: number;
+}
+
+interface BasicActionState {
+  success: boolean;
+  error?: string;
+}
+
+// Book data structure from Google Books API
+interface GoogleBookData {
+  title: string;
+  authors: string[];
+  publisher: string;
+  subjects: string[];
+}
+
 // Validation schemas
 const CreateBookSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
@@ -89,9 +109,9 @@ export async function getBookAction(id: number): Promise<Book | null> {
 
 // Create book
 export async function createBookAction(
-  prevState: any,
+  prevState: BookActionState,
   formData: FormData
-): Promise<{ success: boolean; error?: string; bookId?: number }> {
+): Promise<BookActionState> {
   try {
     const validatedFields = CreateBookSchema.parse({
       title: formData.get('title'),
@@ -179,9 +199,9 @@ export async function createBookAction(
 
 // Update book (title, ISBN, category, and location)
 export async function updateBookAction(
-  prevState: any,
+  prevState: BasicActionState,
   formData: FormData
-): Promise<{ success: boolean; error?: string }> {
+): Promise<BasicActionState> {
   try {
     const validatedFields = UpdateBookSchema.parse({
       id: Number(formData.get('id')),
@@ -257,7 +277,7 @@ export async function deleteBookAction(id: number): Promise<void> {
 }
 
 // Search book by ISBN (for auto-fill feature)
-export async function searchBookByISBN(isbn: string): Promise<any> {
+export async function searchBookByISBN(isbn: string): Promise<GoogleBookData | null> {
   try {
     // Clean ISBN by removing hyphens or spaces
     const cleanIsbn = normalizeIsbn(isbn);

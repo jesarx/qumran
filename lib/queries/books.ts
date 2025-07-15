@@ -54,8 +54,8 @@ export async function getBooks(filters: BookFilters = {}): Promise<{
   const limit = filters.limit || 20;
   const offset = (page - 1) * limit;
 
-  let whereConditions: string[] = [];
-  let params: any[] = [];
+  const whereConditions: string[] = [];
+  const params: unknown[] = [];
   let paramCount = 0;
 
   // Build WHERE conditions
@@ -261,7 +261,7 @@ export async function updateBook(
   }
 ): Promise<Book> {
   const setClauses: string[] = [];
-  const values: any[] = [];
+  const values: unknown[] = [];
   let paramCount = 0;
 
   if (data.title !== undefined) {
@@ -334,7 +334,7 @@ export async function deleteBook(id: number): Promise<boolean> {
     [id]
   );
 
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 }
 
 // Check if ISBN exists (improved version)
@@ -348,7 +348,7 @@ export async function isbnExists(isbn: string, excludeId?: number): Promise<bool
   const normalizedIsbn = normalizeIsbn(isbn);
 
   let sql = 'SELECT COUNT(*) as count FROM books WHERE isbn = $1';
-  const params: any[] = [normalizedIsbn];
+  const params: unknown[] = [normalizedIsbn];
 
   if (excludeId) {
     sql += ' AND id != $2';

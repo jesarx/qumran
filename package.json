@@ -1,6 +1,6 @@
 {
-  "name": "qumran-fe",
-  "version": "0.1.0",
+  "name": "qumran",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

@@ -15,6 +15,12 @@ import {
   PublisherFilters
 } from '@/lib/queries';
 
+// Form state type
+interface ActionState {
+  success: boolean;
+  error?: string;
+}
+
 // Validation schemas
 const CreatePublisherSchema = z.object({
   name: z.string().trim().min(1, 'Publisher name is required'),
@@ -62,9 +68,9 @@ export async function getPublisherAction(id: number): Promise<Publisher | null> 
 
 // Create publisher
 export async function createPublisherAction(
-  prevState: any,
+  prevState: ActionState,
   formData: FormData
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionState> {
   try {
     const validatedFields = CreatePublisherSchema.parse({
       name: formData.get('name'),
@@ -94,9 +100,9 @@ export async function createPublisherAction(
 
 // Update publisher
 export async function updatePublisherAction(
-  prevState: any,
+  prevState: ActionState,
   formData: FormData
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionState> {
   try {
     const validatedFields = UpdatePublisherSchema.parse({
       id: Number(formData.get('id')),
@@ -133,8 +139,8 @@ export async function deletePublisherAction(id: number): Promise<void> {
 
     revalidatePath('/publishers');
     revalidatePath('/dashboard/publishers');
-  } catch (error: any) {
-    if (error.message.includes('Cannot delete publisher with existing books')) {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes('Cannot delete publisher with existing books')) {
       throw new Error('No se puede eliminar una editorial que tiene libros asociados');
     }
 

@@ -1,7 +1,12 @@
 import EditPublisherForm from '@/components/edit-publisher-form';
 
-export default function EditPublisherPage({ params }: { params: { id: string } }) {
-  const publisherId = parseInt(params.id); // Changed from params.slug to params.id
+export default async function EditPublisherPage({
+  params
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const resolvedParams = await params;
+  const publisherId = parseInt(resolvedParams.id);
 
   if (isNaN(publisherId)) {
     return (

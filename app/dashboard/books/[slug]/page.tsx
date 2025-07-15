@@ -1,7 +1,12 @@
 import EditBookForm from '@/components/edit-book-form';
 
-export default function EditBookPage({ params }: { params: { slug: string } }) {
-  const bookId = parseInt(params.slug);
+export default async function EditBookPage({
+  params
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const resolvedParams = await params;
+  const bookId = parseInt(resolvedParams.slug);
 
   if (isNaN(bookId)) {
     return (

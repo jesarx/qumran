@@ -65,9 +65,7 @@ export default function EditAuthorForm({ authorId }: { authorId: number }) {
       await deleteAuthorAction(authorId);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      alert(errorMessage || 'Error al eliminar');
-
-      alert(error.message || 'Error al eliminar el autor');
+      alert(errorMessage || 'Error al eliminar el autor');
       setIsDeleting(false);
     }
   };

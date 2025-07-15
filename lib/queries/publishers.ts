@@ -31,7 +31,7 @@ export async function getPublishers(filters: PublisherFilters = {}): Promise<{
   const offset = (page - 1) * limit;
 
   let whereCondition = '';
-  const params: any[] = [];
+  const params: unknown[] = [];
 
   if (filters.searchTerm) {
     whereCondition = `WHERE LOWER(p.name) LIKE LOWER($1)`;
@@ -110,7 +110,7 @@ export async function getPublisherBySlug(slug: string): Promise<Publisher | null
 
 // Create new publisher
 export async function createPublisher(name: string): Promise<Publisher> {
-  let baseSlug = createSlug(name);
+  const baseSlug = createSlug(name);
   let slug = baseSlug;
   let counter = 1;
 
@@ -162,8 +162,8 @@ export async function deletePublisher(id: number): Promise<boolean> {
       [id]
     );
     return true;
-  } catch (error: any) {
-    if (error.code === '23503') { // Foreign key violation
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === '23503') {
       throw new Error('Cannot delete publisher with existing books');
     }
     throw error;

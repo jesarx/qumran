@@ -30,7 +30,7 @@ export async function getAuthors(filters: AuthorFilters = {}): Promise<{
   const offset = (page - 1) * limit;
 
   let whereCondition = '';
-  const params: any[] = [];
+  const params: unknown[] = [];
 
   if (filters.searchTerm) {
     whereCondition = `WHERE LOWER(a.first_name || ' ' || a.last_name) LIKE LOWER($1)`;
@@ -137,7 +137,7 @@ export async function createAuthor(
 ): Promise<Author> {
   // Generate slug from full name
   const fullName = firstName ? `${firstName} ${lastName}` : lastName;
-  let baseSlug = createSlug(fullName);
+  const baseSlug = createSlug(fullName);
   let slug = baseSlug;
   let counter = 1;
 
@@ -190,8 +190,8 @@ export async function deleteAuthor(id: number): Promise<boolean> {
       [id]
     );
     return true;
-  } catch (error: any) {
-    if (error.code === '23503') { // Foreign key violation
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === '23503') {
       throw new Error('Cannot delete author with existing books');
     }
     throw error;

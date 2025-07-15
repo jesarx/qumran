@@ -45,8 +45,8 @@ export default function BookFilters({ categories }: BookFiltersProps) {
       // Fetch author name
       if (authorSlug) {
         try {
-          const authors = await getAuthorsAction();
-          const author = authors.find(a => a.slug === authorSlug);
+          const authorsData = await getAuthorsAction();
+          const author = authorsData.authors.find(a => a.slug === authorSlug);
           if (author) {
             const fullName = author.first_name
               ? `${author.first_name} ${author.last_name}`
@@ -64,8 +64,8 @@ export default function BookFilters({ categories }: BookFiltersProps) {
       // Fetch publisher name
       if (publisherSlug) {
         try {
-          const publishers = await getPublishersAction();
-          const publisher = publishers.find(p => p.slug === publisherSlug);
+          const publishersData = await getPublishersAction();
+          const publisher = publishersData.publishers.find(p => p.slug === publisherSlug);
           if (publisher) {
             setPublisherName(publisher.name);
           }

@@ -13,9 +13,9 @@ const pool = new Pool({
 });
 
 // Helper function to execute queries
-export async function query<T extends QueryResultRow = any>(
+export async function query<T extends QueryResultRow = QueryResultRow>(
   text: string,
-  params?: any[]
+  params?: unknown[]
 ): Promise<QueryResult<T>> {
   try {
     const result = await pool.query<T>(text, params);
@@ -27,18 +27,18 @@ export async function query<T extends QueryResultRow = any>(
 }
 
 // Helper function to get a single row
-export async function queryOne<T extends QueryResultRow = any>(
+export async function queryOne<T extends QueryResultRow = QueryResultRow>(
   text: string,
-  params?: any[]
+  params?: unknown[]
 ): Promise<T | null> {
   const result = await query<T>(text, params);
   return result.rows[0] || null;
 }
 
 // Helper function to get multiple rows
-export async function queryMany<T extends QueryResultRow = any>(
+export async function queryMany<T extends QueryResultRow = QueryResultRow>(
   text: string,
-  params?: any[]
+  params?: unknown[]
 ): Promise<T[]> {
   const result = await query<T>(text, params);
   return result.rows;

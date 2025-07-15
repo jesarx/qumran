@@ -85,7 +85,7 @@ export default function NewBookForm() {
         ]);
         setCategories(cats);
         setLocations(locs);
-        setAuthors(auths);
+        setAuthors(auths.authors);
 
         // Set Casa as default location
         const casaLocation = locs.find(loc => loc.slug === 'casa');

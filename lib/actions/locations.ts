@@ -15,6 +15,12 @@ import {
   Location
 } from '@/lib/queries';
 
+// Form state type
+interface ActionState {
+  success: boolean;
+  error?: string;
+}
+
 // Validation schemas
 const CreateLocationSchema = z.object({
   name: z.string().trim().min(1, 'Location name is required'),
@@ -67,9 +73,9 @@ export async function getDefaultLocationAction(): Promise<Location | null> {
 
 // Create location
 export async function createLocationAction(
-  prevState: any,
+  prevState: ActionState,
   formData: FormData
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionState> {
   try {
     const validatedFields = CreateLocationSchema.parse({
       name: formData.get('name'),
@@ -99,9 +105,9 @@ export async function createLocationAction(
 
 // Update location
 export async function updateLocationAction(
-  prevState: any,
+  prevState: ActionState,
   formData: FormData
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionState> {
   try {
     const validatedFields = UpdateLocationSchema.parse({
       id: Number(formData.get('id')),
@@ -138,8 +144,8 @@ export async function deleteLocationAction(id: number): Promise<void> {
 
     revalidatePath('/locations');
     revalidatePath('/dashboard/locations');
-  } catch (error: any) {
-    if (error.message.includes('Cannot delete location with existing books')) {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes('Cannot delete location with existing books')) {
       throw new Error('No se puede eliminar una ubicación que tiene libros asociados');
     }
 

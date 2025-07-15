@@ -27,7 +27,7 @@ export async function getLocations(filters: LocationFilters = {}): Promise<Locat
     LEFT JOIN books b ON l.id = b.location_id
   `;
 
-  const params: any[] = [];
+  const params: unknown[] = [];
 
   if (filters.searchTerm) {
     sql += ` WHERE LOWER(l.name) LIKE LOWER($1)`;
@@ -84,7 +84,7 @@ export async function getDefaultLocation(): Promise<Location | null> {
 
 // Create new location
 export async function createLocation(name: string): Promise<Location> {
-  let baseSlug = createSlug(name);
+  const baseSlug = createSlug(name);
   let slug = baseSlug;
   let counter = 1;
 
@@ -136,8 +136,8 @@ export async function deleteLocation(id: number): Promise<boolean> {
       [id]
     );
     return true;
-  } catch (error: any) {
-    if (error.code === '23503') { // Foreign key violation
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === '23503') {
       throw new Error('Cannot delete location with existing books');
     }
     throw error;

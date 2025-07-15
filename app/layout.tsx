@@ -5,7 +5,6 @@ import "./globals.css";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 
-import { auth } from "@/auth"
 import Footer from "@/components/footer";
 
 const geistSans = Geist({

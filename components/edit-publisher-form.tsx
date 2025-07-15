@@ -65,8 +65,7 @@ export default function EditPublisherForm({ publisherId }: { publisherId: number
       await deletePublisherAction(publisherId);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      alert(errorMessage || 'Error al eliminar');
-      alert(error.message || 'Error al eliminar la editorial');
+      alert(errorMessage || 'Error al eliminar la editorial');
       setIsDeleting(false);
     }
   };

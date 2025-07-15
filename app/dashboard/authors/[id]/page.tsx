@@ -1,7 +1,12 @@
 import EditAuthorForm from '@/components/edit-author-form';
 
-export default function EditAuthorPage({ params }: { params: { id: string } }) {
-  const authorId = parseInt(params.id); // Changed from params.slug to params.id
+export default async function EditAuthorPage({
+  params
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const resolvedParams = await params;
+  const authorId = parseInt(resolvedParams.id);
 
   if (isNaN(authorId)) {
     return (

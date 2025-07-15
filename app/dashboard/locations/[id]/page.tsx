@@ -1,7 +1,12 @@
 import EditLocationForm from '@/components/edit-location-form';
 
-export default function EditLocationPage({ params }: { params: { id: string } }) {
-  const locationId = parseInt(params.id);
+export default async function EditLocationPage({
+  params
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const resolvedParams = await params;
+  const locationId = parseInt(resolvedParams.id);
 
   if (isNaN(locationId)) {
     return (
