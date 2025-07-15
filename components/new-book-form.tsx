@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBookAction, searchBookByISBN, getCategoriesAction, getLocationsAction } from '@/lib/actions';
-import { Category, Location } from '@/lib/queries';
+import { createBookAction, searchBookByISBN, getCategoriesAction, getLocationsAction, getAuthorsAction } from '@/lib/actions';
+import { Category, Location, Author } from '@/lib/queries';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, X, Search, Save, ArrowLeft, User, Building, BookOpen, MapPin } from 'lucide-react';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Camera, X, Search, Save, ArrowLeft, User, Building, BookOpen, MapPin, Check, ChevronsUpDown, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 
 // Dynamically import the scanner to avoid SSR issues
@@ -31,35 +45,47 @@ const initialState = {
   bookId: undefined
 };
 
+interface AuthorData {
+  firstName: string;
+  lastName: string;
+  id?: number;
+  isNew?: boolean;
+}
+
 export default function NewBookForm() {
   const router = useRouter();
   const [state, formAction] = useActionState(createBookAction, initialState);
   const [isSearchingISBN, setIsSearchingISBN] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
+  const [authors, setAuthors] = useState<Author[]>([]);
   const [showScanner, setShowScanner] = useState(false);
 
   // Form fields
   const [isbn, setIsbn] = useState('');
   const [title, setTitle] = useState('');
-  const [author1FirstName, setAuthor1FirstName] = useState('');
-  const [author1LastName, setAuthor1LastName] = useState('');
-  const [author2FirstName, setAuthor2FirstName] = useState('');
-  const [author2LastName, setAuthor2LastName] = useState('');
   const [publisherName, setPublisherName] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [locationId, setLocationId] = useState('');
 
-  // Load categories and locations on mount
+  // Author fields with popover states
+  const [author1, setAuthor1] = useState<AuthorData>({ lastName: '', firstName: '' });
+  const [author2, setAuthor2] = useState<AuthorData>({ lastName: '', firstName: '' });
+  const [author1PopoverOpen, setAuthor1PopoverOpen] = useState(false);
+  const [author2PopoverOpen, setAuthor2PopoverOpen] = useState(false);
+
+  // Load initial data
   useEffect(() => {
     async function loadData() {
       try {
-        const [cats, locs] = await Promise.all([
+        const [cats, locs, auths] = await Promise.all([
           getCategoriesAction(),
-          getLocationsAction()
+          getLocationsAction(),
+          getAuthorsAction()
         ]);
         setCategories(cats);
         setLocations(locs);
+        setAuthors(auths);
 
         // Set Casa as default location
         const casaLocation = locs.find(loc => loc.slug === 'casa');
@@ -87,6 +113,18 @@ export default function NewBookForm() {
     await handleISBNSearch(scannedIsbn);
   };
 
+  // Parse author name from Google Books API format
+  const parseAuthorName = (fullName: string): { firstName: string; lastName: string } => {
+    const parts = fullName.trim().split(' ');
+    if (parts.length === 1) {
+      return { firstName: '', lastName: parts[0] };
+    }
+    return {
+      firstName: parts.slice(0, -1).join(' '),
+      lastName: parts[parts.length - 1]
+    };
+  };
+
   // Search book by ISBN
   const handleISBNSearch = async (isbnToSearch?: string) => {
     const searchIsbn = isbnToSearch || isbn;
@@ -104,23 +142,25 @@ export default function NewBookForm() {
 
         // Parse first author
         if (bookData.authors && bookData.authors.length > 0) {
-          const authorParts = bookData.authors[0].split(' ');
-          if (authorParts.length > 1) {
-            setAuthor1LastName(authorParts[authorParts.length - 1]);
-            setAuthor1FirstName(authorParts.slice(0, -1).join(' '));
-          } else {
-            setAuthor1LastName(bookData.authors[0]);
-          }
+          const author1Data = parseAuthorName(bookData.authors[0]);
+          const existingAuthor1 = findExistingAuthor(author1Data.lastName, author1Data.firstName);
+
+          setAuthor1({
+            ...author1Data,
+            id: existingAuthor1?.id,
+            isNew: !existingAuthor1
+          });
 
           // Parse second author if exists
           if (bookData.authors.length > 1) {
-            const author2Parts = bookData.authors[1].split(' ');
-            if (author2Parts.length > 1) {
-              setAuthor2LastName(author2Parts[author2Parts.length - 1]);
-              setAuthor2FirstName(author2Parts.slice(0, -1).join(' '));
-            } else {
-              setAuthor2LastName(bookData.authors[1]);
-            }
+            const author2Data = parseAuthorName(bookData.authors[1]);
+            const existingAuthor2 = findExistingAuthor(author2Data.lastName, author2Data.firstName);
+
+            setAuthor2({
+              ...author2Data,
+              id: existingAuthor2?.id,
+              isNew: !existingAuthor2
+            });
           }
         }
 
@@ -148,6 +188,90 @@ export default function NewBookForm() {
     } finally {
       setIsSearchingISBN(false);
     }
+  };
+
+  // Find existing author in the database
+  const findExistingAuthor = (lastName: string, firstName: string = ''): Author | undefined => {
+    return authors.find(author => {
+      const authorLastName = author.last_name.toLowerCase();
+      const authorFirstName = (author.first_name || '').toLowerCase();
+      const searchLastName = lastName.toLowerCase();
+      const searchFirstName = firstName.toLowerCase();
+
+      if (firstName) {
+        return authorLastName === searchLastName && authorFirstName === searchFirstName;
+      } else {
+        return authorLastName === searchLastName && !author.first_name;
+      }
+    });
+  };
+
+  // Filter authors based on search term
+  const getFilteredAuthors = (searchTerm: string): Author[] => {
+    if (!searchTerm) return [];
+
+    return authors.filter(author => {
+      const fullName = `${author.last_name} ${author.first_name || ''}`.toLowerCase();
+      return fullName.includes(searchTerm.toLowerCase());
+    });
+  };
+
+  // Handle author selection from dropdown
+  const handleAuthorSelect = (author: Author, authorNumber: 1 | 2) => {
+    const authorData: AuthorData = {
+      lastName: author.last_name,
+      firstName: author.first_name || '',
+      id: author.id,
+      isNew: false
+    };
+
+    if (authorNumber === 1) {
+      setAuthor1(authorData);
+      setAuthor1PopoverOpen(false);
+    } else {
+      setAuthor2(authorData);
+      setAuthor2PopoverOpen(false);
+    }
+  };
+
+  // Handle manual author input
+  const handleAuthorLastNameChange = (value: string, authorNumber: 1 | 2) => {
+    const existingAuthor = findExistingAuthor(value);
+
+    const authorData: AuthorData = {
+      lastName: value,
+      firstName: existingAuthor?.first_name || (authorNumber === 1 ? author1.firstName : author2.firstName),
+      id: existingAuthor?.id,
+      isNew: !existingAuthor && value.length > 0
+    };
+
+    if (authorNumber === 1) {
+      setAuthor1(authorData);
+    } else {
+      setAuthor2(authorData);
+    }
+  };
+
+  const handleAuthorFirstNameChange = (value: string, authorNumber: 1 | 2) => {
+    if (authorNumber === 1) {
+      setAuthor1(prev => ({ ...prev, firstName: value, isNew: !prev.id && (prev.lastName.length > 0 || value.length > 0) }));
+    } else {
+      setAuthor2(prev => ({ ...prev, firstName: value, isNew: !prev.id && (prev.lastName.length > 0 || value.length > 0) }));
+    }
+  };
+
+  // Custom form submission to handle author data
+  const handleSubmit = async (formData: FormData) => {
+    // Add author data to form
+    formData.set('author1LastName', author1.lastName);
+    formData.set('author1FirstName', author1.firstName);
+
+    if (author2.lastName) {
+      formData.set('author2LastName', author2.lastName);
+      formData.set('author2FirstName', author2.firstName);
+    }
+
+    return formAction(formData);
   };
 
   return (
@@ -194,7 +318,7 @@ export default function NewBookForm() {
             </div>
           )}
 
-          <form action={formAction} className="space-y-6">
+          <form action={handleSubmit} className="space-y-6">
             {/* ISBN with search */}
             <div className="space-y-2">
               <Label htmlFor="isbn" className="text-sm font-medium">
@@ -269,33 +393,87 @@ export default function NewBookForm() {
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
+                      <Label htmlFor="author1LastName" className="text-sm">
+                        Apellido <span className="text-destructive">*</span>
+                      </Label>
+                      <Popover open={author1PopoverOpen} onOpenChange={setAuthor1PopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={author1PopoverOpen}
+                            className="w-full justify-between font-normal"
+                          >
+                            {author1.lastName || "Selecciona o escribe un apellido..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0 bg-background border border-input shadow-md">
+                          <Command>
+                            <CommandInput
+                              placeholder="Buscar apellido..."
+                              value={author1.lastName}
+                              onValueChange={(value) => handleAuthorLastNameChange(value, 1)}
+                            />
+                            <CommandList>
+                              <CommandEmpty>
+                                {author1.lastName && author1.isNew ? (
+                                  <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
+                                    <Plus className="h-4 w-4" />
+                                    Se creará un nuevo autor
+                                  </div>
+                                ) : (
+                                  "No se encontraron autores"
+                                )}
+                              </CommandEmpty>
+                              <CommandGroup>
+                                {getFilteredAuthors(author1.lastName).map((author) => (
+                                  <CommandItem
+                                    key={author.id}
+                                    value={`${author.last_name} ${author.first_name || ''}`}
+                                    onSelect={() => handleAuthorSelect(author, 1)}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        author1.id === author.id ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {author.last_name}
+                                    {author.first_name && (
+                                      <span className="text-muted-foreground ml-2">
+                                        {author.first_name}
+                                      </span>
+                                    )}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-2">
                       <Label htmlFor="author1FirstName" className="text-sm">
                         Nombre
                       </Label>
                       <Input
                         id="author1FirstName"
-                        name="author1FirstName"
                         type="text"
-                        value={author1FirstName}
-                        onChange={(e) => setAuthor1FirstName(e.target.value)}
+                        value={author1.firstName}
+                        onChange={(e) => handleAuthorFirstNameChange(e.target.value, 1)}
                         placeholder="Nombre"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="author1LastName" className="text-sm">
-                        Apellido <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="author1LastName"
-                        name="author1LastName"
-                        type="text"
-                        required
-                        value={author1LastName}
-                        onChange={(e) => setAuthor1LastName(e.target.value)}
-                        placeholder="Apellido"
-                      />
-                    </div>
                   </div>
+                  {author1.isNew && author1.lastName && (
+                    <Alert>
+                      <Plus className="h-4 w-4" />
+                      <AlertDescription>
+                        Se creará un nuevo autor: {author1.firstName} {author1.lastName}
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
 
                 {/* Secondary Author */}
@@ -305,32 +483,87 @@ export default function NewBookForm() {
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
+                      <Label htmlFor="author2LastName" className="text-sm">
+                        Apellido
+                      </Label>
+                      <Popover open={author2PopoverOpen} onOpenChange={setAuthor2PopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={author2PopoverOpen}
+                            className="w-full justify-between font-normal"
+                          >
+                            {author2.lastName || "Selecciona o escribe un apellido..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0 bg-background border border-input shadow-md">
+                          <Command>
+                            <CommandInput
+                              placeholder="Buscar apellido..."
+                              value={author2.lastName}
+                              onValueChange={(value) => handleAuthorLastNameChange(value, 2)}
+                            />
+                            <CommandList>
+                              <CommandEmpty>
+                                {author2.lastName && author2.isNew ? (
+                                  <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
+                                    <Plus className="h-4 w-4" />
+                                    Se creará un nuevo autor
+                                  </div>
+                                ) : (
+                                  "No se encontraron autores"
+                                )}
+                              </CommandEmpty>
+                              <CommandGroup>
+                                {getFilteredAuthors(author2.lastName).map((author) => (
+                                  <CommandItem
+                                    key={author.id}
+                                    value={`${author.last_name} ${author.first_name || ''}`}
+                                    onSelect={() => handleAuthorSelect(author, 2)}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        author2.id === author.id ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {author.last_name}
+                                    {author.first_name && (
+                                      <span className="text-muted-foreground ml-2">
+                                        {author.first_name}
+                                      </span>
+                                    )}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-2">
                       <Label htmlFor="author2FirstName" className="text-sm">
                         Nombre
                       </Label>
                       <Input
                         id="author2FirstName"
-                        name="author2FirstName"
                         type="text"
-                        value={author2FirstName}
-                        onChange={(e) => setAuthor2FirstName(e.target.value)}
+                        value={author2.firstName}
+                        onChange={(e) => handleAuthorFirstNameChange(e.target.value, 2)}
                         placeholder="Nombre"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="author2LastName" className="text-sm">
-                        Apellido
-                      </Label>
-                      <Input
-                        id="author2LastName"
-                        name="author2LastName"
-                        type="text"
-                        value={author2LastName}
-                        onChange={(e) => setAuthor2LastName(e.target.value)}
-                        placeholder="Apellido"
-                      />
-                    </div>
                   </div>
+                  {author2.isNew && author2.lastName && (
+                    <Alert>
+                      <Plus className="h-4 w-4" />
+                      <AlertDescription>
+                        Se creará un nuevo autor: {author2.firstName} {author2.lastName}
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
               </CardContent>
             </Card>

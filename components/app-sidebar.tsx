@@ -1,4 +1,4 @@
-import { Home, BookOpen, Users, Building2, LayoutList, MapPin, LogIn, LogOut, Info, LibraryBig } from "lucide-react";
+import { Home, BookOpen, Users, Building2, LayoutList, MapPin, LogIn, LogOut, Info, LibraryBig, FilePlus } from "lucide-react";
 import ThemeToggle from '@/components/theme-toggle';
 import { auth } from "@/auth";
 import { logout } from '@/lib/actions';
@@ -48,6 +48,11 @@ const adminItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: Home,
+  },
+  {
+    title: "Añadir libro",
+    url: "/dashboard/books/new",
+    icon: FilePlus,
   },
   {
     title: "Gestionar Libros",
