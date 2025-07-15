@@ -1,3 +1,5 @@
+// Update this in: lib/queries/categories.ts
+
 import { queryOne, queryMany } from '@/lib/db';
 import { QueryResultRow } from 'pg';
 
@@ -10,17 +12,50 @@ export interface Category extends QueryResultRow {
   book_count?: number;
 }
 
-// Get all categories with book count
-export async function getCategories(): Promise<Category[]> {
-  return queryMany<Category>(`
+export interface CategoryFilters {
+  searchTerm?: string;
+  sort?: 'name' | '-name' | 'book_count' | '-book_count';
+}
+
+// Get all categories with book count and filtering
+export async function getCategories(filters: CategoryFilters = {}): Promise<Category[]> {
+  let sql = `
     SELECT 
       c.*,
       COUNT(b.id) as book_count
     FROM categories c
     LEFT JOIN books b ON c.id = b.category_id
-    GROUP BY c.id
-    ORDER BY c.name
-  `);
+  `;
+
+  const params: any[] = [];
+
+  if (filters.searchTerm) {
+    sql += ` WHERE LOWER(c.name) LIKE LOWER($1)`;
+    params.push(`%${filters.searchTerm}%`);
+  }
+
+  sql += ` GROUP BY c.id`;
+
+  // Add sorting
+  let orderBy = 'c.name ASC'; // default
+  switch (filters.sort) {
+    case 'name':
+      orderBy = 'c.name ASC';
+      break;
+    case '-name':
+      orderBy = 'c.name DESC';
+      break;
+    case 'book_count':
+      orderBy = 'book_count ASC, c.name ASC';
+      break;
+    case '-book_count':
+      orderBy = 'book_count DESC, c.name ASC';
+      break;
+  }
+
+  sql += ` ORDER BY ${orderBy}`;
+
+  return queryMany<Category>(sql, params);
 }
 
 // Get category by ID

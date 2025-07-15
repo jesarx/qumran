@@ -1,16 +1,26 @@
+// Update this in: lib/actions/categories.ts
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import {
   getCategories,
   getCategoryById,
-  Category
+  Category,
+  CategoryFilters
 } from '@/lib/queries';
 
-// Get all categories
-export async function getCategoriesAction(): Promise<Category[]> {
+// Get all categories with optional search and sorting
+export async function getCategoriesAction(
+  searchTerm?: string,
+  sort?: string
+): Promise<Category[]> {
   try {
-    return await getCategories();
+    const filters: CategoryFilters = {
+      searchTerm,
+      sort: sort as CategoryFilters['sort']
+    };
+    return await getCategories(filters);
   } catch (error) {
     console.error('Failed to fetch categories:', error);
     throw new Error('Failed to fetch categories');
