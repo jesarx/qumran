@@ -13,6 +13,7 @@ export const AuthConfig: NextAuthConfig = {
     signIn: "/login",
     error: "/login",
   },
+  trustHost: true,
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
