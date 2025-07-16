@@ -61,7 +61,7 @@ export default async function RootLayout({
           <AppSidebar />
 
           <main className="w-full flex flex-col bg-background min-h-screen">
-            <div className="flex items-center p-2 border-b border-border">
+            <div className="flex items-center p-0">
               <SidebarTrigger />
             </div>
 

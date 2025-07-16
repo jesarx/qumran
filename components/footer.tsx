@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
     <footer className="border-t border-border bg-card">
-      <div className="mx-auto py-6 px-4 flex flex-col items-center space-y-2">
+      <div className="mx-auto py-3 px-4 flex flex-col items-center space-y-1">
         <p className="text-center text-sm text-muted-foreground">
           Ningún derecho reservado
         </p>

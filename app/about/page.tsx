@@ -41,6 +41,14 @@ export default function AboutPage() {
               los famosos Manuscritos del Mar Muerto.
 
             </p>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <Link href="https://github.com/jesarx/qumran" target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" size="sm" className="flex items-center gap-2 transition-colors cursor-pointer">
+                  <Github className="h-4 w-4" />
+                  Código Fuente
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
 
@@ -96,21 +104,15 @@ export default function AboutPage() {
             {/* Contact buttons with better styling */}
             <div className="flex flex-wrap gap-3 pt-2">
               <Link href="https://edpartida.com" target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="sm" className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-950 dark:hover:border-blue-800 transition-colors">
+                <Button variant="outline" size="sm" className="flex items-center gap-2 cursor-pointer">
                   <ExternalLink className="h-4 w-4" />
                   Sitio Personal
                 </Button>
               </Link>
               <Link href="mailto:edpartida@proton.me">
-                <Button variant="outline" size="sm" className="flex items-center gap-2 hover:bg-green-50 hover:border-green-200 dark:hover:bg-green-950 dark:hover:border-green-800 transition-colors">
+                <Button variant="outline" size="sm" className="flex items-center gap-2 cursor-pointer">
                   <Mail className="h-4 w-4" />
                   Contacto
-                </Button>
-              </Link>
-              <Link href="https://github.com/jesarx/qumran" target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="sm" className="flex items-center gap-2 hover:bg-gray-50 hover:border-gray-200 dark:hover:bg-gray-950 dark:hover:border-gray-800 transition-colors">
-                  <Github className="h-4 w-4" />
-                  Código Fuente
                 </Button>
               </Link>
             </div>

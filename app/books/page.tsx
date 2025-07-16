@@ -37,7 +37,7 @@ export default async function BooksPage({
 
 
   return (
-    <div className="mx-auto max-w-7xl p-4 bg-background min-h-screen min-w-3/4">
+    <div className="mx-auto max-w-4/5 p-4 bg-background min-h-screen min-w-3/4">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground">Biblioteca</h1>
         <p className="text-muted-foreground mt-2">

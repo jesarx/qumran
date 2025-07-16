@@ -1,7 +1,8 @@
-import { Home, BookOpen, Users, LayoutList, MapPin, LogIn, LogOut, Info, LibraryBig, SquarePlus } from "lucide-react";
+import { Home, BookOpen, Users, LayoutList, MapPin, LogIn, LogOut, Info, LibraryBig, SquarePlus, Scroll } from "lucide-react";
 import ThemeToggle from '@/components/theme-toggle';
 import { auth } from "@/auth";
 import { logout } from '@/lib/actions';
+import Link from 'next/link';
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +17,11 @@ import {
 
 // Menu items
 const publicItems = [
+  {
+    title: "Inicio",
+    url: "/",
+    icon: Home,
+  },
   {
     title: "Libros",
     url: "/books",
@@ -50,14 +56,14 @@ const publicItems = [
 
 const adminItems = [
   {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: Home,
-  },
-  {
     title: "Añadir libro",
     url: "/dashboard/books/new",
     icon: SquarePlus,
+  },
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: Home,
   },
   {
     title: "Gestionar Libros",
@@ -87,24 +93,28 @@ export async function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarContent>
+      <SidebarContent className="bg-sidebar/95 backdrop-blur-sm md:bg-sidebar">
         {/* Text-based Logo */}
         <div className="px-6 py-10">
           <div className="text-center space-y-4">
-            <div className="relative">
-              <h1 className="text-4xl font-thin text-sidebar-primary tracking-[0.2em] uppercase">
-                Qumran
-              </h1>
-              {/* Subtle accent line */}
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-px bg-gradient-to-r from-transparent via-sidebar-primary/60 to-transparent"></div>
-            </div>
+            <Link href="/" className="block">
+              <div className="relative">
+                <div className="flex flex-col items-center gap-4">
+                  <Scroll className="h-8 w-8 text-sidebar-primary" />
+                  <h1 className="text-4xl font-thin text-sidebar-primary tracking-[0.2em] uppercase">
+                    Qumran
+                  </h1>
+                </div>
+                {/* Subtle accent line */}
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-px bg-gradient-to-r from-transparent via-sidebar-primary/60 to-transparent"></div>
+              </div>
+            </Link>
 
             <div className="space-y-3 pt-2">
               <p className="text-xs text-sidebar-foreground/70 leading-relaxed font-medium">
                 biblioteca personal de<br />
                 eduardo partida
               </p>
-
             </div>
           </div>
         </div>
@@ -135,7 +145,18 @@ export async function AppSidebar() {
             <SidebarMenu>
               {isAuthenticated ? (
                 <>
-                  {adminItems.map((item) => (
+                  {/* Add Book button */}
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href="/dashboard/books/new">
+                        <SquarePlus />
+                        <span>Añadir libro</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  {/* Rest of admin items */}
+                  {adminItems.slice(1).map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild>
                         <a href={item.url}>
