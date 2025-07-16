@@ -18,18 +18,9 @@ export default async function AuthorsPage({
   const authorsData = await getAuthorsAction(name, sort, page);
   const { authors, total, totalPages } = authorsData;
 
-  console.log('Authors page data:', {
-    authorsReceived: Array.isArray(authors),
-    count: authors?.length,
-    total,
-    currentPage: page,
-    totalPages,
-    searchTerm: name,
-    sortBy: sort
-  });
 
   return (
-    <div className="mx-auto max-w-4xl p-4 bg-background min-h-screen">
+    <div className="mx-auto max-w-2xl p-4 bg-background min-h-screen">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground mb-4">Autores</h1>
         <p className="text-muted-foreground mb-4">

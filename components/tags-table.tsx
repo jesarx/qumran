@@ -18,27 +18,26 @@ export default function CategoriesTable({ categories }: CategoriesTableProps) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Nombre</TableHead>
-          <TableHead>Número de Libros</TableHead>
-          <TableHead>Ver Libros</TableHead>
+          <TableHead className="font-black">Nombre</TableHead>
+          <TableHead className="font-black">Número de Libros</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {categories.map((category) => (
           <TableRow key={category.id}>
-            <TableCell className="font-medium">{category.name}</TableCell>
-            <TableCell>{category.book_count || 0}</TableCell>
             <TableCell>
               <Link
                 href={`/books?categorySlug=${category.slug}`}
-                className="text-blue-600 hover:underline"
+                className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors"
               >
-                Ver libros →
+                {category.name}
               </Link>
             </TableCell>
+            <TableCell>{category.book_count || 0}</TableCell>
           </TableRow>
         ))}
       </TableBody>
     </Table>
   );
 }
+

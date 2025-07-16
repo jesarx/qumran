@@ -210,9 +210,24 @@ export default function NewBookForm() {
   const getFilteredAuthors = (searchTerm: string): Author[] => {
     if (!searchTerm) return [];
 
+    const searchLower = searchTerm.toLowerCase();
+
     return authors.filter(author => {
-      const fullName = `${author.last_name} ${author.first_name || ''}`.toLowerCase();
-      return fullName.includes(searchTerm.toLowerCase());
+      // Search primarily by last name
+      const lastName = (author.last_name || '').toLowerCase();
+      const firstName = (author.first_name || '').toLowerCase();
+
+      // Check if search term matches last name first
+      if (lastName.includes(searchLower)) return true;
+
+      // Then check first name
+      if (firstName.includes(searchLower)) return true;
+
+      // Finally check full name in both orders
+      const fullName1 = `${author.last_name} ${author.first_name || ''}`.toLowerCase();
+      const fullName2 = `${author.first_name || ''} ${author.last_name}`.toLowerCase();
+
+      return fullName1.includes(searchLower) || fullName2.includes(searchLower);
     });
   };
 

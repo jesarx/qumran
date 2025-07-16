@@ -18,18 +18,9 @@ export default async function PublishersPage({
   const publishersData = await getPublishersAction(name, sort, page);
   const { publishers, total, totalPages } = publishersData;
 
-  console.log('Publishers page data:', {
-    publishersReceived: Array.isArray(publishers),
-    count: publishers?.length,
-    total,
-    currentPage: page,
-    totalPages,
-    searchTerm: name,
-    sortBy: sort
-  });
 
   return (
-    <div className="mx-auto max-w-4xl p-4 bg-background min-h-screen">
+    <div className="mx-auto max-w-2xl p-4 bg-background min-h-screen">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground mb-4">Editoriales</h1>
         <p className="text-muted-foreground mb-4">

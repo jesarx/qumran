@@ -17,57 +17,99 @@ interface BooksTableProps {
 
 export default function BooksTable({ books, showActions = false }: BooksTableProps) {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow className="font-bold">
-          <TableHead>Título</TableHead>
-          <TableHead>Autor(es)</TableHead>
-          <TableHead>Editorial</TableHead>
-          <TableHead>Categoría</TableHead>
-          <TableHead>Ubicación</TableHead>
-          <TableHead>ISBN</TableHead>
-          {showActions && <TableHead className="text-right">Acciones</TableHead>}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {books.length === 0 ? (
+    <div className="w-full">
+      <Table>
+        <TableHeader>
           <TableRow>
-            <TableCell colSpan={showActions ? 7 : 6} className="text-center">
-              No se encontraron libros
-            </TableCell>
+            {/* Mobile-only header */}
+            <TableHead className="font-black block sm:hidden">Libro</TableHead>
+
+            {/* Full headers for larger screens */}
+            <TableHead className="font-black hidden sm:table-cell">Título</TableHead>
+            <TableHead className="font-black hidden sm:table-cell">Autor(es)</TableHead>
+            <TableHead className="font-black hidden sm:table-cell">Editorial</TableHead>
+            <TableHead className="font-black hidden sm:table-cell">Categoría</TableHead>
+            <TableHead className="font-black hidden sm:table-cell">Ubicación</TableHead>
+            <TableHead className="font-black hidden sm:table-cell">ISBN</TableHead>
+            {showActions && (
+              <TableHead className="text-right hidden sm:table-cell">Acciones</TableHead>
+            )}
           </TableRow>
-        ) : (
-          books.map((book) => (
-            <TableRow key={book.id}>
-              <TableCell className="font-medium">{book.title}</TableCell>
-              <TableCell>
-                {book.author1_last_name}
-                {book.author1_first_name && `, ${book.author1_first_name}`}
-                {book.author2_last_name && (
-                  <>
-                    <br />
-                    {book.author2_last_name}
-                    {book.author2_first_name && `, ${book.author2_first_name}`}
-                  </>
-                )}
+        </TableHeader>
+
+        <TableBody>
+          {books.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={showActions ? 7 : 6} className="text-center">
+                No se encontraron libros
               </TableCell>
-              <TableCell>{book.publisher_name}</TableCell>
-              <TableCell>{book.category_name}</TableCell>
-              <TableCell>{book.location_name || 'Sin ubicación'}</TableCell>
-              <TableCell className="text-sm">{book.isbn || '-'}</TableCell>
-              {showActions && (
-                <TableCell className="text-right">
-                  <Link href={`/dashboard/books/${book.id}`}>
-                    <Button size="sm" variant="outline">
-                      Editar
-                    </Button>
-                  </Link>
-                </TableCell>
-              )}
             </TableRow>
-          ))
-        )}
-      </TableBody>
-    </Table>
+          ) : (
+            books.map((book) => (
+              <TableRow key={book.id}>
+                {/* Mobile-only cell */}
+                <TableCell className="block sm:hidden py-4">
+                  <div className="font-semibold text-sm truncate max-w-[260px]">
+                    {book.title}
+                  </div>
+                  <div className="text-xs mt-1">
+                    <span className="font-medium">
+                      {book.author1_last_name}
+                      {book.author1_first_name && `, ${book.author1_first_name}`}
+                    </span>
+                    {book.author2_last_name && (
+                      <>
+                        <br />
+                        <span className="text-muted-foreground">
+                          {book.author2_last_name}
+                          {book.author2_first_name && `, ${book.author2_first_name}`}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </TableCell>
+
+
+                {/* Full table for larger screens */}
+                <TableCell className="font-medium hidden sm:table-cell">
+                  {book.title}
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  <span className="font-medium">
+                    {book.author1_last_name}
+                    {book.author1_first_name && `, ${book.author1_first_name}`}
+                  </span>
+                  {book.author2_last_name && (
+                    <>
+                      <br />
+                      <span className="text-muted-foreground">
+                        {book.author2_last_name}
+                        {book.author2_first_name && `, ${book.author2_first_name}`}
+                      </span>
+                    </>
+                  )}
+
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">{book.publisher_name}</TableCell>
+                <TableCell className="hidden sm:table-cell">{book.category_name}</TableCell>
+                <TableCell className="hidden sm:table-cell">{book.location_name || 'Sin ubicación'}</TableCell>
+                <TableCell className="text-sm hidden sm:table-cell">{book.isbn || '-'}</TableCell>
+                {showActions && (
+                  <TableCell className="text-right hidden sm:table-cell">
+                    <Link href={`/dashboard/books/${book.id}`}>
+                      <Button size="sm" variant="outline">
+                        Editar
+                      </Button>
+                    </Link>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+
+      </Table>
+    </div>
   );
 }
+
