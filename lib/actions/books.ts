@@ -219,16 +219,36 @@ export async function createBookAction(
   }
 }
 
-// Update book (title, ISBN, category, and location)
+// Update book (title, ISBN, publisher, category, and location)
 export async function updateBookAction(
   prevState: BasicActionState,
   formData: FormData
 ): Promise<BasicActionState> {
   try {
-    const validatedFields = UpdateBookSchema.parse({
+    // Enhanced validation schema that includes publisher
+    const UpdateBookWithPublisherSchema = z.object({
+      id: z.number(),
+      title: z.string().trim().min(1, 'Title is required'),
+      isbn: z.string().trim().optional().transform(val => {
+        // Convert empty string to null, keep valid ISBNs
+        if (!val || val === '') return null;
+        return val;
+      }).refine(val => {
+        // If ISBN is provided, it should be valid length (10 or 13 digits)
+        if (val === null) return true;
+        const cleanIsbn = val.replace(/[-\s]/g, '');
+        return cleanIsbn.length === 10 || cleanIsbn.length === 13;
+      }, 'ISBN must be 10 or 13 digits'),
+      publisherName: z.string().trim().min(1, 'Publisher is required'),
+      categoryId: z.number().min(1, 'Category is required'),
+      locationId: z.number().min(1, 'Location is required'),
+    });
+
+    const validatedFields = UpdateBookWithPublisherSchema.parse({
       id: Number(formData.get('id')),
       title: formData.get('title'),
       isbn: formData.get('isbn'),
+      publisherName: formData.get('publisherName'),
       categoryId: Number(formData.get('categoryId')),
       locationId: Number(formData.get('locationId')),
     });
@@ -244,9 +264,13 @@ export async function updateBookAction(
       }
     }
 
+    // Find or create publisher
+    const publisher = await findOrCreatePublisher(validatedFields.publisherName);
+
     await updateBook(validatedFields.id, {
       title: validatedFields.title,
       isbn: validatedFields.isbn,
+      publisher_id: publisher.id,
       category_id: validatedFields.categoryId,
       location_id: validatedFields.locationId,
     });

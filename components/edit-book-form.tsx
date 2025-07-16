@@ -7,9 +7,10 @@ import {
   deleteBookAction,
   getBookAction,
   getCategoriesAction,
-  getLocationsAction
+  getLocationsAction,
+  getPublishersAction
 } from '@/lib/actions';
-import { Book, Category, Location } from '@/lib/queries';
+import { Book, Category, Location, Publisher } from '@/lib/queries';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -22,12 +23,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Trash2, Save, ArrowLeft, User, Building, MapPin } from 'lucide-react';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Trash2, Save, ArrowLeft, User, Building, MapPin, Check, ChevronsUpDown, Plus, LayoutList, LibraryBig } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useDebouncedCallback } from 'use-debounce';
 
 const initialState = {
   success: false,
   error: undefined
 };
+
+interface PublisherData {
+  name: string;
+  id?: number;
+  isNew?: boolean;
+}
 
 export default function EditBookForm({ bookId }: { bookId: number }) {
   const router = useRouter();
@@ -35,27 +57,70 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
   const [book, setBook] = useState<Book | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
+  const [publishers, setPublishers] = useState<Publisher[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Load book, categories, and locations
+  // Form fields
+  const [title, setTitle] = useState('');
+  const [isbn, setIsbn] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [locationId, setLocationId] = useState('');
+
+  // Publisher field with popover state
+  const [publisher, setPublisher] = useState<PublisherData>({ name: '' });
+  const [publisherPopoverOpen, setPublisherPopoverOpen] = useState(false);
+  const [publisherSearchTerm, setPublisherSearchTerm] = useState('');
+  const [filteredPublishers, setFilteredPublishers] = useState<Publisher[]>([]);
+
+  // Debounced search function for publishers
+  const debouncedPublisherSearch = useDebouncedCallback(async (searchTerm: string) => {
+    if (searchTerm.length > 0) {
+      try {
+        const publishersData = await getPublishersAction(searchTerm, 'name', 1);
+        setFilteredPublishers(publishersData.publishers);
+      } catch (error) {
+        console.error('Failed to search publishers:', error);
+        setFilteredPublishers([]);
+      }
+    } else {
+      setFilteredPublishers([]);
+    }
+  }, 300);
+
+  // Load book, categories, locations, and publishers
   useEffect(() => {
     async function loadData() {
       try {
-        const [bookData, cats, locs] = await Promise.all([
+        const [bookData, cats, locs, pubs] = await Promise.all([
           getBookAction(bookId),
           getCategoriesAction(),
-          getLocationsAction()
+          getLocationsAction(),
+          getPublishersAction()
         ]);
 
         if (bookData) {
           setBook(bookData);
+          // Set form fields with current book data
+          setTitle(bookData.title);
+          setIsbn(bookData.isbn || '');
+          setCategoryId(bookData.category_id.toString());
+          setLocationId(bookData.location_id?.toString() || '');
+
+          // Set publisher data
+          setPublisher({
+            name: bookData.publisher_name || '',
+            id: bookData.publisher_id,
+            isNew: false
+          });
+          setPublisherSearchTerm(bookData.publisher_name || '');
         } else {
           router.push('/dashboard/books');
         }
 
         setCategories(cats);
         setLocations(locs);
+        setPublishers(pubs.publishers);
       } catch (error) {
         console.error('Failed to load data:', error);
         router.push('/dashboard/books');
@@ -73,6 +138,11 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
     }
   }, [state.success, router]);
 
+  // Handle publisher search term changes
+  useEffect(() => {
+    debouncedPublisherSearch(publisherSearchTerm);
+  }, [publisherSearchTerm, debouncedPublisherSearch]);
+
   // Handle delete
   const handleDelete = async () => {
     if (!window.confirm('¿Estás seguro de que quieres eliminar este libro?')) {
@@ -88,6 +158,96 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
       alert('Error al eliminar el libro');
       setIsDeleting(false);
     }
+  };
+
+  // Handle publisher selection from dropdown
+  const handlePublisherSelect = (publisher: Publisher) => {
+    const publisherData: PublisherData = {
+      name: publisher.name,
+      id: publisher.id,
+      isNew: false
+    };
+
+    setPublisher(publisherData);
+    setPublisherSearchTerm(publisher.name);
+    setPublisherPopoverOpen(false);
+  };
+
+  // Handle manual publisher input
+  const handlePublisherSearchChange = (value: string) => {
+    setPublisherSearchTerm(value);
+    if (value.trim()) {
+      // Check if the value matches an existing publisher
+      const existingPublisher = publishers.find(p =>
+        p.name.toLowerCase() === value.trim().toLowerCase()
+      );
+
+      if (existingPublisher) {
+        setPublisher({
+          name: existingPublisher.name,
+          id: existingPublisher.id,
+          isNew: false
+        });
+      } else {
+        setPublisher({
+          name: value.trim(),
+          id: undefined,
+          isNew: true
+        });
+      }
+    } else {
+      setPublisher({ name: '' });
+    }
+  };
+
+  // Custom form submission to handle publisher data
+  const handleSubmit = async (formData: FormData) => {
+    // Debug: Log current state
+    console.log('Form submission - Current state:', {
+      title,
+      isbn,
+      publisher,
+      categoryId,
+      locationId,
+      bookId
+    });
+
+    // Validate required fields before submission
+    if (!title.trim()) {
+      alert('El título es requerido');
+      return;
+    }
+
+    if (!publisher.name.trim()) {
+      alert('La editorial es requerida');
+      return;
+    }
+
+    if (!categoryId) {
+      alert('La categoría es requerida');
+      return;
+    }
+
+    if (!locationId) {
+      alert('La ubicación es requerida');
+      return;
+    }
+
+    // Set form data
+    formData.set('id', bookId.toString());
+    formData.set('title', title.trim());
+    formData.set('isbn', isbn.trim() || '');
+    formData.set('publisherName', publisher.name.trim());
+    formData.set('categoryId', categoryId.toString());
+    formData.set('locationId', locationId.toString());
+
+    // Debug: Log final FormData
+    console.log('Final FormData entries:');
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}:`, value, `(type: ${typeof value})`);
+    }
+
+    return formAction(formData);
   };
 
   if (isLoading || !book) {
@@ -135,9 +295,7 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
             </Alert>
           )}
 
-          <form action={formAction} className="space-y-6">
-            <input type="hidden" name="id" value={bookId} />
-
+          <form action={handleSubmit} className="space-y-6">
             {/* Book ID (readonly) */}
             <div className="space-y-2">
               <Label htmlFor="bookId" className="text-sm font-medium">
@@ -161,7 +319,8 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
                 id="isbn"
                 name="isbn"
                 type="text"
-                defaultValue={book.isbn || ''}
+                value={isbn}
+                onChange={(e) => setIsbn(e.target.value)}
                 placeholder="978-84-376-0494-7"
               />
             </div>
@@ -176,7 +335,8 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
                 name="title"
                 type="text"
                 required
-                defaultValue={book.title}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 placeholder="Ingresa el título del libro"
               />
             </div>
@@ -207,29 +367,87 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
               </CardContent>
             </Card>
 
-            {/* Publisher (readonly) */}
+            {/* Publisher */}
             <div className="space-y-2">
               <Label htmlFor="publisher" className="text-sm font-medium flex items-center gap-2">
-                <Building className="h-4 w-4" />
-                Editorial (no editable)
+                <LibraryBig className="h-4 w-4" />
+                Editorial <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="publisher"
-                type="text"
-                value={book.publisher_name || ''}
-                disabled
-                className="bg-muted"
-              />
+              <Popover open={publisherPopoverOpen} onOpenChange={setPublisherPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={publisherPopoverOpen}
+                    className={cn(
+                      "w-full justify-between font-normal",
+                      !publisher.name && "text-muted-foreground"
+                    )}
+                  >
+                    {publisher.name || "Selecciona una editorial..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" style={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}>
+                  <Command style={{ backgroundColor: 'hsl(var(--popover))' }}>
+                    <CommandInput
+                      placeholder="Buscar editorial..."
+                      value={publisherSearchTerm}
+                      onValueChange={handlePublisherSearchChange}
+                    />
+                    <CommandList>
+                      <CommandEmpty>
+                        {publisher.name && publisher.isNew ? (
+                          <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
+                            <Plus className="h-4 w-4" />
+                            Se creará una nueva editorial
+                          </div>
+                        ) : (
+                          "No se encontraron editoriales"
+                        )}
+                      </CommandEmpty>
+                      <CommandGroup>
+                        {filteredPublishers.map((pub) => (
+                          <CommandItem
+                            key={pub.id}
+                            value={pub.name}
+                            onSelect={() => handlePublisherSelect(pub)}
+                            className="cursor-pointer"
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                publisher.id === pub.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {pub.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {publisher.isNew && publisher.name && (
+                <Alert>
+                  <Plus className="h-4 w-4" />
+                  <AlertDescription>
+                    Se creará una nueva editorial: {publisher.name}
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
 
             {/* Category */}
             <div className="space-y-2">
-              <Label htmlFor="categoryId" className="text-sm font-medium">
+              <Label htmlFor="categoryId" className="text-sm font-medium flex items-center gap-2">
+                <LayoutList className="h-4 w-4" />
                 Categoría <span className="text-destructive">*</span>
               </Label>
               <Select
                 name="categoryId"
-                defaultValue={book.category_id.toString()}
+                value={categoryId}
+                onValueChange={setCategoryId}
                 required
               >
                 <SelectTrigger>
@@ -253,7 +471,8 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
               </Label>
               <Select
                 name="locationId"
-                defaultValue={book.location_id?.toString() || ''}
+                value={locationId}
+                onValueChange={setLocationId}
                 required
               >
                 <SelectTrigger>

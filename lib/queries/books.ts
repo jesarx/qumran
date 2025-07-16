@@ -247,6 +247,8 @@ export async function createBook(data: {
   return fullBook;
 }
 
+// Update this function in: lib/queries/books.ts
+
 // Update book
 export async function updateBook(
   id: number,
@@ -285,6 +287,7 @@ export async function updateBook(
     values.push(data.author2_id);
   }
 
+  // Add publisher_id support
   if (data.publisher_id !== undefined) {
     setClauses.push(`publisher_id = $${++paramCount}`);
     values.push(data.publisher_id);
