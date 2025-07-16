@@ -1,7 +1,7 @@
 import { getBooksAction, getAuthorsAction, getPublishersAction, getCategoriesAction } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Users, Building2, LayoutList, ArrowRight, Scroll, Library, LibraryBig, MapPin, Book } from 'lucide-react';
+import { BookOpen, Users, Building2, LayoutList, ArrowRight, Scroll, Library, LibraryBig, Book } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function HomePage() {

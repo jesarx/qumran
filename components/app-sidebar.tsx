@@ -148,10 +148,10 @@ export async function AppSidebar() {
                   {/* Add Book button */}
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
-                      <a href="/dashboard/books/new">
+                      <Link href="/dashboard/books/new">
                         <SquarePlus />
                         <span>Añadir libro</span>
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
 
