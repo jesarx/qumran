@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Scroll } from 'lucide-react';
 
-export default function Loading(): JSX.Element {
+export default function Loading() {
   return (
     <div className="mx-auto max-w-4xl p-4 bg-background min-h-[80vh] flex items-center justify-center">
       <div className="w-full max-w-2xl">

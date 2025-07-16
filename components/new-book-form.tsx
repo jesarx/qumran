@@ -29,7 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Camera, X, Search, Save, ArrowLeft, User, Building, BookOpen, MapPin, Check, ChevronsUpDown, Plus, LayoutList, LibraryBig } from 'lucide-react';
+import { Camera, X, Search, Save, ArrowLeft, User, BookOpen, MapPin, Check, ChevronsUpDown, Plus, LayoutList, LibraryBig } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDebouncedCallback } from 'use-debounce';
 import dynamic from 'next/dynamic';
@@ -65,8 +65,6 @@ export default function NewBookForm() {
   const [isSearchingISBN, setIsSearchingISBN] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
-  const [authors, setAuthors] = useState<Author[]>([]);
-  const [publishers, setPublishers] = useState<Publisher[]>([]);
   const [showScanner, setShowScanner] = useState(false);
 
   // Form fields

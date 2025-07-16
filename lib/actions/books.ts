@@ -67,23 +67,6 @@ const CreateBookSchema = z.object({
   locationId: z.number().min(1, 'Location is required'),
 });
 
-const UpdateBookSchema = z.object({
-  id: z.number(),
-  title: z.string().trim().min(1, 'Title is required'),
-  isbn: z.string().trim().optional().transform(val => {
-    // Convert empty string to null, keep valid ISBNs
-    if (!val || val === '') return null;
-    return val;
-  }).refine(val => {
-    // If ISBN is provided, it should be valid length (10 or 13 digits)
-    if (val === null) return true;
-    const cleanIsbn = val.replace(/[-\s]/g, '');
-    return cleanIsbn.length === 10 || cleanIsbn.length === 13;
-  }, 'ISBN must be 10 or 13 digits'),
-  categoryId: z.number().min(1, 'Category is required'),
-  locationId: z.number().min(1, 'Location is required'),
-});
-
 // Helper function to normalize ISBN
 function normalizeIsbn(isbn: string): string {
   return isbn.replace(/[-\s]/g, '');

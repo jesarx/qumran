@@ -36,7 +36,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Trash2, Save, ArrowLeft, User, Building, MapPin, Check, ChevronsUpDown, Plus, LayoutList, LibraryBig } from 'lucide-react';
+import { Trash2, Save, ArrowLeft, User, MapPin, Check, ChevronsUpDown, Plus, LayoutList, LibraryBig } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDebouncedCallback } from 'use-debounce';
 
