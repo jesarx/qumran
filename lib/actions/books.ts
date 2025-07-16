@@ -36,23 +36,32 @@ interface GoogleBookData {
   subjects: string[];
 }
 
-// Validation schemas
+// Enhanced validation schema for debugging
 const CreateBookSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
-  isbn: z.string().trim().optional().transform(val => {
-    // Convert empty string to null, keep valid ISBNs
-    if (!val || val === '') return null;
+  isbn: z.string().trim().optional().nullable().transform(val => {
+    // Handle null, undefined, and empty string cases
+    if (!val || val === '' || val === 'null' || val === 'undefined') return null;
     return val;
   }).refine(val => {
     // If ISBN is provided, it should be valid length (10 or 13 digits)
-    if (val === null) return true;
+    if (val === null || val === undefined) return true;
     const cleanIsbn = val.replace(/[-\s]/g, '');
     return cleanIsbn.length === 10 || cleanIsbn.length === 13;
   }, 'ISBN must be 10 or 13 digits'),
-  author1FirstName: z.string().trim().optional().transform(val => val || null),
+  author1FirstName: z.string().trim().optional().nullable().transform(val => {
+    if (!val || val === '' || val === 'null' || val === 'undefined') return null;
+    return val.trim();
+  }),
   author1LastName: z.string().trim().min(1, 'Author last name is required'),
-  author2FirstName: z.string().trim().optional().transform(val => val || null),
-  author2LastName: z.string().trim().optional().transform(val => val || null),
+  author2FirstName: z.string().trim().optional().nullable().transform(val => {
+    if (!val || val === '' || val === 'null' || val === 'undefined') return null;
+    return val.trim();
+  }),
+  author2LastName: z.string().trim().optional().nullable().transform(val => {
+    if (!val || val === '' || val === 'null' || val === 'undefined') return null;
+    return val.trim();
+  }),
   publisherName: z.string().trim().min(1, 'Publisher is required'),
   categoryId: z.number().min(1, 'Category is required'),
   locationId: z.number().min(1, 'Location is required'),
@@ -107,12 +116,17 @@ export async function getBookAction(id: number): Promise<Book | null> {
   }
 }
 
-// Create book
+// Create book - Fixed version
 export async function createBookAction(
   prevState: BookActionState,
   formData: FormData
 ): Promise<BookActionState> {
   try {
+    console.log('Raw FormData received:');
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}:`, value, typeof value);
+    }
+
     const validatedFields = CreateBookSchema.parse({
       title: formData.get('title'),
       isbn: formData.get('isbn'),
@@ -124,6 +138,8 @@ export async function createBookAction(
       categoryId: Number(formData.get('categoryId')),
       locationId: Number(formData.get('locationId')),
     });
+
+    console.log('Validated fields:', validatedFields);
 
     // Check if ISBN already exists (only if ISBN is provided)
     if (validatedFields.isbn) {
@@ -166,12 +182,18 @@ export async function createBookAction(
       location_id: validatedFields.locationId,
     });
 
+    console.log('Book created successfully:', book.id);
+
     revalidatePath('/books');
     revalidatePath('/dashboard/books');
 
-    return { success: true, bookId: book.id };
+    return {
+      success: true,
+      bookId: book.id
+    };
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('Zod validation error:', error.errors);
       return {
         success: false,
         error: error.errors[0].message
