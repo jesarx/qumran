@@ -23,7 +23,7 @@ export default async function DashboardLocationsPage(
   const locations = await getLocationsAction(name, sort);
 
   return (
-    <div className="mx-auto max-w-7xl p-4">
+    <div className="mx-auto max-w-4xl p-4">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Gestión de Ubicaciones</h1>

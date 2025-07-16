@@ -24,7 +24,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     template: '%s | qumran.cc',
-    default: 'qumran.cc'
+    default: 'Qumran.cc'
   },
   description: "biblioteca personal de eduardo partida",
 };

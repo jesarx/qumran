@@ -26,7 +26,7 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
 
             {/* Full headers for larger screens */}
             <TableHead className="font-black hidden sm:table-cell">Título</TableHead>
-            <TableHead className="font-black hidden sm:table-cell">Autor(es)</TableHead>
+            <TableHead className="font-black hidden sm:table-cell">Autor(xs)</TableHead>
             <TableHead className="font-black hidden sm:table-cell">Editorial</TableHead>
             <TableHead className="font-black hidden sm:table-cell">Categoría</TableHead>
             <TableHead className="font-black hidden sm:table-cell">Ubicación</TableHead>

@@ -21,15 +21,6 @@ export default async function DashboardBooksPage({
   const sort = typeof params.sort === 'string' ? params.sort : '';
   const page = typeof params.page === 'string' ? parseInt(params.page) : 1;
 
-  console.log('Dashboard Books page params:', {
-    title,
-    categorySlug,
-    authorSlug,
-    publisherSlug,
-    locationSlug,
-    sort,
-    page
-  });
 
   const [booksData, categories] = await Promise.all([
     getBooksAction({
@@ -47,12 +38,6 @@ export default async function DashboardBooksPage({
 
   const { books, total, totalPages } = booksData;
 
-  console.log('Dashboard Books page results:', {
-    totalBooks: total,
-    booksDisplayed: books.length,
-    currentPage: page,
-    totalPages
-  });
 
   return (
     <div className="mx-auto max-w-7xl p-4">

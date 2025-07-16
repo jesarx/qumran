@@ -22,7 +22,7 @@ const publicItems = [
     icon: BookOpen,
   },
   {
-    title: "Autores",
+    title: "Autorxs",
     url: "/authors",
     icon: Users,
   },
