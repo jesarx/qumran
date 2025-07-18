@@ -34,7 +34,7 @@ export default function NotFound() {
               Manuscrito no encontrado
             </div>
             <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
-              El documento que buscas parece haberse perdido en las arenas del tiempo,
+              El documento que buscas parece haberse en las arenas del tiempo,
               como los antiguos manuscritos de Qumran.
             </p>
           </CardHeader>

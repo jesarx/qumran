@@ -56,14 +56,14 @@ const publicItems = [
 
 const adminItems = [
   {
-    title: "Añadir libro",
-    url: "/dashboard/books/new",
-    icon: SquarePlus,
-  },
-  {
     title: "Dashboard",
     url: "/dashboard",
     icon: Home,
+  },
+  {
+    title: "Añadir libro",
+    url: "/dashboard/books/new",
+    icon: SquarePlus,
   },
   {
     title: "Gestionar Libros",
@@ -145,18 +145,9 @@ export async function AppSidebar() {
             <SidebarMenu>
               {isAuthenticated ? (
                 <>
-                  {/* Add Book button */}
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <Link href="/dashboard/books/new">
-                        <SquarePlus />
-                        <span>Añadir libro</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
 
                   {/* Rest of admin items */}
-                  {adminItems.slice(1).map((item) => (
+                  {adminItems.slice(0).map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild>
                         <a href={item.url}>

@@ -8,9 +8,10 @@ import {
   getBookAction,
   getCategoriesAction,
   getLocationsAction,
-  getPublishersAction
+  getPublishersAction,
+  getAuthorsAction
 } from '@/lib/actions';
-import { Book, Category, Location, Publisher } from '@/lib/queries';
+import { Book, Category, Location, Publisher, Author } from '@/lib/queries';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -45,6 +46,13 @@ const initialState = {
   error: undefined
 };
 
+interface AuthorData {
+  firstName: string;
+  lastName: string;
+  id?: number;
+  isNew?: boolean;
+}
+
 interface PublisherData {
   name: string;
   id?: number;
@@ -67,13 +75,51 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
   const [categoryId, setCategoryId] = useState('');
   const [locationId, setLocationId] = useState('');
 
+  // Author fields with popover states
+  const [author1, setAuthor1] = useState<AuthorData>({ lastName: '', firstName: '' });
+  const [author2, setAuthor2] = useState<AuthorData>({ lastName: '', firstName: '' });
+  const [author1PopoverOpen, setAuthor1PopoverOpen] = useState(false);
+  const [author2PopoverOpen, setAuthor2PopoverOpen] = useState(false);
+  const [author1SearchTerm, setAuthor1SearchTerm] = useState('');
+  const [author2SearchTerm, setAuthor2SearchTerm] = useState('');
+  const [filteredAuthors1, setFilteredAuthors1] = useState<Author[]>([]);
+  const [filteredAuthors2, setFilteredAuthors2] = useState<Author[]>([]);
+
   // Publisher field with popover state
   const [publisher, setPublisher] = useState<PublisherData>({ name: '' });
   const [publisherPopoverOpen, setPublisherPopoverOpen] = useState(false);
   const [publisherSearchTerm, setPublisherSearchTerm] = useState('');
   const [filteredPublishers, setFilteredPublishers] = useState<Publisher[]>([]);
 
-  // Debounced search function for publishers
+  // Debounced search functions for authors (by last name)
+  const debouncedAuthorSearch1 = useDebouncedCallback(async (searchTerm: string) => {
+    if (searchTerm.length > 0) {
+      try {
+        const authorsData = await getAuthorsAction(searchTerm, 'name', 1);
+        setFilteredAuthors1(authorsData.authors);
+      } catch (error) {
+        console.error('Failed to search authors:', error);
+        setFilteredAuthors1([]);
+      }
+    } else {
+      setFilteredAuthors1([]);
+    }
+  }, 300);
+
+  const debouncedAuthorSearch2 = useDebouncedCallback(async (searchTerm: string) => {
+    if (searchTerm.length > 0) {
+      try {
+        const authorsData = await getAuthorsAction(searchTerm, 'name', 1);
+        setFilteredAuthors2(authorsData.authors);
+      } catch (error) {
+        console.error('Failed to search authors:', error);
+        setFilteredAuthors2([]);
+      }
+    } else {
+      setFilteredAuthors2([]);
+    }
+  }, 300);
+
   const debouncedPublisherSearch = useDebouncedCallback(async (searchTerm: string) => {
     if (searchTerm.length > 0) {
       try {
@@ -88,7 +134,7 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
     }
   }, 300);
 
-  // Load book, categories, locations, and publishers
+  // Load book, categories, locations, publishers, and authors
   useEffect(() => {
     async function loadData() {
       try {
@@ -106,6 +152,25 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
           setIsbn(bookData.isbn || '');
           setCategoryId(bookData.category_id.toString());
           setLocationId(bookData.location_id?.toString() || '');
+
+          // Set author data
+          setAuthor1({
+            lastName: bookData.author1_last_name || '',
+            firstName: bookData.author1_first_name || '',
+            id: bookData.author1_id,
+            isNew: false
+          });
+          setAuthor1SearchTerm(bookData.author1_last_name || '');
+
+          if (bookData.author2_last_name) {
+            setAuthor2({
+              lastName: bookData.author2_last_name,
+              firstName: bookData.author2_first_name || '',
+              id: bookData.author2_id,
+              isNew: false
+            });
+            setAuthor2SearchTerm(bookData.author2_last_name);
+          }
 
           // Set publisher data
           setPublisher({
@@ -138,6 +203,15 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
     }
   }, [state.success, router]);
 
+  // Handle author search term changes
+  useEffect(() => {
+    debouncedAuthorSearch1(author1SearchTerm);
+  }, [author1SearchTerm, debouncedAuthorSearch1]);
+
+  useEffect(() => {
+    debouncedAuthorSearch2(author2SearchTerm);
+  }, [author2SearchTerm, debouncedAuthorSearch2]);
+
   // Handle publisher search term changes
   useEffect(() => {
     debouncedPublisherSearch(publisherSearchTerm);
@@ -160,6 +234,26 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
     }
   };
 
+  // Handle author selection from dropdown
+  const handleAuthorSelect = (author: Author, authorNumber: 1 | 2) => {
+    const authorData: AuthorData = {
+      lastName: author.last_name,
+      firstName: author.first_name || '',
+      id: author.id,
+      isNew: false
+    };
+
+    if (authorNumber === 1) {
+      setAuthor1(authorData);
+      setAuthor1SearchTerm(author.last_name);
+      setAuthor1PopoverOpen(false);
+    } else {
+      setAuthor2(authorData);
+      setAuthor2SearchTerm(author.last_name);
+      setAuthor2PopoverOpen(false);
+    }
+  };
+
   // Handle publisher selection from dropdown
   const handlePublisherSelect = (publisher: Publisher) => {
     const publisherData: PublisherData = {
@@ -171,6 +265,44 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
     setPublisher(publisherData);
     setPublisherSearchTerm(publisher.name);
     setPublisherPopoverOpen(false);
+  };
+
+  // Handle manual author last name input
+  const handleAuthorLastNameChange = (value: string, authorNumber: 1 | 2) => {
+    if (authorNumber === 1) {
+      setAuthor1SearchTerm(value);
+      setAuthor1(prev => ({
+        ...prev,
+        lastName: value,
+        id: undefined,
+        isNew: value.trim().length > 0
+      }));
+    } else {
+      setAuthor2SearchTerm(value);
+      setAuthor2(prev => ({
+        ...prev,
+        lastName: value,
+        id: undefined,
+        isNew: value.trim().length > 0
+      }));
+    }
+  };
+
+  // Handle manual author first name input
+  const handleAuthorFirstNameChange = (value: string, authorNumber: 1 | 2) => {
+    if (authorNumber === 1) {
+      setAuthor1(prev => ({
+        ...prev,
+        firstName: value,
+        isNew: !prev.id && (prev.lastName.length > 0 || value.length > 0)
+      }));
+    } else {
+      setAuthor2(prev => ({
+        ...prev,
+        firstName: value,
+        isNew: !prev.id && (prev.lastName.length > 0 || value.length > 0)
+      }));
+    }
   };
 
   // Handle manual publisher input
@@ -200,12 +332,14 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
     }
   };
 
-  // Custom form submission to handle publisher data
+  // Custom form submission to handle author and publisher data
   const handleSubmit = async (formData: FormData) => {
     // Debug: Log current state
     console.log('Form submission - Current state:', {
       title,
       isbn,
+      author1,
+      author2,
       publisher,
       categoryId,
       locationId,
@@ -215,6 +349,11 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
     // Validate required fields before submission
     if (!title.trim()) {
       alert('El título es requerido');
+      return;
+    }
+
+    if (!author1.lastName.trim()) {
+      alert('El apellido del autor principal es requerido');
       return;
     }
 
@@ -237,9 +376,17 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
     formData.set('id', bookId.toString());
     formData.set('title', title.trim());
     formData.set('isbn', isbn.trim() || '');
+    formData.set('author1LastName', author1.lastName.trim());
+    formData.set('author1FirstName', author1.firstName?.trim() || '');
     formData.set('publisherName', publisher.name.trim());
     formData.set('categoryId', categoryId.toString());
     formData.set('locationId', locationId.toString());
+
+    // Only set author2 if lastName exists
+    if (author2.lastName && author2.lastName.trim()) {
+      formData.set('author2LastName', author2.lastName.trim());
+      formData.set('author2FirstName', author2.firstName?.trim() || '');
+    }
 
     // Debug: Log final FormData
     console.log('Final FormData entries:');
@@ -341,29 +488,200 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
               />
             </div>
 
-            {/* Authors (readonly) */}
+            {/* Authors */}
             <Card className="bg-muted/30">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  Autores (no editables)
+                  Autores
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-muted-foreground">Autor Principal:</span>
-                  <span className="text-sm">
-                    {book.author1_first_name} {book.author1_last_name}
-                  </span>
-                </div>
-                {book.author2_last_name && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-muted-foreground">Segundo Autor:</span>
-                    <span className="text-sm">
-                      {book.author2_first_name} {book.author2_last_name}
-                    </span>
+              <CardContent className="space-y-4">
+                {/* Primary Author */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    Autor Principal <span className="text-destructive">*</span>
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="author1LastName" className="text-sm">
+                        Apellido <span className="text-destructive">*</span>
+                      </Label>
+                      <Popover open={author1PopoverOpen} onOpenChange={setAuthor1PopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={author1PopoverOpen}
+                            className={cn(
+                              "w-full justify-between font-normal",
+                              !author1.lastName && "text-muted-foreground"
+                            )}
+                          >
+                            {author1.lastName || "Comienza a escribir..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0" style={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}>
+                          <Command style={{ backgroundColor: 'hsl(var(--popover))' }}>
+                            <CommandInput
+                              placeholder="Buscar apellido..."
+                              value={author1SearchTerm}
+                              onValueChange={(value) => handleAuthorLastNameChange(value, 1)}
+                            />
+                            <CommandList>
+                              <CommandEmpty>
+                                {author1.lastName && author1.isNew ? (
+                                  <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
+                                    <Plus className="h-4 w-4" />
+                                    Se creará un nuevo autor
+                                  </div>
+                                ) : (
+                                  "No se encontraron autores"
+                                )}
+                              </CommandEmpty>
+                              <CommandGroup>
+                                {filteredAuthors1.map((author) => (
+                                  <CommandItem
+                                    key={author.id}
+                                    value={`${author.last_name}${author.first_name ? ` ${author.first_name}` : ''}`}
+                                    onSelect={() => handleAuthorSelect(author, 1)}
+                                    className="cursor-pointer"
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        author1.id === author.id ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {author.last_name}
+                                    {author.first_name && (
+                                      <span className="text-muted-foreground ml-2">
+                                        , {author.first_name}
+                                      </span>
+                                    )}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="author1FirstName" className="text-sm">
+                        Nombre
+                      </Label>
+                      <Input
+                        id="author1FirstName"
+                        type="text"
+                        value={author1.firstName}
+                        onChange={(e) => handleAuthorFirstNameChange(e.target.value, 1)}
+                      />
+                    </div>
                   </div>
-                )}
+                  {author1.isNew && author1.lastName && (
+                    <Alert>
+                      <Plus className="h-4 w-4" />
+                      <AlertDescription>
+                        Se creará un nuevo autor: {author1.firstName} {author1.lastName}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+
+                {/* Secondary Author */}
+                <div className="space-y-3 pt-4 border-t border-border">
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    Segundo Autor (opcional)
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="author2LastName" className="text-sm">
+                        Apellido
+                      </Label>
+                      <Popover open={author2PopoverOpen} onOpenChange={setAuthor2PopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={author2PopoverOpen}
+                            className={cn(
+                              "w-full justify-between font-normal",
+                              !author2.lastName && "text-muted-foreground"
+                            )}
+                          >
+                            {author2.lastName || "comienza a escribir..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0" style={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}>
+                          <Command style={{ backgroundColor: 'hsl(var(--popover))' }}>
+                            <CommandInput
+                              placeholder="Buscar apellido..."
+                              value={author2SearchTerm}
+                              onValueChange={(value) => handleAuthorLastNameChange(value, 2)}
+                            />
+                            <CommandList>
+                              <CommandEmpty>
+                                {author2.lastName && author2.isNew ? (
+                                  <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
+                                    <Plus className="h-4 w-4" />
+                                    Se creará un nuevo autor
+                                  </div>
+                                ) : (
+                                  "No se encontraron autores"
+                                )}
+                              </CommandEmpty>
+                              <CommandGroup>
+                                {filteredAuthors2.map((author) => (
+                                  <CommandItem
+                                    key={author.id}
+                                    value={`${author.last_name}${author.first_name ? ` ${author.first_name}` : ''}`}
+                                    onSelect={() => handleAuthorSelect(author, 2)}
+                                    className="cursor-pointer"
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        author2.id === author.id ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {author.last_name}
+                                    {author.first_name && (
+                                      <span className="text-muted-foreground ml-2">
+                                        , {author.first_name}
+                                      </span>
+                                    )}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="author2FirstName" className="text-sm">
+                        Nombre
+                      </Label>
+                      <Input
+                        id="author2FirstName"
+                        type="text"
+                        value={author2.firstName}
+                        onChange={(e) => handleAuthorFirstNameChange(e.target.value, 2)}
+                      />
+                    </div>
+                  </div>
+                  {author2.isNew && author2.lastName && (
+                    <Alert>
+                      <Plus className="h-4 w-4" />
+                      <AlertDescription>
+                        Se creará un nuevo autor: {author2.firstName} {author2.lastName}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
               </CardContent>
             </Card>
 

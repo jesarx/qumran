@@ -7,8 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-raleway);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -202,95 +201,49 @@
 }
 
 @layer utilities {
-  /* Font weight utilities using Geist variables */
+  /* Font weight utilities using Raleway variables */
   .font-thin {
-    font-family: var(--font-geist-sans);
+    font-family: var(--font-raleway);
     font-weight: var(--font-weight-thin);
   }
   
   .font-extralight {
-    font-family: var(--font-geist-sans);
+    font-family: var(--font-raleway);
     font-weight: var(--font-weight-extralight);
   }
   
   .font-light {
-    font-family: var(--font-geist-sans);
+    font-family: var(--font-raleway);
     font-weight: var(--font-weight-light);
   }
   
   .font-normal {
-    font-family: var(--font-geist-sans);
+    font-family: var(--font-raleway);
     font-weight: var(--font-weight-normal);
   }
   
   .font-medium {
-    font-family: var(--font-geist-sans);
+    font-family: var(--font-raleway);
     font-weight: var(--font-weight-medium);
   }
   
   .font-semibold {
-    font-family: var(--font-geist-sans);
+    font-family: var(--font-raleway);
     font-weight: var(--font-weight-semibold);
   }
   
   .font-bold {
-    font-family: var(--font-geist-sans);
+    font-family: var(--font-raleway);
     font-weight: var(--font-weight-bold);
   }
   
   .font-extrabold {
-    font-family: var(--font-geist-sans);
+    font-family: var(--font-raleway);
     font-weight: var(--font-weight-extrabold);
   }
   
   .font-black {
-    font-family: var(--font-geist-sans);
-    font-weight: var(--font-weight-black);
-  }
-  
-  /* Font mono weight utilities */
-  .font-mono-thin {
-    font-family: var(--font-geist-mono);
-    font-weight: var(--font-weight-thin);
-  }
-  
-  .font-mono-extralight {
-    font-family: var(--font-geist-mono);
-    font-weight: var(--font-weight-extralight);
-  }
-  
-  .font-mono-light {
-    font-family: var(--font-geist-mono);
-    font-weight: var(--font-weight-light);
-  }
-  
-  .font-mono-normal {
-    font-family: var(--font-geist-mono);
-    font-weight: var(--font-weight-normal);
-  }
-  
-  .font-mono-medium {
-    font-family: var(--font-geist-mono);
-    font-weight: var(--font-weight-medium);
-  }
-  
-  .font-mono-semibold {
-    font-family: var(--font-geist-mono);
-    font-weight: var(--font-weight-semibold);
-  }
-  
-  .font-mono-bold {
-    font-family: var(--font-geist-mono);
-    font-weight: var(--font-weight-bold);
-  }
-  
-  .font-mono-extrabold {
-    font-family: var(--font-geist-mono);
-    font-weight: var(--font-weight-extrabold);
-  }
-  
-  .font-mono-black {
-    font-family: var(--font-geist-mono);
+    font-family: var(--font-raleway);
     font-weight: var(--font-weight-black);
   }
 }
@@ -451,4 +404,110 @@
 /* Ensure backdrop for sheet overlay is solid */
 [data-slot="sheet-overlay"] {
   background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* ==============================================
+   TEXT SELECTION STYLING - Add to bottom of globals.css
+   ============================================== */
+
+/* Global text selection styling for all elements */
+::selection {
+  background: hsl(var(--primary) / 0.4);
+  color: hsl(var(--background));
+}
+
+::-moz-selection {
+  background: hsl(var(--primary) / 0.4);
+  color: hsl(var(--background));
+}
+
+/* Enhanced selection for inputs, textareas, and editable content */
+input::selection,
+textarea::selection,
+[contenteditable]::selection {
+  background: hsl(var(--primary) / 0.5);
+  color: hsl(var(--background));
+}
+
+input::-moz-selection,
+textarea::-moz-selection,
+[contenteditable]::-moz-selection {
+  background: hsl(var(--primary) / 0.5);
+  color: hsl(var(--background));
+}
+
+/* Dark theme specific selection styling */
+.dark ::selection {
+  background: hsl(var(--primary) / 0.5);
+  color: hsl(var(--background));
+}
+
+.dark ::-moz-selection {
+  background: hsl(var(--primary) / 0.5);
+  color: hsl(var(--background));
+}
+
+.dark input::selection,
+.dark textarea::selection,
+.dark [contenteditable]::selection {
+  background: hsl(var(--primary) / 0.6);
+  color: hsl(var(--background));
+}
+
+.dark input::-moz-selection,
+.dark textarea::-moz-selection,
+.dark [contenteditable]::-moz-selection {
+  background: hsl(var(--primary) / 0.6);
+  color: hsl(var(--background));
+}
+
+/* Light theme specific selection styling */
+.light ::selection {
+  background: hsl(var(--primary) / 0.3);
+  color: hsl(var(--primary-foreground));
+}
+
+.light ::-moz-selection {
+  background: hsl(var(--primary) / 0.3);
+  color: hsl(var(--primary-foreground));
+}
+
+.light input::selection,
+.light textarea::selection,
+.light [contenteditable]::selection {
+  background: hsl(var(--primary) / 0.4);
+  color: hsl(var(--primary-foreground));
+}
+
+.light input::-moz-selection,
+.light textarea::-moz-selection,
+.light [contenteditable]::-moz-selection {
+  background: hsl(var(--primary) / 0.4);
+  color: hsl(var(--primary-foreground));
+}
+
+/* Special selection styling for Command components and popovers */
+[data-slot="command-input"]::selection,
+[data-slot="popover-content"] input::selection {
+  background: hsl(var(--accent) / 0.7);
+  color: hsl(var(--accent-foreground));
+}
+
+[data-slot="command-input"]::-moz-selection,
+[data-slot="popover-content"] input::-moz-selection {
+  background: hsl(var(--accent) / 0.7);
+  color: hsl(var(--accent-foreground));
+}
+
+/* Selection in buttons and interactive elements */
+button::selection,
+[role="button"]::selection {
+  background: hsl(var(--primary) / 0.3);
+  color: hsl(var(--primary-foreground));
+}
+
+button::-moz-selection,
+[role="button"]::-moz-selection {
+  background: hsl(var(--primary) / 0.3);
+  color: hsl(var(--primary-foreground));
 }
