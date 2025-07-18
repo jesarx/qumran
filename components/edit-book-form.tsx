@@ -153,11 +153,11 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
           setCategoryId(bookData.category_id.toString());
           setLocationId(bookData.location_id?.toString() || '');
 
-          // Set author data
+          // Set author data - Fix: Convert null to undefined
           setAuthor1({
             lastName: bookData.author1_last_name || '',
             firstName: bookData.author1_first_name || '',
-            id: bookData.author1_id,
+            id: bookData.author1_id || undefined,
             isNew: false
           });
           setAuthor1SearchTerm(bookData.author1_last_name || '');
@@ -166,16 +166,16 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
             setAuthor2({
               lastName: bookData.author2_last_name,
               firstName: bookData.author2_first_name || '',
-              id: bookData.author2_id,
+              id: bookData.author2_id || undefined, // Fix: Convert null to undefined
               isNew: false
             });
             setAuthor2SearchTerm(bookData.author2_last_name);
           }
 
-          // Set publisher data
+          // Set publisher data - Fix: Convert null to undefined
           setPublisher({
             name: bookData.publisher_name || '',
-            id: bookData.publisher_id,
+            id: bookData.publisher_id || undefined,
             isNew: false
           });
           setPublisherSearchTerm(bookData.publisher_name || '');
