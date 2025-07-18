@@ -154,7 +154,7 @@ export default function EditLocationForm({ locationId }: { locationId: number })
                 variant="destructive"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 cursor-pointer"
               >
                 <Trash2 className="h-4 w-4" />
                 {isDeleting ? 'Eliminando...' : 'Eliminar Ubicación'}
@@ -165,10 +165,11 @@ export default function EditLocationForm({ locationId }: { locationId: number })
                   type="button"
                   variant="outline"
                   onClick={() => router.back()}
+                  className='cursor-pointer'
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" className="flex items-center gap-2">
+                <Button type="submit" className="flex items-center gap-2 cursor-pointer" variant='outline'>
                   <Save className="h-4 w-4" />
                   Guardar Cambios
                 </Button>

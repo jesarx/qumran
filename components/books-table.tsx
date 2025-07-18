@@ -66,16 +66,13 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
             <TableHead className="font-black hidden sm:table-cell">Ubicación</TableHead>
             <TableHead className="font-black hidden sm:table-cell">ISBN</TableHead>
             <TableHead className="font-black hidden sm:table-cell">Agregado</TableHead>
-            {showActions && (
-              <TableHead className="text-right hidden sm:table-cell">Acciones</TableHead>
-            )}
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {books.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={showActions ? 8 : 7} className="text-center">
+              <TableCell colSpan={7} className="text-center">
                 No se encontraron libros
               </TableCell>
             </TableRow>
@@ -85,7 +82,17 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
                 {/* Mobile-only cell */}
                 <TableCell className="block sm:hidden py-4">
                   <div className="font-semibold text-sm truncate max-w-[260px]">
-                    {book.title}
+                    {showActions ? (
+                      <Link
+                        href={`/dashboard/books/${book.id}`}
+                        className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
+                        title="Editar"
+                      >
+                        {book.title}
+                      </Link>
+                    ) : (
+                      book.title
+                    )}
                   </div>
                   <div className="text-xs mt-1">
                     <span className="font-medium">
@@ -106,7 +113,17 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
 
                 {/* Full table for larger screens */}
                 <TableCell className="font-medium hidden sm:table-cell">
-                  {book.title}
+                  {showActions ? (
+                    <Link
+                      href={`/dashboard/books/${book.id}`}
+                      className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
+                      title="Editar"
+                    >
+                      {book.title}
+                    </Link>
+                  ) : (
+                    book.title
+                  )}
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <span className="font-medium">
@@ -130,15 +147,6 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
                 <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">
                   {formatCompactDate(book.created_at)}
                 </TableCell>
-                {showActions && (
-                  <TableCell className="text-right hidden sm:table-cell">
-                    <Link href={`/dashboard/books/${book.id}`}>
-                      <Button size="sm" variant="outline">
-                        Editar
-                      </Button>
-                    </Link>
-                  </TableCell>
-                )}
               </TableRow>
             ))
           )}

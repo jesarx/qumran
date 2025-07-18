@@ -17,20 +17,18 @@ interface AuthorsTableProps {
 
 export default function AuthorsTable({ authors = [], showActions = false }: AuthorsTableProps) {
   const authorsList = Array.isArray(authors) ? authors : [];
-
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead className="font-black">Nombre Completo</TableHead>
           <TableHead className="font-black">Número de Libros</TableHead>
-          {showActions && <TableHead className="text-right">Acciones</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
         {authorsList.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={showActions ? 3 : 2} className="text-center">
+            <TableCell colSpan={2} className="text-center">
               No se encontraron autores
             </TableCell>
           </TableRow>
@@ -38,24 +36,26 @@ export default function AuthorsTable({ authors = [], showActions = false }: Auth
           authorsList.map((author) => (
             <TableRow key={author.id}>
               <TableCell>
-                <Link
-                  href={`/books?authorSlug=${author.slug}`}
-                  className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors"
-                >
-                  {author.last_name}
-                  {author.first_name && `, ${author.first_name}`}
-                </Link>
+                {showActions ? (
+                  <Link
+                    href={`/dashboard/authors/${author.id}`}
+                    className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
+                    title="Editar"
+                  >
+                    {author.last_name}
+                    {author.first_name && `, ${author.first_name}`}
+                  </Link>
+                ) : (
+                  <Link
+                    href={`/books?authorSlug=${author.slug}`}
+                    className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors"
+                  >
+                    {author.last_name}
+                    {author.first_name && `, ${author.first_name}`}
+                  </Link>
+                )}
               </TableCell>
               <TableCell>{author.book_count || 0}</TableCell>
-              {showActions && (
-                <TableCell className="text-right">
-                  <Link href={`/dashboard/authors/${author.id}`}>
-                    <Button size="sm" variant="outline">
-                      Editar
-                    </Button>
-                  </Link>
-                </TableCell>
-              )}
             </TableRow>
           ))
         )}
@@ -63,4 +63,3 @@ export default function AuthorsTable({ authors = [], showActions = false }: Auth
     </Table>
   );
 }
-

@@ -526,7 +526,7 @@ export default function NewBookForm() {
                   onClick={() => handleISBNSearch()}
                   disabled={isSearchingISBN || !isbn}
                   variant="outline"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 cursor-pointer"
                 >
                   <Search className="h-4 w-4" />
                   {isSearchingISBN ? 'Buscando...' : 'Buscar'}
@@ -877,10 +877,11 @@ export default function NewBookForm() {
                 type="button"
                 variant="outline"
                 onClick={() => router.back()}
+                className='cursor-pointer'
               >
                 Cancelar
               </Button>
-              <Button type="submit" className="flex items-center gap-2">
+              <Button type="submit" className="flex items-center gap-2 cursor-pointer" variant='outline'>
                 <Save className="h-4 w-4" />
                 Agregar Libro
               </Button>
