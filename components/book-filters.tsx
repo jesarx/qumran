@@ -84,10 +84,12 @@ export default function BookFilters({ categories }: BookFiltersProps) {
   const handleSearch = useDebouncedCallback((term: string) => {
     const params = new URLSearchParams(searchParams);
     if (term) {
-      params.set('title', term);
+      params.set('search', term);
       params.set('page', '1');
-    } else {
+      // Remove the old title-only filter
       params.delete('title');
+    } else {
+      params.delete('search');
     }
     router.push(`${pathname}?${params.toString()}`);
   }, 300);
@@ -135,7 +137,7 @@ export default function BookFilters({ categories }: BookFiltersProps) {
   };
 
   // Check if there are any active filters
-  const hasActiveFilters = searchParams.get('title') ||
+  const hasActiveFilters = searchParams.get('search') ||
     searchParams.get('categorySlug') ||
     searchParams.get('locationSlug') ||
     searchParams.get('authorSlug') ||
@@ -146,10 +148,10 @@ export default function BookFilters({ categories }: BookFiltersProps) {
   const getFilterSummary = () => {
     const filters = [];
 
-    if (searchParams.get('title')) {
+    if (searchParams.get('search')) {
       filters.push({
-        type: 'title',
-        label: `Título: "${searchParams.get('title')}"`,
+        type: 'search',
+        label: `Búsqueda: "${searchParams.get('search')}"`,
         removable: true
       });
     }
@@ -261,9 +263,9 @@ export default function BookFilters({ categories }: BookFiltersProps) {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
           <Input
-            placeholder="Buscar por título..."
+            placeholder="Buscar por título, autor o ISBN..."
             onChange={(e) => handleSearch(e.target.value)}
-            defaultValue={searchParams.get('title') || ''}
+            defaultValue={searchParams.get('search') || ''}
           />
         </div>
 

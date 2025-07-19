@@ -1,7 +1,7 @@
 import { getBooksAction, getAuthorsAction, getPublishersAction, getCategoriesAction } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Users, Building2, LayoutList, ArrowRight, Scroll, Library, LibraryBig, Book } from 'lucide-react';
+import { BookOpen, Users, LayoutList, ArrowRight, Scroll, Library, LibraryBig, Book } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function HomePage() {
@@ -33,7 +33,7 @@ export default async function HomePage() {
     {
       title: 'Editoriales',
       value: publishersData.total,
-      icon: Building2,
+      icon: LibraryBig,
       href: '/publishers',
       color: 'text-purple-600',
       bgColor: 'bg-purple-50 dark:bg-purple-950',

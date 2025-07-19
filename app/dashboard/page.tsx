@@ -1,7 +1,7 @@
 import { getBooksAction, getAuthorsAction, getPublishersAction, getCategoriesAction, getLocationsAction } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { BookOpen, Users, Building2, LayoutList, MapPin } from 'lucide-react';
+import { BookOpen, Users, LayoutList, MapPin, LibraryBig } from 'lucide-react';
 
 export default async function DashboardPage() {
   const [booksData, authorsData, publishersData, categories, locations] = await Promise.all([
@@ -32,7 +32,7 @@ export default async function DashboardPage() {
     {
       title: 'Editoriales',
       value: publishersData.total, // Use .total instead of .length
-      icon: Building2,
+      icon: LibraryBig,
       href: '/dashboard/publishers',
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',

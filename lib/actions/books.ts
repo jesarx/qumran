@@ -104,15 +104,24 @@ function normalizeIsbn(isbn: string): string {
   return isbn.replace(/[-\s]/g, '');
 }
 
-// Get books with filters
+// Get books with filters - Updated to handle universal search
 export async function getBooksAction(filters: BookFilters = {}) {
   try {
     console.log('getBooksAction called with filters:', filters);
-    const result = await getBooks(filters);
+
+    // Map the search parameter if it exists
+    const processedFilters = {
+      ...filters,
+      // If 'search' parameter exists, use it; otherwise fall back to 'title'
+      search: filters.search || undefined,
+      title: filters.search ? undefined : filters.title, // Don't use both
+    };
+
+    const result = await getBooks(processedFilters);
     console.log('getBooksAction result:', {
       totalBooks: result.total,
       booksReturned: result.books.length,
-      filters: filters
+      filters: processedFilters
     });
     return result;
   } catch (error) {

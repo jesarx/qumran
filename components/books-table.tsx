@@ -94,17 +94,37 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
                     )}
                   </div>
                   <div className="text-xs mt-1">
-                    <span className="font-medium">
-                      {book.author1_last_name}
-                      {book.author1_first_name && `, ${book.author1_first_name}`}
-                    </span>
+                    {showActions && book.author1_slug ? (
+                      <Link
+                        href={`/dashboard/books?authorSlug=${book.author1_slug}`}
+                        className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
+                      >
+                        {book.author1_last_name}
+                        {book.author1_first_name && `, ${book.author1_first_name}`}
+                      </Link>
+                    ) : (
+                      <span className="font-medium">
+                        {book.author1_last_name}
+                        {book.author1_first_name && `, ${book.author1_first_name}`}
+                      </span>
+                    )}
                     {book.author2_last_name && (
                       <>
                         <br />
-                        <span className="text-muted-foreground">
-                          {book.author2_last_name}
-                          {book.author2_first_name && `, ${book.author2_first_name}`}
-                        </span>
+                        {showActions && book.author2_slug ? (
+                          <Link
+                            href={`/dashboard/books?authorSlug=${book.author2_slug}`}
+                            className="text-muted-foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
+                          >
+                            {book.author2_last_name}
+                            {book.author2_first_name && `, ${book.author2_first_name}`}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            {book.author2_last_name}
+                            {book.author2_first_name && `, ${book.author2_first_name}`}
+                          </span>
+                        )}
                       </>
                     )}
                   </div>
@@ -112,36 +132,91 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
 
                 {/* Full table for larger screens */}
                 <TableCell className="font-medium hidden sm:table-cell">
-                  {showActions ? (
-                    <Link
-                      href={`/dashboard/books/${book.id}`}
-                      className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
-                      title="Editar"
-                    >
-                      {book.title}
-                    </Link>
-                  ) : (
-                    book.title
-                  )}
+                  <div className="max-w-[450px] truncate">
+                    {showActions ? (
+                      <Link
+                        href={`/dashboard/books/${book.id}`}
+                        className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
+                        title={`Editar: ${book.title}`}
+                      >
+                        {book.title}
+                      </Link>
+                    ) : (
+                      <span title={book.title}>{book.title}</span>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  <span className="font-medium">
-                    {book.author1_last_name}
-                    {book.author1_first_name && `, ${book.author1_first_name}`}
-                  </span>
+                  {showActions && book.author1_slug ? (
+                    <Link
+                      href={`/dashboard/books?authorSlug=${book.author1_slug}`}
+                      className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
+                    >
+                      {book.author1_last_name}
+                      {book.author1_first_name && `, ${book.author1_first_name}`}
+                    </Link>
+                  ) : (
+                    <span className="font-medium">
+                      {book.author1_last_name}
+                      {book.author1_first_name && `, ${book.author1_first_name}`}
+                    </span>
+                  )}
                   {book.author2_last_name && (
                     <>
                       <br />
-                      <span className="text-muted-foreground">
-                        {book.author2_last_name}
-                        {book.author2_first_name && `, ${book.author2_first_name}`}
-                      </span>
+                      {showActions && book.author2_slug ? (
+                        <Link
+                          href={`/dashboard/books?authorSlug=${book.author2_slug}`}
+                          className="text-muted-foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
+                        >
+                          {book.author2_last_name}
+                          {book.author2_first_name && `, ${book.author2_first_name}`}
+                        </Link>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          {book.author2_last_name}
+                          {book.author2_first_name && `, ${book.author2_first_name}`}
+                        </span>
+                      )}
                     </>
                   )}
                 </TableCell>
-                <TableCell className="hidden sm:table-cell">{book.publisher_name}</TableCell>
-                <TableCell className="hidden sm:table-cell">{book.category_name}</TableCell>
-                <TableCell className="hidden sm:table-cell">{book.location_name || 'Sin ubicación'}</TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {showActions && book.publisher_slug ? (
+                    <Link
+                      href={`/dashboard/books?publisherSlug=${book.publisher_slug}`}
+                      className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
+                    >
+                      {book.publisher_name}
+                    </Link>
+                  ) : (
+                    book.publisher_name
+                  )}
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {showActions && book.category_slug ? (
+                    <Link
+                      href={`/dashboard/books?categorySlug=${book.category_slug}`}
+                      className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
+                    >
+                      {book.category_name}
+                    </Link>
+                  ) : (
+                    book.category_name
+                  )}
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {showActions && book.location_slug ? (
+                    <Link
+                      href={`/dashboard/books?locationSlug=${book.location_slug}`}
+                      className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
+                    >
+                      {book.location_name || 'Sin ubicación'}
+                    </Link>
+                  ) : (
+                    book.location_name || 'Sin ubicación'
+                  )}
+                </TableCell>
                 <TableCell className="text-sm hidden sm:table-cell">{book.isbn || '-'}</TableCell>
                 <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">
                   {formatCompactDate(book.created_at)}

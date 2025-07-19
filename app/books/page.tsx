@@ -11,6 +11,7 @@ export default async function BooksPage({
   const params = await searchParams;
 
   const title = typeof params.title === 'string' ? params.title : '';
+  const search = typeof params.search === 'string' ? params.search : '';
   const categorySlug = typeof params.categorySlug === 'string' ? params.categorySlug : '';
   const authorSlug = typeof params.authorSlug === 'string' ? params.authorSlug : '';
   const publisherSlug = typeof params.publisherSlug === 'string' ? params.publisherSlug : '';
@@ -18,10 +19,10 @@ export default async function BooksPage({
   const sort = typeof params.sort === 'string' ? params.sort : '';
   const page = typeof params.page === 'string' ? parseInt(params.page) : 1;
 
-
   const [booksData, categories] = await Promise.all([
     getBooksAction({
       title,
+      search, // Add the new search parameter
       categorySlug,
       authorSlug,
       publisherSlug,
@@ -34,7 +35,6 @@ export default async function BooksPage({
   ]);
 
   const { books, total, totalPages } = booksData;
-
 
   return (
     <div className="mx-auto max-w-7xl p-4 bg-background min-h-screen min-w-3/4">

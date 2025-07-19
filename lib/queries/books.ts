@@ -28,7 +28,8 @@ export interface Book extends QueryResultRow {
 }
 
 export interface BookFilters {
-  title?: string;
+  title?: string; // Keep for backward compatibility
+  search?: string; // New universal search parameter
   authorSlug?: string;
   publisherSlug?: string;
   categorySlug?: string;
@@ -59,7 +60,33 @@ export async function getBooks(filters: BookFilters = {}): Promise<{
   let paramCount = 0;
 
   // Build WHERE conditions
-  if (filters.title) {
+  // Universal search - searches across title, authors, and ISBN
+  if (filters.search) {
+    const searchTerm = filters.search.trim();
+
+    // Check if search term looks like an ISBN (10-13 digits, possibly with hyphens)
+    const cleanedSearchTerm = searchTerm.replace(/[-\s]/g, '');
+    const isLikelyIsbn = /^\d{10,13}$/.test(cleanedSearchTerm);
+
+    if (isLikelyIsbn) {
+      // If it looks like an ISBN, search in ISBN field (normalized)
+      whereConditions.push(`b.isbn = $${++paramCount}`);
+      params.push(cleanedSearchTerm);
+    } else {
+      // Otherwise, search in title and author names
+      whereConditions.push(`(
+        LOWER(b.title) LIKE LOWER($${++paramCount}) OR
+        LOWER(a1.first_name || ' ' || a1.last_name) LIKE LOWER($${paramCount}) OR
+        LOWER(a1.last_name) LIKE LOWER($${paramCount}) OR
+        LOWER(a2.first_name || ' ' || a2.last_name) LIKE LOWER($${paramCount}) OR
+        LOWER(a2.last_name) LIKE LOWER($${paramCount})
+      )`);
+      params.push(`%${searchTerm}%`);
+    }
+  }
+
+  // Keep backward compatibility with title filter
+  if (filters.title && !filters.search) {
     whereConditions.push(`LOWER(b.title) LIKE LOWER($${++paramCount})`);
     params.push(`%${filters.title}%`);
   }
