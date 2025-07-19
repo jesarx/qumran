@@ -49,7 +49,7 @@ export default async function DashboardBooksPage({
           </p>
         </div>
         <Link href="/dashboard/books/new">
-          <Button>
+          <Button className='cursor-pointer' variant="outline">
             <PlusIcon className="mr-2 h-4 w-4" />
             Agregar libro
           </Button>
