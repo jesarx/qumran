@@ -470,7 +470,7 @@ export default function NewBookForm() {
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                Ingresa el ISBN y presiona "Buscar" para obtener información automáticamente
+                Ingresa el ISBN y presiona &quot;Buscar&quot; para obtener información automáticamente
                 <span className="md:hidden"> o usa la cámara para escanear el código de barras</span>
               </p>
             </div>
