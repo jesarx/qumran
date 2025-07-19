@@ -59,9 +59,12 @@ interface PublisherData {
   isNew?: boolean;
 }
 
-// Helper function to convert text to title case
-function toTitleCase(str: string): string {
-  return str.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+// Helper function to convert text to sentence case (only first letter capitalized)
+function toSentenceCase(str: string): string {
+  if (!str || str.length === 0) return str;
+
+  // Convert to lowercase and capitalize only the first letter
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
 export default function NewBookForm() {
@@ -227,10 +230,10 @@ export default function NewBookForm() {
     await handleISBNSearch(scannedIsbn);
   };
 
-  // Parse author name from Google Books API format and convert to title case
+  // Parse author name from Google Books API format and convert to sentence case
   const parseAuthorName = (fullName: string): { firstName: string; lastName: string } => {
-    const titleCaseName = toTitleCase(fullName.trim());
-    const parts = titleCaseName.split(' ');
+    const sentenceCaseName = toSentenceCase(fullName.trim());
+    const parts = sentenceCaseName.split(' ');
     if (parts.length === 1) {
       return { firstName: '', lastName: parts[0] };
     }
@@ -252,8 +255,8 @@ export default function NewBookForm() {
       const bookData = await searchBookByISBN(searchIsbn);
 
       if (bookData) {
-        // Auto-fill form fields with title case conversion
-        setTitle(toTitleCase(bookData.title));
+        // Auto-fill form fields with sentence case conversion
+        setTitle(toSentenceCase(bookData.title));
 
         // Parse first author
         if (bookData.authors && bookData.authors.length > 0) {
@@ -282,14 +285,14 @@ export default function NewBookForm() {
         }
 
         if (bookData.publisher) {
-          const titleCasePublisher = toTitleCase(bookData.publisher);
-          const existingPublisher = await findExistingPublisher(titleCasePublisher);
+          const sentenceCasePublisher = toSentenceCase(bookData.publisher);
+          const existingPublisher = await findExistingPublisher(sentenceCasePublisher);
           setPublisher({
-            name: titleCasePublisher,
+            name: sentenceCasePublisher,
             id: existingPublisher?.id,
             isNew: !existingPublisher
           });
-          setPublisherSearchTerm(titleCasePublisher);
+          setPublisherSearchTerm(sentenceCasePublisher);
         }
 
         // Try to match category based on subjects
