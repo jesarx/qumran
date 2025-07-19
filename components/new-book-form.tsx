@@ -59,14 +59,6 @@ interface PublisherData {
   isNew?: boolean;
 }
 
-// Helper function to convert text to sentence case (only first letter capitalized)
-function toSentenceCase(str: string): string {
-  if (!str || str.length === 0) return str;
-
-  // Convert to lowercase and capitalize only the first letter
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-}
-
 export default function NewBookForm() {
   const router = useRouter();
   const [state, formAction] = useActionState(createBookAction, initialState);
@@ -97,30 +89,12 @@ export default function NewBookForm() {
   const [publisherSearchTerm, setPublisherSearchTerm] = useState('');
   const [filteredPublishers, setFilteredPublishers] = useState<Publisher[]>([]);
 
-  // Debounced search functions for authors (by last name) - Fixed for single names
+  // Debounced search functions for authors
   const debouncedAuthorSearch1 = useDebouncedCallback(async (searchTerm: string) => {
     if (searchTerm.length > 0) {
       try {
-        // Search for authors where the search term matches either:
-        // 1. Last name contains the search term
-        // 2. Full name (first + last) contains the search term
         const authorsData = await getAuthorsAction(searchTerm, 'name', 1);
-
-        // Additional client-side filtering to handle edge cases
-        const filteredResults = authorsData.authors.filter(author => {
-          const searchLower = searchTerm.toLowerCase();
-          const lastNameLower = author.last_name.toLowerCase();
-          const firstNameLower = (author.first_name || '').toLowerCase();
-          const fullNameLower = `${firstNameLower} ${lastNameLower}`.trim().toLowerCase();
-
-          return (
-            lastNameLower.includes(searchLower) ||
-            fullNameLower.includes(searchLower) ||
-            lastNameLower === searchLower // Exact match for single names like "Platón"
-          );
-        });
-
-        setFilteredAuthors1(filteredResults);
+        setFilteredAuthors1(authorsData.authors);
       } catch (error) {
         console.error('Failed to search authors:', error);
         setFilteredAuthors1([]);
@@ -134,22 +108,7 @@ export default function NewBookForm() {
     if (searchTerm.length > 0) {
       try {
         const authorsData = await getAuthorsAction(searchTerm, 'name', 1);
-
-        // Additional client-side filtering to handle edge cases
-        const filteredResults = authorsData.authors.filter(author => {
-          const searchLower = searchTerm.toLowerCase();
-          const lastNameLower = author.last_name.toLowerCase();
-          const firstNameLower = (author.first_name || '').toLowerCase();
-          const fullNameLower = `${firstNameLower} ${lastNameLower}`.trim().toLowerCase();
-
-          return (
-            lastNameLower.includes(searchLower) ||
-            fullNameLower.includes(searchLower) ||
-            lastNameLower === searchLower // Exact match for single names like "Platón"
-          );
-        });
-
-        setFilteredAuthors2(filteredResults);
+        setFilteredAuthors2(authorsData.authors);
       } catch (error) {
         console.error('Failed to search authors:', error);
         setFilteredAuthors2([]);
@@ -172,8 +131,6 @@ export default function NewBookForm() {
       setFilteredPublishers([]);
     }
   }, 300);
-
-  // We'll remove the debounced auto-search to only search on blur/tab
 
   // Load initial data
   useEffect(() => {
@@ -221,19 +178,16 @@ export default function NewBookForm() {
     debouncedPublisherSearch(publisherSearchTerm);
   }, [publisherSearchTerm, debouncedPublisherSearch]);
 
-  // Remove the auto-search effect that was triggering while typing
-
   // Handle barcode scan
   const handleBarcodeScan = async (scannedIsbn: string) => {
     setShowScanner(false);
     setIsbn(scannedIsbn);
-    await handleISBNSearch(scannedIsbn);
   };
 
-  // Parse author name from Google Books API format and convert to sentence case
+  // Parse author name from Google Books API format (no transformation)
   const parseAuthorName = (fullName: string): { firstName: string; lastName: string } => {
-    const sentenceCaseName = toSentenceCase(fullName.trim());
-    const parts = sentenceCaseName.split(' ');
+    const trimmedName = fullName.trim();
+    const parts = trimmedName.split(' ');
     if (parts.length === 1) {
       return { firstName: '', lastName: parts[0] };
     }
@@ -243,56 +197,38 @@ export default function NewBookForm() {
     };
   };
 
-  // Search book by ISBN - Updated to not show blocking alerts
-  const handleISBNSearch = async (isbnToSearch?: string) => {
-    const searchIsbn = isbnToSearch || isbn;
-    if (!searchIsbn || searchIsbn.length < 10) {
+  // Search book by ISBN - simplified
+  const handleISBNSearch = async () => {
+    if (!isbn || isbn.length < 10) {
+      alert('Por favor ingresa un ISBN válido (mínimo 10 dígitos)');
       return;
     }
 
     setIsSearchingISBN(true);
     try {
-      const bookData = await searchBookByISBN(searchIsbn);
+      const bookData = await searchBookByISBN(isbn);
 
       if (bookData) {
-        // Auto-fill form fields with sentence case conversion
-        setTitle(toSentenceCase(bookData.title));
+        // Auto-fill form fields (no case transformation)
+        setTitle(bookData.title);
 
         // Parse first author
         if (bookData.authors && bookData.authors.length > 0) {
           const author1Data = parseAuthorName(bookData.authors[0]);
-          const existingAuthor1 = await findExistingAuthor(author1Data.lastName, author1Data.firstName);
-
-          setAuthor1({
-            ...author1Data,
-            id: existingAuthor1?.id,
-            isNew: !existingAuthor1
-          });
+          setAuthor1({ ...author1Data, isNew: true });
           setAuthor1SearchTerm(author1Data.lastName);
 
           // Parse second author if exists
           if (bookData.authors.length > 1) {
             const author2Data = parseAuthorName(bookData.authors[1]);
-            const existingAuthor2 = await findExistingAuthor(author2Data.lastName, author2Data.firstName);
-
-            setAuthor2({
-              ...author2Data,
-              id: existingAuthor2?.id,
-              isNew: !existingAuthor2
-            });
+            setAuthor2({ ...author2Data, isNew: true });
             setAuthor2SearchTerm(author2Data.lastName);
           }
         }
 
         if (bookData.publisher) {
-          const sentenceCasePublisher = toSentenceCase(bookData.publisher);
-          const existingPublisher = await findExistingPublisher(sentenceCasePublisher);
-          setPublisher({
-            name: sentenceCasePublisher,
-            id: existingPublisher?.id,
-            isNew: !existingPublisher
-          });
-          setPublisherSearchTerm(sentenceCasePublisher);
+          setPublisher({ name: bookData.publisher, isNew: true });
+          setPublisherSearchTerm(bookData.publisher);
         }
 
         // Try to match category based on subjects
@@ -306,50 +242,14 @@ export default function NewBookForm() {
             setCategoryId(matchedCategory.id.toString());
           }
         }
+      } else {
+        alert('No se encontró información para este ISBN');
       }
-      // Remove the blocking alert - just silently continue if no data found
     } catch (error) {
       console.error('Error searching ISBN:', error);
-      // Remove blocking alert here too - just log the error
+      alert('Error al buscar el ISBN. Por favor intenta de nuevo.');
     } finally {
       setIsSearchingISBN(false);
-    }
-  };
-
-  // Find existing author in the database
-  const findExistingAuthor = async (lastName: string, firstName: string = ''): Promise<Author | undefined> => {
-    try {
-      const searchTerm = lastName; // Search by last name only
-      const authorsData = await getAuthorsAction(searchTerm, 'name', 1);
-
-      return authorsData.authors.find(author => {
-        const authorLastName = author.last_name.toLowerCase();
-        const authorFirstName = (author.first_name || '').toLowerCase();
-        const searchLastName = lastName.toLowerCase();
-        const searchFirstName = firstName.toLowerCase();
-
-        if (firstName) {
-          return authorLastName === searchLastName && authorFirstName === searchFirstName;
-        } else {
-          return authorLastName === searchLastName && !author.first_name;
-        }
-      });
-    } catch (error) {
-      console.error('Error finding existing author:', error);
-      return undefined;
-    }
-  };
-
-  // Find existing publisher in the database
-  const findExistingPublisher = async (name: string): Promise<Publisher | undefined> => {
-    try {
-      const publishersData = await getPublishersAction(name, 'name', 1);
-      return publishersData.publishers.find(publisher =>
-        publisher.name.toLowerCase() === name.toLowerCase()
-      );
-    } catch (error) {
-      console.error('Error finding existing publisher:', error);
-      return undefined;
     }
   };
 
@@ -386,72 +286,24 @@ export default function NewBookForm() {
     setPublisherPopoverOpen(false);
   };
 
-  // Handle manual author last name input - Fixed to properly detect existing authors
+  // Handle manual author last name input
   const handleAuthorLastNameChange = (value: string, authorNumber: 1 | 2) => {
     if (authorNumber === 1) {
       setAuthor1SearchTerm(value);
-
-      // Check if this matches an existing author from current search results
-      const existingAuthor = filteredAuthors1.find(author => {
-        const searchLower = value.toLowerCase();
-        const lastNameLower = author.last_name.toLowerCase();
-        const firstNameLower = (author.first_name || '').toLowerCase();
-        const fullNameLower = `${firstNameLower} ${lastNameLower}`.trim().toLowerCase();
-
-        return (
-          lastNameLower === searchLower ||
-          fullNameLower === searchLower ||
-          (lastNameLower.includes(searchLower) && searchLower.length > 2)
-        );
-      });
-
-      if (existingAuthor) {
-        setAuthor1({
-          lastName: existingAuthor.last_name,
-          firstName: existingAuthor.first_name || '',
-          id: existingAuthor.id,
-          isNew: false
-        });
-      } else {
-        setAuthor1(prev => ({
-          ...prev,
-          lastName: value,
-          id: undefined,
-          isNew: value.trim().length > 0
-        }));
-      }
+      setAuthor1(prev => ({
+        ...prev,
+        lastName: value,
+        id: undefined,
+        isNew: value.trim().length > 0
+      }));
     } else {
       setAuthor2SearchTerm(value);
-
-      // Check if this matches an existing author from current search results
-      const existingAuthor = filteredAuthors2.find(author => {
-        const searchLower = value.toLowerCase();
-        const lastNameLower = author.last_name.toLowerCase();
-        const firstNameLower = (author.first_name || '').toLowerCase();
-        const fullNameLower = `${firstNameLower} ${lastNameLower}`.trim().toLowerCase();
-
-        return (
-          lastNameLower === searchLower ||
-          fullNameLower === searchLower ||
-          (lastNameLower.includes(searchLower) && searchLower.length > 2)
-        );
-      });
-
-      if (existingAuthor) {
-        setAuthor2({
-          lastName: existingAuthor.last_name,
-          firstName: existingAuthor.first_name || '',
-          id: existingAuthor.id,
-          isNew: false
-        });
-      } else {
-        setAuthor2(prev => ({
-          ...prev,
-          lastName: value,
-          id: undefined,
-          isNew: value.trim().length > 0
-        }));
-      }
+      setAuthor2(prev => ({
+        ...prev,
+        lastName: value,
+        id: undefined,
+        isNew: value.trim().length > 0
+      }));
     }
   };
 
@@ -475,28 +327,11 @@ export default function NewBookForm() {
   // Handle manual publisher input
   const handlePublisherSearchChange = (value: string) => {
     setPublisherSearchTerm(value);
-    if (value.trim()) {
-      // Check if the value matches an existing publisher
-      const existingPublisher = filteredPublishers.find((p: Publisher) =>
-        p.name.toLowerCase() === value.trim().toLowerCase()
-      );
-
-      if (existingPublisher) {
-        setPublisher({
-          name: existingPublisher.name,
-          id: existingPublisher.id,
-          isNew: false
-        });
-      } else {
-        setPublisher({
-          name: value.trim(),
-          id: undefined,
-          isNew: true
-        });
-      }
-    } else {
-      setPublisher({ name: '' });
-    }
+    setPublisher({
+      name: value.trim(),
+      id: undefined,
+      isNew: value.trim().length > 0
+    });
   };
 
   // Handle ISBN input with validation
@@ -506,25 +341,8 @@ export default function NewBookForm() {
     setIsbn(numericValue);
   };
 
-  // Handle ISBN blur for auto-search
-  const handleISBNBlur = () => {
-    if (isbn.length >= 10) {
-      handleISBNSearch();
-    }
-  };
-
-  // Custom form submission to handle author and publisher data
+  // Custom form submission
   const handleSubmit = async (formData: FormData) => {
-    // Debug: Log all form data before submission
-    console.log('Form submission debug:');
-    console.log('ISBN:', isbn);
-    console.log('Title:', title);
-    console.log('Author1:', author1);
-    console.log('Author2:', author2);
-    console.log('Publisher:', publisher);
-    console.log('CategoryId:', categoryId);
-    console.log('LocationId:', locationId);
-
     // Validate required fields before submission
     if (!title.trim()) {
       alert('El título es requerido');
@@ -551,11 +369,11 @@ export default function NewBookForm() {
       return;
     }
 
-    // Ensure all required fields are properly set as strings (not null)
+    // Set form data
     formData.set('title', title.trim());
-    formData.set('isbn', isbn.trim() || ''); // Empty string instead of null
+    formData.set('isbn', isbn.trim() || '');
     formData.set('author1LastName', author1.lastName.trim());
-    formData.set('author1FirstName', author1.firstName?.trim() || ''); // Empty string if undefined
+    formData.set('author1FirstName', author1.firstName?.trim() || '');
     formData.set('publisherName', publisher.name.trim());
     formData.set('categoryId', categoryId.toString());
     formData.set('locationId', locationId.toString());
@@ -564,12 +382,6 @@ export default function NewBookForm() {
     if (author2.lastName && author2.lastName.trim()) {
       formData.set('author2LastName', author2.lastName.trim());
       formData.set('author2FirstName', author2.firstName?.trim() || '');
-    }
-
-    // Debug: Log final FormData
-    console.log('Final FormData entries:');
-    for (const [key, value] of formData.entries()) {
-      console.log(`${key}:`, value, `(type: ${typeof value})`);
     }
 
     return formAction(formData);
@@ -632,7 +444,6 @@ export default function NewBookForm() {
                   type="text"
                   value={isbn}
                   onChange={(e) => handleISBNChange(e.target.value)}
-                  onBlur={handleISBNBlur}
                   className="flex-1"
                   maxLength={13}
                   placeholder="Ingresa el ISBN (solo números)"
@@ -649,7 +460,7 @@ export default function NewBookForm() {
                 </Button>
                 <Button
                   type="button"
-                  onClick={() => handleISBNSearch()}
+                  onClick={handleISBNSearch}
                   disabled={isSearchingISBN || !isbn}
                   variant="outline"
                   className="flex items-center gap-2 cursor-pointer"
@@ -659,7 +470,7 @@ export default function NewBookForm() {
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                Ingresa el ISBN y presiona Tab o el botón &quot;Buscar&quot; para obtener información automáticamente
+                Ingresa el ISBN y presiona "Buscar" para obtener información automáticamente
                 <span className="md:hidden"> o usa la cámara para escanear el código de barras</span>
               </p>
             </div>
@@ -708,40 +519,24 @@ export default function NewBookForm() {
                               "w-full justify-between font-normal",
                               !author1.lastName && "text-muted-foreground"
                             )}
-                            onFocus={() => setAuthor1PopoverOpen(true)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Tab' && !e.shiftKey) {
-                                e.preventDefault();
-                                setAuthor1PopoverOpen(false);
-                                // Focus next field
-                                const nextField = document.getElementById('author1FirstName');
-                                nextField?.focus();
-                              }
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                setAuthor1PopoverOpen(!author1PopoverOpen);
-                              }
-                            }}
                           >
                             {author1.lastName || "Comienza a escribir..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-full p-0" style={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}>
+                        <PopoverContent
+                          className="w-full p-0"
+                          style={{
+                            backgroundColor: 'hsl(var(--popover))',
+                            border: '1px solid hsl(var(--border))',
+                            backdropFilter: 'none'
+                          }}
+                        >
                           <Command style={{ backgroundColor: 'hsl(var(--popover))' }}>
                             <CommandInput
                               placeholder="Buscar apellido..."
                               value={author1SearchTerm}
                               onValueChange={(value) => handleAuthorLastNameChange(value, 1)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Tab' && !e.shiftKey) {
-                                  e.preventDefault();
-                                  setAuthor1PopoverOpen(false);
-                                  // Focus next field
-                                  const nextField = document.getElementById('author1FirstName');
-                                  nextField?.focus();
-                                }
-                              }}
                             />
                             <CommandList>
                               <CommandEmpty>
@@ -824,40 +619,24 @@ export default function NewBookForm() {
                               "w-full justify-between font-normal",
                               !author2.lastName && "text-muted-foreground"
                             )}
-                            onFocus={() => setAuthor2PopoverOpen(true)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Tab' && !e.shiftKey) {
-                                e.preventDefault();
-                                setAuthor2PopoverOpen(false);
-                                // Focus next field
-                                const nextField = document.getElementById('author2FirstName');
-                                nextField?.focus();
-                              }
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                setAuthor2PopoverOpen(!author2PopoverOpen);
-                              }
-                            }}
                           >
                             {author2.lastName || "comienza a escribir..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-full p-0" style={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}>
+                        <PopoverContent
+                          className="w-full p-0"
+                          style={{
+                            backgroundColor: 'hsl(var(--popover))',
+                            border: '1px solid hsl(var(--border))',
+                            backdropFilter: 'none'
+                          }}
+                        >
                           <Command style={{ backgroundColor: 'hsl(var(--popover))' }}>
                             <CommandInput
                               placeholder="Buscar apellido..."
                               value={author2SearchTerm}
                               onValueChange={(value) => handleAuthorLastNameChange(value, 2)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Tab' && !e.shiftKey) {
-                                  e.preventDefault();
-                                  setAuthor2PopoverOpen(false);
-                                  // Focus next field
-                                  const nextField = document.getElementById('author2FirstName');
-                                  nextField?.focus();
-                                }
-                              }}
                             />
                             <CommandList>
                               <CommandEmpty>
@@ -938,42 +717,24 @@ export default function NewBookForm() {
                       "w-full justify-between font-normal",
                       !publisher.name && "text-muted-foreground"
                     )}
-                    onFocus={() => setPublisherPopoverOpen(true)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Tab' && !e.shiftKey) {
-                        e.preventDefault();
-                        setPublisherPopoverOpen(false);
-                        // Focus next field (category select)
-                        setTimeout(() => {
-                          const nextField = document.querySelector('[name="categoryId"]') as HTMLElement;
-                          nextField?.focus();
-                        }, 0);
-                      }
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        setPublisherPopoverOpen(!publisherPopoverOpen);
-                      }
-                    }}
                   >
                     {publisher.name || "Comienza a escribir..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-full p-0" style={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}>
+                <PopoverContent
+                  className="w-full p-0"
+                  style={{
+                    backgroundColor: 'hsl(var(--popover))',
+                    border: '1px solid hsl(var(--border))',
+                    backdropFilter: 'none'
+                  }}
+                >
                   <Command style={{ backgroundColor: 'hsl(var(--popover))' }}>
                     <CommandInput
                       placeholder="Buscar editorial..."
                       value={publisherSearchTerm}
                       onValueChange={handlePublisherSearchChange}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Tab' && !e.shiftKey) {
-                          e.preventDefault();
-                          setPublisherPopoverOpen(false);
-                          // Focus next field
-                          const nextField = document.querySelector('[data-slot="select-trigger"]') as HTMLElement;
-                          nextField?.focus();
-                        }
-                      }}
                     />
                     <CommandList>
                       <CommandEmpty>
