@@ -42,7 +42,6 @@ export default function AuthorsTable({ authors = [], showActions = false }: Auth
                   <Link
                     href={`/dashboard/books?authorSlug=${author.slug}`}
                     className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
-                    title="Editar"
                   >
                     {author.last_name}
                     {author.first_name && `, ${author.first_name}`}
@@ -62,7 +61,7 @@ export default function AuthorsTable({ authors = [], showActions = false }: Auth
               {showActions && (
                 <TableCell className="text-right">
                   <Link href={`/dashboard/authors/${author.id}`}>
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" className="cursor-pointer">
                       Editar
                     </Button>
                   </Link>

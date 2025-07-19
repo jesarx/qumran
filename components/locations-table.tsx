@@ -42,7 +42,6 @@ export default function LocationsTable({ locations = [], showActions = false }: 
                   <Link
                     href={`/dashboard/books?locationSlug=${location.slug}`}
                     className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
-                    title="Editar"
                   >
                     {location.name}
                   </Link>
@@ -60,7 +59,7 @@ export default function LocationsTable({ locations = [], showActions = false }: 
               {showActions && (
                 <TableCell className="text-right">
                   <Link href={`/dashboard/locations/${location.id}`}>
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" className="cursor-pointer">
                       Editar
                     </Button>
                   </Link>
