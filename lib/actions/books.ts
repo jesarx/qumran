@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
+import { auth } from '@/auth';
 import {
   getBooks,
   getBookById,
@@ -107,23 +108,13 @@ function normalizeIsbn(isbn: string): string {
 // Get books with filters - Updated to handle universal search
 export async function getBooksAction(filters: BookFilters = {}) {
   try {
-    console.log('getBooksAction called with filters:', filters);
-
-    // Map the search parameter if it exists
     const processedFilters = {
       ...filters,
-      // If 'search' parameter exists, use it; otherwise fall back to 'title'
       search: filters.search || undefined,
-      title: filters.search ? undefined : filters.title, // Don't use both
+      title: filters.search ? undefined : filters.title,
     };
 
-    const result = await getBooks(processedFilters);
-    console.log('getBooksAction result:', {
-      totalBooks: result.total,
-      booksReturned: result.books.length,
-      filters: processedFilters
-    });
-    return result;
+    return await getBooks(processedFilters);
   } catch (error) {
     console.error('Failed to fetch books:', error);
     throw new Error('Failed to fetch books');
@@ -145,12 +136,10 @@ export async function createBookAction(
   prevState: BookActionState,
   formData: FormData
 ): Promise<BookActionState> {
-  try {
-    console.log('Raw FormData received:');
-    for (const [key, value] of formData.entries()) {
-      console.log(`${key}:`, value, typeof value);
-    }
+  const session = await auth();
+  if (!session) return { success: false, error: 'Unauthorized' };
 
+  try {
     const validatedFields = CreateBookSchema.parse({
       title: formData.get('title'),
       isbn: formData.get('isbn'),
@@ -162,8 +151,6 @@ export async function createBookAction(
       categoryId: Number(formData.get('categoryId')),
       locationId: Number(formData.get('locationId')),
     });
-
-    console.log('Validated fields:', validatedFields);
 
     // Check if ISBN already exists (only if ISBN is provided)
     if (validatedFields.isbn) {
@@ -206,8 +193,6 @@ export async function createBookAction(
       location_id: validatedFields.locationId,
     });
 
-    console.log('Book created successfully:', book.id);
-
     revalidatePath('/books');
     revalidatePath('/dashboard/books');
 
@@ -248,12 +233,10 @@ export async function updateBookAction(
   prevState: BasicActionState,
   formData: FormData
 ): Promise<BasicActionState> {
-  try {
-    console.log('UpdateBookAction - Raw FormData received:');
-    for (const [key, value] of formData.entries()) {
-      console.log(`${key}:`, value, typeof value);
-    }
+  const session = await auth();
+  if (!session) return { success: false, error: 'Unauthorized' };
 
+  try {
     const validatedFields = UpdateBookWithAuthorsSchema.parse({
       id: Number(formData.get('id')),
       title: formData.get('title'),
@@ -266,8 +249,6 @@ export async function updateBookAction(
       categoryId: Number(formData.get('categoryId')),
       locationId: Number(formData.get('locationId')),
     });
-
-    console.log('Validated fields:', validatedFields);
 
     // Check if ISBN already exists (only if ISBN is provided and excluding current book)
     if (validatedFields.isbn) {
@@ -310,8 +291,6 @@ export async function updateBookAction(
       location_id: validatedFields.locationId,
     });
 
-    console.log('Book updated successfully:', validatedFields.id);
-
     revalidatePath('/books');
     revalidatePath('/dashboard/books');
     revalidatePath(`/dashboard/books/${validatedFields.id}`);
@@ -347,6 +326,9 @@ export async function updateBookAction(
 
 // Delete book
 export async function deleteBookAction(id: number): Promise<void> {
+  const session = await auth();
+  if (!session) throw new Error('Unauthorized');
+
   try {
     await deleteBook(id);
 

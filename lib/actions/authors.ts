@@ -5,6 +5,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
+import { auth } from '@/auth';
 import {
   getAuthors,
   getAuthorById,
@@ -73,6 +74,9 @@ export async function createAuthorAction(
   prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  const session = await auth();
+  if (!session) return { success: false, error: 'Unauthorized' };
+
   try {
     const validatedFields = CreateAuthorSchema.parse({
       firstName: formData.get('firstName') || null,
@@ -106,6 +110,9 @@ export async function updateAuthorAction(
   prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  const session = await auth();
+  if (!session) return { success: false, error: 'Unauthorized' };
+
   try {
     const validatedFields = UpdateAuthorSchema.parse({
       id: Number(formData.get('id')),
@@ -142,6 +149,9 @@ export async function updateAuthorAction(
 
 // Delete author
 export async function deleteAuthorAction(id: number): Promise<void> {
+  const session = await auth();
+  if (!session) throw new Error('Unauthorized');
+
   try {
     await deleteAuthor(id);
 

@@ -26,19 +26,21 @@ export const AuthConfig: NextAuthConfig = {
 
       return true;
     },
-    async signIn({ user, account, profile }) {
-      // Check if email is in allowed list
-      const allowedEmails = process.env.ALLOWED_EMAILS?.split(',').map(email => email.trim()) || [];
+    async signIn({ user }) {
+      const allowedEmails = process.env.ALLOWED_EMAILS?.split(',').map(email => email.trim()) ?? [];
 
-      if (allowedEmails.length > 0 && user.email) {
-        const isAllowed = allowedEmails.includes(user.email);
-        if (!isAllowed) {
-          console.log(`Access denied for email: ${user.email}`);
-          return false; // This will redirect to the error page
-        }
+      // Fail closed: if no allowed emails configured, deny all sign-ins
+      if (allowedEmails.length === 0) {
+        console.error('ALLOWED_EMAILS is not configured - denying sign-in');
+        return false;
       }
 
-      return true; // Allow sign in
+      if (!user.email || !allowedEmails.includes(user.email)) {
+        console.error(`Access denied for email: ${user.email ?? 'unknown'}`);
+        return false;
+      }
+
+      return true;
     },
     async session({ session, token }) {
       // You can add custom session properties here if needed
