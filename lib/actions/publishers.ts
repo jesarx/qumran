@@ -5,6 +5,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
+import { auth } from '@/auth';
 import {
   getPublishers,
   getPublisherById,
@@ -71,6 +72,9 @@ export async function createPublisherAction(
   prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  const session = await auth();
+  if (!session) return { success: false, error: 'Unauthorized' };
+
   try {
     const validatedFields = CreatePublisherSchema.parse({
       name: formData.get('name'),
@@ -103,6 +107,9 @@ export async function updatePublisherAction(
   prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  const session = await auth();
+  if (!session) return { success: false, error: 'Unauthorized' };
+
   try {
     const validatedFields = UpdatePublisherSchema.parse({
       id: Number(formData.get('id')),
@@ -134,6 +141,9 @@ export async function updatePublisherAction(
 
 // Delete publisher
 export async function deletePublisherAction(id: number): Promise<void> {
+  const session = await auth();
+  if (!session) throw new Error('Unauthorized');
+
   try {
     await deletePublisher(id);
 

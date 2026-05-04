@@ -5,6 +5,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
+import { auth } from '@/auth';
 import {
   getLocations,
   getLocationById,
@@ -76,6 +77,9 @@ export async function createLocationAction(
   prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  const session = await auth();
+  if (!session) return { success: false, error: 'Unauthorized' };
+
   try {
     const validatedFields = CreateLocationSchema.parse({
       name: formData.get('name'),
@@ -108,6 +112,9 @@ export async function updateLocationAction(
   prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  const session = await auth();
+  if (!session) return { success: false, error: 'Unauthorized' };
+
   try {
     const validatedFields = UpdateLocationSchema.parse({
       id: Number(formData.get('id')),
@@ -139,6 +146,9 @@ export async function updateLocationAction(
 
 // Delete location
 export async function deleteLocationAction(id: number): Promise<void> {
+  const session = await auth();
+  if (!session) throw new Error('Unauthorized');
+
   try {
     await deleteLocation(id);
 
