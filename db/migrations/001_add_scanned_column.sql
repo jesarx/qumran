@@ -2,14 +2,18 @@
 -- Migración 001: columna `scanned` en books + marcado inicial desde Pirateca
 -- ----------------------------------------------------------------------------
 -- Estados (enum book_scan_status):
---   'pending'        -> falta escanear (DEFAULT para todo libro nuevo/existente)
+--   'pending'        -> falta escanear (estado disponible, sin uso por ahora)
 --   'done'           -> ya escaneado (los que existen en la base "pirateca")
---   'not_applicable' -> no aplica escaneo (se asigna manualmente)
+--   'not_applicable' -> no aplica escaneo (DEFAULT por ahora)
 --
 -- Diseño: se usa un ENUM (no un varchar libre) para garantizar a nivel de BD
 -- que solo existan estos 3 valores. La columna es NOT NULL con DEFAULT
--- 'pending', por lo que NO rompe inserts existentes (lib/queries/books.ts
+-- 'not_applicable', por lo que NO rompe inserts existentes (lib/queries/books.ts
 -- inserta columnas explícitas y omite `scanned`).
+--
+-- NOTA: por ahora no se usa 'pending'. Todo lo que no es 'done' queda como
+-- 'not_applicable' y los libros nuevos entran como 'not_applicable'. El valor
+-- 'pending' queda disponible en el enum para cuando se quiera activar.
 --
 -- El marcado 'done' se basa en los fingerprints de la base pirateca
 -- (corte 2026-06-29). Cruce por ISBN normalizado (solo dígitos) y, como
@@ -28,9 +32,9 @@ BEGIN
 END
 $$;
 
--- 2) Columna (idempotente). NOT NULL DEFAULT 'pending'
+-- 2) Columna (idempotente). NOT NULL DEFAULT 'not_applicable'
 ALTER TABLE public.books
-    ADD COLUMN IF NOT EXISTS scanned book_scan_status NOT NULL DEFAULT 'pending';
+    ADD COLUMN IF NOT EXISTS scanned book_scan_status NOT NULL DEFAULT 'not_applicable';
 
 -- 3) Fingerprints de pirateca (isbn normalizado, titulo lower-trim, apellido lower-trim)
 CREATE TEMP TABLE _pirateca_fp (isbn text, title text, last_name text) ON COMMIT DROP;
@@ -357,7 +361,13 @@ UPDATE public.books b
    AND lower(btrim(a.last_name)) = p.last_name
    AND b.scanned <> 'done';
 
--- 6) Resumen
+-- 6) Por ahora no se usa 'pending': cualquier libro no escaneado queda como
+--    'not_applicable' (cubre el caso de que la columna ya existiera con otro
+--    default) y se fija el default para los libros nuevos.
+UPDATE public.books SET scanned = 'not_applicable' WHERE scanned = 'pending';
+ALTER TABLE public.books ALTER COLUMN scanned SET DEFAULT 'not_applicable';
+
+-- 7) Resumen
 SELECT scanned, count(*) FROM public.books GROUP BY scanned ORDER BY scanned;
 
 COMMIT;
