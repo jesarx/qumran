@@ -7,11 +7,30 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
-import { Book } from "@/lib/queries";
+import { Book, BookScanStatus } from "@/lib/queries";
 
 interface BooksTableProps {
   books: Book[];
   showActions?: boolean;
+}
+
+// Traffic-light indicator for the "Escaneado?" column:
+//   done           -> verde
+//   pending        -> amarillo
+//   not_applicable -> gris
+const SCAN_STATUS_META: Record<BookScanStatus, { color: string; label: string }> = {
+  done: { color: "bg-green-500", label: "Escaneado" },
+  pending: { color: "bg-yellow-400", label: "Pendiente" },
+  not_applicable: { color: "bg-gray-400", label: "No aplica" },
+};
+
+function ScanStatusDot({ status }: { status?: BookScanStatus }) {
+  const meta = SCAN_STATUS_META[status ?? "not_applicable"] ?? SCAN_STATUS_META.not_applicable;
+  return (
+    <span className="inline-flex items-center gap-1.5" title={meta.label} aria-label={meta.label}>
+      <span className={`inline-block h-3 w-3 rounded-full ${meta.color}`} />
+    </span>
+  );
 }
 
 // Function to format date compactly
@@ -65,13 +84,14 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
             <TableHead className="font-black hidden sm:table-cell">Ubicación</TableHead>
             <TableHead className="font-black hidden sm:table-cell">ISBN</TableHead>
             <TableHead className="font-black hidden sm:table-cell">Agregado</TableHead>
+            <TableHead className="font-black hidden sm:table-cell text-center">Escaneado?</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {books.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center">
+              <TableCell colSpan={8} className="text-center">
                 No se encontraron libros
               </TableCell>
             </TableRow>
@@ -80,18 +100,21 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
               <TableRow key={book.id}>
                 {/* Mobile-only cell */}
                 <TableCell className="block sm:hidden py-4">
-                  <div className="font-semibold text-sm truncate max-w-[260px]">
-                    {showActions ? (
-                      <Link
-                        href={`/dashboard/books/${book.id}`}
-                        className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
-                        title="Editar"
-                      >
-                        {book.title}
-                      </Link>
-                    ) : (
-                      book.title
-                    )}
+                  <div className="flex items-center gap-2">
+                    <ScanStatusDot status={book.scanned} />
+                    <div className="font-semibold text-sm truncate max-w-[240px]">
+                      {showActions ? (
+                        <Link
+                          href={`/dashboard/books/${book.id}`}
+                          className="font-medium text-sm foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer"
+                          title="Editar"
+                        >
+                          {book.title}
+                        </Link>
+                      ) : (
+                        book.title
+                      )}
+                    </div>
                   </div>
                   <div className="text-xs mt-1">
                     {showActions && book.author1_slug ? (
@@ -220,6 +243,9 @@ export default function BooksTable({ books, showActions = false }: BooksTablePro
                 <TableCell className="text-sm hidden sm:table-cell">{book.isbn || '-'}</TableCell>
                 <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">
                   {formatCompactDate(book.created_at)}
+                </TableCell>
+                <TableCell className="hidden sm:table-cell text-center">
+                  <ScanStatusDot status={book.scanned} />
                 </TableCell>
               </TableRow>
             ))

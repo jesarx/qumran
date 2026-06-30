@@ -204,6 +204,10 @@ CREATE TABLE public.locations (
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Scan status for a book (see db/migrations/001_add_scanned_column.sql).
+-- 'not_applicable' is the explicit "no aplica" state; NULL is not used.
+CREATE TYPE public.book_scan_status AS ENUM ('pending', 'done', 'not_applicable');
+
 -- Books table
 CREATE TABLE public.books (
     id SERIAL PRIMARY KEY,
@@ -214,9 +218,10 @@ CREATE TABLE public.books (
     publisher_id integer NOT NULL,
     category_id integer NOT NULL,
     location_id integer,
+    scanned public.book_scan_status NOT NULL DEFAULT 'not_applicable',
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    
+
     -- Constraints
     CONSTRAINT isbn_format_check CHECK (
         (isbn IS NULL) OR 

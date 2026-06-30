@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
+import { BrowserMultiFormatReader } from '@zxing/browser';
+import { DecodeHintType, BarcodeFormat, NotFoundException } from '@zxing/library';
+import type { IScannerControls } from '@zxing/browser';
 
 interface BarcodeScannerProps {
   onScan: (result: string) => void;
@@ -9,66 +11,83 @@ interface BarcodeScannerProps {
 
 export default function BarcodeScanner({ onScan }: BarcodeScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isScanning, setIsScanning] = useState(true);
+  // Keep the latest onScan without restarting the camera stream.
+  const onScanRef = useRef(onScan);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const codeReader = new BrowserMultiFormatReader();
-    let selectedDeviceId: string | undefined;
+    onScanRef.current = onScan;
+  }, [onScan]);
 
-    const startScanning = async () => {
-      try {
-        // Get available video input devices
-        const videoInputDevices = await codeReader.listVideoInputDevices();
+  useEffect(() => {
+    // Restrict to the 1D formats used by book barcodes. This makes detection
+    // noticeably faster and more reliable on phones than the full multi-format set.
+    const hints = new Map();
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+      BarcodeFormat.UPC_A,
+      BarcodeFormat.UPC_E,
+    ]);
+    hints.set(DecodeHintType.TRY_HARDER, true);
 
-        if (videoInputDevices.length === 0) {
-          setError('No se encontraron cámaras disponibles');
-          return;
+    const codeReader = new BrowserMultiFormatReader(hints);
+    let controls: IScannerControls | undefined;
+    let stopped = false;
+
+    const stop = () => {
+      stopped = true;
+      controls?.stop();
+    };
+
+    // Force the rear/environment camera. Using constraints (instead of
+    // enumerating deviceIds before permission is granted) is what makes the
+    // back camera get selected on mobile — device labels are empty until the
+    // user grants permission, so the old "find a device labelled back" logic
+    // fell back to the front camera and never focused on the barcode.
+    const constraints: MediaStreamConstraints = {
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+    };
+
+    if (!videoRef.current) return;
+
+    codeReader
+      .decodeFromConstraints(constraints, videoRef.current, (result, err) => {
+        if (result) {
+          // Keep only digits; EAN-13 ISBN barcodes are 13 digits.
+          const digits = result.getText().replace(/\D/g, '');
+          if (!stopped && (digits.length === 13 || digits.length === 10)) {
+            stop();
+            onScanRef.current(digits);
+          }
         }
-
-        // Prefer back camera on mobile devices
-        selectedDeviceId = videoInputDevices.find(device =>
-          device.label.toLowerCase().includes('back') ||
-          device.label.toLowerCase().includes('rear')
-        )?.deviceId || videoInputDevices[0].deviceId;
-
-        if (videoRef.current && isScanning) {
-          // Start continuous scanning
-          await codeReader.decodeFromVideoDevice(
-            selectedDeviceId,
-            videoRef.current,
-            (result, error) => {
-              if (result) {
-                const text = result.getText();
-                console.log('Scanned:', text);
-
-                // Check if it's a valid ISBN (10 or 13 digits)
-                if (text && (text.length === 13 || text.length === 10)) {
-                  setIsScanning(false);
-                  onScan(text);
-                  codeReader.reset();
-                }
-              }
-
-              if (error && !(error instanceof NotFoundException)) {
-                console.error('Scanning error:', error);
-              }
-            }
-          );
+        // NotFoundException is thrown for every frame without a barcode; ignore it.
+        if (err && !(err instanceof NotFoundException)) {
+          console.error('Scanning error:', err);
         }
-      } catch (err) {
+      })
+      .then((c) => {
+        controls = c;
+        // If we already matched/unmounted before the promise resolved, stop now.
+        if (stopped) c.stop();
+      })
+      .catch((err) => {
         console.error('Failed to start scanner:', err);
-        setError('Error al iniciar la cámara. Por favor, verifica los permisos.');
-      }
-    };
+        setError(
+          'No se pudo iniciar la cámara. Verifica los permisos y que la página use HTTPS.'
+        );
+      });
 
-    startScanning();
-
-    // Cleanup
     return () => {
-      codeReader.reset();
+      stop();
     };
-  }, [onScan, isScanning]);
+    // Run once on mount; onScan is read through onScanRef.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (error) {
     return (
@@ -87,6 +106,8 @@ export default function BarcodeScanner({ onScan }: BarcodeScannerProps) {
         ref={videoRef}
         className="w-full h-full object-cover"
         playsInline
+        muted
+        autoPlay
       />
 
       {/* Scanning overlay */}
