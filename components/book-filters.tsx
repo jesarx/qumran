@@ -116,6 +116,17 @@ export default function BookFilters({ categories }: BookFiltersProps) {
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  const handleScannedChange = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value && value !== 'all') {
+      params.set('scanned', value);
+      params.set('page', '1');
+    } else {
+      params.delete('scanned');
+    }
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   const handleSortChange = (value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value && value !== '-created_at') { // '-created_at' (Más recientes) is the default
@@ -140,6 +151,7 @@ export default function BookFilters({ categories }: BookFiltersProps) {
   const hasActiveFilters = searchParams.get('search') ||
     searchParams.get('categorySlug') ||
     searchParams.get('locationSlug') ||
+    searchParams.get('scanned') ||
     searchParams.get('authorSlug') ||
     searchParams.get('publisherSlug') ||
     searchParams.get('sort');
@@ -176,6 +188,20 @@ export default function BookFilters({ categories }: BookFiltersProps) {
           removable: true
         });
       }
+    }
+
+    if (searchParams.get('scanned')) {
+      const scannedLabels: Record<string, string> = {
+        done: 'Escaneado',
+        pending: 'Pendiente',
+        not_applicable: 'No aplica',
+      };
+      const value = searchParams.get('scanned') as string;
+      filters.push({
+        type: 'scanned',
+        label: `Escaneado: ${scannedLabels[value] ?? value}`,
+        removable: true,
+      });
     }
 
     if (searchParams.get('authorSlug')) {
@@ -300,6 +326,21 @@ export default function BookFilters({ categories }: BookFiltersProps) {
                 {location.name}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          onValueChange={handleScannedChange}
+          defaultValue={searchParams.get('scanned') || 'all'}
+        >
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Escaneado?" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Escaneado: todos</SelectItem>
+            <SelectItem value="done">Escaneado</SelectItem>
+            <SelectItem value="pending">Pendiente</SelectItem>
+            <SelectItem value="not_applicable">No aplica</SelectItem>
           </SelectContent>
         </Select>
 

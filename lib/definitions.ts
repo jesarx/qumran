@@ -55,6 +55,7 @@ export interface BookFilters extends BaseFilters {
   publisherSlug?: string;
   categorySlug?: string;
   locationSlug?: string;
+  scanned?: 'pending' | 'done' | 'not_applicable';
   sort?: 'title' | '-title' | 'author' | '-author' | 'created_at' | '-created_at';
 }
 
