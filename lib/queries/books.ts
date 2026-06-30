@@ -39,6 +39,7 @@ export interface BookFilters {
   publisherSlug?: string;
   categorySlug?: string;
   locationSlug?: string;
+  scanned?: BookScanStatus;
   page?: number;
   limit?: number;
   sort?: 'title' | '-title' | 'author' | '-author' | 'created_at' | '-created_at';
@@ -114,6 +115,11 @@ export async function getBooks(filters: BookFilters = {}): Promise<{
   if (filters.locationSlug) {
     whereConditions.push(`l.slug = $${++paramCount}`);
     params.push(filters.locationSlug);
+  }
+
+  if (filters.scanned) {
+    whereConditions.push(`b.scanned = $${++paramCount}`);
+    params.push(filters.scanned);
   }
 
   const whereClause = whereConditions.length > 0

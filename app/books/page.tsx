@@ -16,6 +16,7 @@ export default async function BooksPage({
   const authorSlug = typeof params.authorSlug === 'string' ? params.authorSlug : '';
   const publisherSlug = typeof params.publisherSlug === 'string' ? params.publisherSlug : '';
   const locationSlug = typeof params.locationSlug === 'string' ? params.locationSlug : '';
+  const scanned = typeof params.scanned === 'string' ? params.scanned : '';
   const sort = typeof params.sort === 'string' ? params.sort : '';
   const page = typeof params.page === 'string' ? parseInt(params.page) : 1;
 
@@ -27,6 +28,7 @@ export default async function BooksPage({
       authorSlug,
       publisherSlug,
       locationSlug,
+      scanned: scanned as 'pending' | 'done' | 'not_applicable' | undefined,
       sort: sort as 'title' | '-title' | 'author' | '-author' | 'created_at' | '-created_at' | undefined,
       page,
       limit: 20,
