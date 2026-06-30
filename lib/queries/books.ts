@@ -1,6 +1,10 @@
 import { queryOne, queryMany, query } from '@/lib/db';
 import { QueryResultRow } from 'pg';
 
+// Scan status for a book. NULL is not used: 'not_applicable' is the explicit
+// "no aplica" state. See db/migrations/001_add_scanned_column.sql
+export type BookScanStatus = 'pending' | 'done' | 'not_applicable';
+
 export interface Book extends QueryResultRow {
   id: number;
   title: string;
@@ -10,6 +14,7 @@ export interface Book extends QueryResultRow {
   publisher_id: number;
   category_id: number;
   location_id: number | null;
+  scanned: BookScanStatus;
   created_at: Date;
   updated_at: Date;
   // Joined fields
@@ -115,13 +120,10 @@ export async function getBooks(filters: BookFilters = {}): Promise<{
     ? `WHERE ${whereConditions.join(' AND ')}`
     : '';
 
-  // Enhanced sort orders with special handling
-  let orderBy = `
-    get_author_sort_priority(a1.last_name) ASC,
-    normalize_author_lastname_for_sorting(a1.last_name) ASC,
-    a1.first_name ASC,
-    normalize_title_for_sorting(b.title) ASC
-  `; // default: sort by author with special priorities
+  // Enhanced sort orders with special handling.
+  // Default: most recent first ("Más recientes"). b.id is a stable tie-breaker
+  // because many rows share the same created_at (bulk import).
+  let orderBy = `b.created_at DESC, b.id DESC`;
 
   switch (filters.sort) {
     case 'author':
@@ -147,10 +149,10 @@ export async function getBooks(filters: BookFilters = {}): Promise<{
       orderBy = `normalize_title_for_sorting(b.title) DESC`;
       break;
     case 'created_at':
-      orderBy = 'b.created_at ASC';
+      orderBy = 'b.created_at ASC, b.id ASC';
       break;
     case '-created_at':
-      orderBy = 'b.created_at DESC';
+      orderBy = 'b.created_at DESC, b.id DESC';
       break;
   }
 
@@ -242,13 +244,14 @@ export async function createBook(data: {
   publisher_id: number;
   category_id: number;
   location_id?: number | null;
+  scanned?: BookScanStatus;
 }): Promise<Book> {
   // Normalize ISBN if provided
   const normalizedIsbn = data.isbn ? normalizeIsbn(data.isbn) : null;
 
   const result = await queryOne<Book>(
-    `INSERT INTO books (title, isbn, author1_id, author2_id, publisher_id, category_id, location_id) 
-     VALUES ($1, $2, $3, $4, $5, $6, $7) 
+    `INSERT INTO books (title, isbn, author1_id, author2_id, publisher_id, category_id, location_id, scanned)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING *`,
     [
       data.title,
@@ -257,7 +260,8 @@ export async function createBook(data: {
       data.author2_id || null,
       data.publisher_id,
       data.category_id,
-      data.location_id || null
+      data.location_id || null,
+      data.scanned || 'not_applicable'
     ]
   );
 
@@ -287,6 +291,7 @@ export async function updateBook(
     publisher_id?: number;
     category_id?: number;
     location_id?: number | null;
+    scanned?: BookScanStatus;
   }
 ): Promise<Book> {
   const setClauses: string[] = [];
@@ -327,6 +332,11 @@ export async function updateBook(
   if (data.location_id !== undefined) {
     setClauses.push(`location_id = $${++paramCount}`);
     values.push(data.location_id);
+  }
+
+  if (data.scanned !== undefined) {
+    setClauses.push(`scanned = $${++paramCount}`);
+    values.push(data.scanned);
   }
 
   if (setClauses.length === 0) {

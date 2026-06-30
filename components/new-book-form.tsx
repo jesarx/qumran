@@ -29,7 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Camera, X, Search, Save, ArrowLeft, User, BookOpen, MapPin, Check, ChevronsUpDown, Plus, LayoutList, LibraryBig } from 'lucide-react';
+import { Camera, X, Search, Save, ArrowLeft, User, BookOpen, MapPin, Check, ChevronsUpDown, Plus, LayoutList, LibraryBig, ScanLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDebouncedCallback } from 'use-debounce';
 import dynamic from 'next/dynamic';
@@ -72,6 +72,7 @@ export default function NewBookForm() {
   const [title, setTitle] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [locationId, setLocationId] = useState('');
+  const [scanned, setScanned] = useState<'pending' | 'done' | 'not_applicable'>('not_applicable');
 
   // Author fields with popover states
   const [author1, setAuthor1] = useState<AuthorData>({ lastName: '', firstName: '' });
@@ -150,10 +151,12 @@ export default function NewBookForm() {
     loadData();
   }, []);
 
-  // Set default location after locations are loaded
+  // Set default location after locations are loaded.
+  // Prefer "Casa"; fall back to the first location if it doesn't exist.
   useEffect(() => {
     if (locations.length > 0 && !locationId) {
-      setLocationId(locations[0].id.toString());
+      const casa = locations.find(loc => loc.name.trim().toLowerCase() === 'casa');
+      setLocationId((casa ?? locations[0]).id.toString());
     }
   }, [locations, locationId]);
 
@@ -377,6 +380,7 @@ export default function NewBookForm() {
     formData.set('publisherName', publisher.name.trim());
     formData.set('categoryId', categoryId.toString());
     formData.set('locationId', locationId.toString());
+    formData.set('scanned', scanned);
 
     // Only set author2 if lastName exists
     if (author2.lastName && author2.lastName.trim()) {
@@ -825,6 +829,28 @@ export default function NewBookForm() {
                       {location.name}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Scanned status */}
+            <div className="space-y-2">
+              <Label htmlFor="scanned" className="text-sm font-medium flex items-center gap-2">
+                <ScanLine className="h-4 w-4" />
+                Escaneado?
+              </Label>
+              <Select
+                name="scanned"
+                value={scanned}
+                onValueChange={(v) => setScanned(v as 'pending' | 'done' | 'not_applicable')}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="not_applicable">No aplica</SelectItem>
+                  <SelectItem value="pending">Pendiente</SelectItem>
+                  <SelectItem value="done">Escaneado</SelectItem>
                 </SelectContent>
               </Select>
             </div>

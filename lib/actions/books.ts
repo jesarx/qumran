@@ -66,6 +66,7 @@ const CreateBookSchema = z.object({
   publisherName: z.string().trim().min(1, 'Publisher is required'),
   categoryId: z.number().min(1, 'Category is required'),
   locationId: z.number().min(1, 'Location is required'),
+  scanned: z.enum(['pending', 'done', 'not_applicable']).optional().default('not_applicable'),
 });
 
 // Enhanced validation schema for updating books with authors
@@ -98,6 +99,7 @@ const UpdateBookWithAuthorsSchema = z.object({
   publisherName: z.string().trim().min(1, 'Publisher is required'),
   categoryId: z.number().min(1, 'Category is required'),
   locationId: z.number().min(1, 'Location is required'),
+  scanned: z.enum(['pending', 'done', 'not_applicable']).optional(),
 });
 
 // Helper function to normalize ISBN
@@ -150,6 +152,7 @@ export async function createBookAction(
       publisherName: formData.get('publisherName'),
       categoryId: Number(formData.get('categoryId')),
       locationId: Number(formData.get('locationId')),
+      scanned: formData.get('scanned') ?? undefined,
     });
 
     // Check if ISBN already exists (only if ISBN is provided)
@@ -191,6 +194,7 @@ export async function createBookAction(
       publisher_id: publisher.id,
       category_id: validatedFields.categoryId,
       location_id: validatedFields.locationId,
+      scanned: validatedFields.scanned,
     });
 
     revalidatePath('/books');
@@ -248,6 +252,7 @@ export async function updateBookAction(
       publisherName: formData.get('publisherName'),
       categoryId: Number(formData.get('categoryId')),
       locationId: Number(formData.get('locationId')),
+      scanned: formData.get('scanned') ?? undefined,
     });
 
     // Check if ISBN already exists (only if ISBN is provided and excluding current book)
@@ -289,6 +294,7 @@ export async function updateBookAction(
       publisher_id: publisher.id,
       category_id: validatedFields.categoryId,
       location_id: validatedFields.locationId,
+      scanned: validatedFields.scanned,
     });
 
     revalidatePath('/books');

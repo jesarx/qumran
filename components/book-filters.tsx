@@ -118,7 +118,7 @@ export default function BookFilters({ categories }: BookFiltersProps) {
 
   const handleSortChange = (value: string) => {
     const params = new URLSearchParams(searchParams);
-    if (value && value !== 'author') { // 'author' is now the default
+    if (value && value !== '-created_at') { // '-created_at' (Más recientes) is the default
       params.set('sort', value);
     } else {
       params.delete('sort');
@@ -305,18 +305,18 @@ export default function BookFilters({ categories }: BookFiltersProps) {
 
         <Select
           onValueChange={handleSortChange}
-          defaultValue={searchParams.get('sort') || 'author'}
+          defaultValue={searchParams.get('sort') || '-created_at'}
         >
           <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Ordenar por..." />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="-created_at">Más recientes</SelectItem>
+            <SelectItem value="created_at">Más antiguos</SelectItem>
             <SelectItem value="author">Por Autor (A-Z)</SelectItem>
             <SelectItem value="-author">Por Autor (Z-A)</SelectItem>
             <SelectItem value="title">Título (A-Z)</SelectItem>
             <SelectItem value="-title">Título (Z-A)</SelectItem>
-            <SelectItem value="-created_at">Más recientes</SelectItem>
-            <SelectItem value="created_at">Más antiguos</SelectItem>
           </SelectContent>
         </Select>
 

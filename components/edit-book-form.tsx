@@ -37,7 +37,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Trash2, Save, ArrowLeft, User, MapPin, Check, ChevronsUpDown, Plus, LayoutList, LibraryBig } from 'lucide-react';
+import { Trash2, Save, ArrowLeft, User, MapPin, Check, ChevronsUpDown, Plus, LayoutList, LibraryBig, ScanLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDebouncedCallback } from 'use-debounce';
 
@@ -74,6 +74,7 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
   const [isbn, setIsbn] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [locationId, setLocationId] = useState('');
+  const [scanned, setScanned] = useState<'pending' | 'done' | 'not_applicable'>('not_applicable');
 
   // Author fields with popover states
   const [author1, setAuthor1] = useState<AuthorData>({ lastName: '', firstName: '' });
@@ -152,6 +153,7 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
           setIsbn(bookData.isbn || '');
           setCategoryId(bookData.category_id.toString());
           setLocationId(bookData.location_id?.toString() || '');
+          setScanned(bookData.scanned ?? 'not_applicable');
 
           // Set author data - Fix: Convert null to undefined
           setAuthor1({
@@ -381,6 +383,7 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
     formData.set('publisherName', publisher.name.trim());
     formData.set('categoryId', categoryId.toString());
     formData.set('locationId', locationId.toString());
+    formData.set('scanned', scanned);
 
     // Only set author2 if lastName exists
     if (author2.lastName && author2.lastName.trim()) {
@@ -802,6 +805,28 @@ export default function EditBookForm({ bookId }: { bookId: number }) {
                       {location.name}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Scanned status */}
+            <div className="space-y-2">
+              <Label htmlFor="scanned" className="text-sm font-medium flex items-center gap-2">
+                <ScanLine className="h-4 w-4" />
+                Escaneado?
+              </Label>
+              <Select
+                name="scanned"
+                value={scanned}
+                onValueChange={(v) => setScanned(v as 'pending' | 'done' | 'not_applicable')}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="not_applicable">No aplica</SelectItem>
+                  <SelectItem value="pending">Pendiente</SelectItem>
+                  <SelectItem value="done">Escaneado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
