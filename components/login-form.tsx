@@ -8,18 +8,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { authenticate } from '@/lib/actions';
 import { useSearchParams } from 'next/navigation';
-import { FcGoogle } from 'react-icons/fc'; // You'll need to install react-icons
+import { useActionState } from 'react';
+import { KeyRound, LogIn } from 'lucide-react';
 
 export default function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
-  const error = searchParams.get('error');
-
-  const handleGoogleLogin = async () => {
-    await authenticate('google', callbackUrl);
-  };
+  const [errorMessage, formAction, isPending] = useActionState(
+    authenticate,
+    undefined
+  );
 
   return (
     <Card className="w-[350px]">
@@ -28,26 +30,45 @@ export default function LoginForm() {
         <CardDescription>Accede al panel de administración</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid w-full items-center gap-4">
-          {error && (
-            <div className="p-3 text-sm text-red-500 bg-red-50 rounded">
-              Error al iniciar sesión. Por favor intenta de nuevo.
+        <form action={formAction} className="grid w-full items-center gap-4">
+          {errorMessage && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-300 rounded">
+              {errorMessage}
             </div>
           )}
 
+          <div className="space-y-2">
+            <Label htmlFor="password" className="flex items-center gap-2">
+              <KeyRound className="h-4 w-4" />
+              Contraseña
+            </Label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              required
+              autoFocus
+              autoComplete="current-password"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <input type="hidden" name="callbackUrl" value={callbackUrl} />
+
           <Button
-            onClick={handleGoogleLogin}
+            type="submit"
             variant="outline"
-            className="w-full"
+            className="w-full cursor-pointer"
+            disabled={isPending}
           >
-            <FcGoogle className="mr-2 h-4 w-4" />
-            Continuar con Google
+            <LogIn className="mr-2 h-4 w-4" />
+            {isPending ? 'Entrando...' : 'Entrar'}
           </Button>
 
           <p className="text-xs text-center text-gray-500 mt-4">
-            Solo usuarios autorizados pueden acceder al panel de administración.
+            Solo el administrador puede acceder a esta sección.
           </p>
-        </div>
+        </form>
       </CardContent>
     </Card>
   );
