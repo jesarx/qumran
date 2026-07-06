@@ -73,10 +73,12 @@ NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="tu_secret_aqui"
 
 # Login con contraseña (hash bcrypt, nunca la contraseña en texto plano).
-# Generar el hash con:
-#   node -e "console.log(require('bcryptjs').hashSync(process.argv[1], 12))" 'tu-contraseña'
-# Usar comillas simples: el hash contiene caracteres $.
-ADMIN_PASSWORD_HASH='$2b$12$...'
+# Generar la línea completa con:
+#   node scripts/hash-password.js 'tu-contraseña'
+# IMPORTANTE: Next.js expande $VAR dentro de los .env (incluso entre
+# comillas), por lo que cada $ del hash debe ir escapado como \$.
+# El script ya entrega la línea con los escapes puestos.
+ADMIN_PASSWORD_HASH='\$2b\$12\$...'
 ```
 
 4. **Configurar base de datos**
