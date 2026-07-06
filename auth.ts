@@ -1,12 +1,66 @@
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
 import type { NextAuthConfig } from "next-auth";
+
+// Single-admin password login. The password is never stored: only its bcrypt
+// hash lives in ADMIN_PASSWORD_HASH. Generate one with:
+//   node -e "console.log(require('bcryptjs').hashSync(process.argv[1], 12))" 'tu-contraseña'
+//
+// Brute-force protection (single-instance in-memory limiter — this app runs
+// as one Node process on the VPS):
+//   - after MAX_ATTEMPTS failed tries within WINDOW_MS, logins are rejected
+//     until the window expires, even with the right password.
+//   - bcrypt cost 12 also makes each attempt inherently slow (~100ms).
+const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_ATTEMPTS = 5;
+let failedAttempts: number[] = [];
+
+// Dummy hash ("this-is-not-the-password") so a misconfigured server still
+// burns a bcrypt compare instead of returning instantly (no timing oracle).
+const DUMMY_HASH = "$2b$12$7JzX0GFft2BILcWAkQCYUOY6w.yPIcAOu4BmrB0fraTfJ6pkfNZFO";
+
+function isLockedOut(): boolean {
+  const now = Date.now();
+  failedAttempts = failedAttempts.filter((t) => now - t < WINDOW_MS);
+  return failedAttempts.length >= MAX_ATTEMPTS;
+}
 
 export const AuthConfig: NextAuthConfig = {
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    Credentials({
+      name: "Contraseña",
+      credentials: {
+        password: { label: "Contraseña", type: "password" },
+      },
+      async authorize(credentials) {
+        const password = credentials?.password;
+        if (typeof password !== "string" || password.length === 0) {
+          return null;
+        }
+
+        if (isLockedOut()) {
+          console.error("Login locked out: too many failed attempts");
+          return null;
+        }
+
+        const hash = process.env.ADMIN_PASSWORD_HASH;
+        if (!hash) {
+          // Fail closed, but still spend a bcrypt compare.
+          console.error("ADMIN_PASSWORD_HASH is not configured - denying sign-in");
+          await bcrypt.compare(password, DUMMY_HASH);
+          return null;
+        }
+
+        const ok = await bcrypt.compare(password, hash);
+        if (!ok) {
+          failedAttempts.push(Date.now());
+          return null;
+        }
+
+        failedAttempts = [];
+        return { id: "admin", name: "Admin" };
+      },
     }),
   ],
   pages: {
@@ -26,36 +80,19 @@ export const AuthConfig: NextAuthConfig = {
 
       return true;
     },
-    async signIn({ user }) {
-      const allowedEmails = process.env.ALLOWED_EMAILS?.split(',').map(email => email.trim()) ?? [];
-
-      // Fail closed: if no allowed emails configured, deny all sign-ins
-      if (allowedEmails.length === 0) {
-        console.error('ALLOWED_EMAILS is not configured - denying sign-in');
-        return false;
-      }
-
-      if (!user.email || !allowedEmails.includes(user.email)) {
-        console.error(`Access denied for email: ${user.email ?? 'unknown'}`);
-        return false;
-      }
-
-      return true;
-    },
-    async session({ session, token }) {
-      // You can add custom session properties here if needed
-      return session;
-    },
-    async jwt({ token, user, account }) {
-      // Persist user data in token
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
       }
       return token;
     },
+    async session({ session }) {
+      return session;
+    },
   },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
 };
 

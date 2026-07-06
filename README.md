@@ -72,9 +72,11 @@ DATABASE_URL="postgresql://usuario:contraseña@localhost:5432/qumran"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="tu_secret_aqui"
 
-# Google OAuth
-GOOGLE_CLIENT_ID="tu_google_client_id"
-GOOGLE_CLIENT_SECRET="tu_google_client_secret"
+# Login con contraseña (hash bcrypt, nunca la contraseña en texto plano).
+# Generar el hash con:
+#   node -e "console.log(require('bcryptjs').hashSync(process.argv[1], 12))" 'tu-contraseña'
+# Usar comillas simples: el hash contiene caracteres $.
+ADMIN_PASSWORD_HASH='$2b$12$...'
 ```
 
 4. **Configurar base de datos**
