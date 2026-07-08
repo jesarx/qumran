@@ -2,7 +2,10 @@ package main
 
 import (
 	"io/fs"
+	"log/slog"
 	"net/http"
+
+	"github.com/justinas/nosurf"
 )
 
 func (app *application) routes() http.Handler {
@@ -25,10 +28,41 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("GET /locations", app.locationsHandler)
 	mux.HandleFunc("GET /about", app.aboutHandler)
 
+	// Auth
+	mux.HandleFunc("GET /login", app.loginPageHandler)
+	mux.HandleFunc("POST /login", app.loginPostHandler)
+	mux.HandleFunc("POST /logout", app.logoutHandler)
+
+	// Dashboard (protegido). El sub-mux ve el path completo; las rutas CRUD
+	// se agregan en la etapa 4.
+	dashboard := http.NewServeMux()
+	dashboard.HandleFunc("GET /dashboard", app.dashboardHandler)
+	dashboard.HandleFunc("/", app.notFound)
+	mux.Handle("/dashboard", app.requireAuth(dashboard))
+	mux.Handle("/dashboard/", app.requireAuth(dashboard))
+
 	// Cualquier otra ruta: 404 con la página propia
 	mux.HandleFunc("/", app.notFound)
 
-	return app.securityHeaders(mux)
+	// CSRF en todos los POST; sesiones cargadas/guardadas en cada request.
+	csrf := nosurf.New(mux)
+	csrf.SetBaseCookie(http.Cookie{
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   app.secureCookies,
+	})
+	csrf.SetFailureHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		slog.Warn("CSRF rechazado", "url", r.URL.Path, "reason", nosurf.Reason(r))
+		http.Error(w, "Solicitud inválida (CSRF)", http.StatusBadRequest)
+	}))
+	// Detrás del proxy TLS (nginx/caddy) la conexión local es HTTP plano;
+	// nosurf necesita saber el esquema real para el chequeo de mismo origen.
+	csrf.SetIsTLSFunc(func(r *http.Request) bool {
+		return r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https"
+	})
+
+	return app.securityHeaders(app.sessions.LoadAndSave(csrf))
 }
 
 func (app *application) securityHeaders(next http.Handler) http.Handler {

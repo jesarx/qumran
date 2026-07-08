@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/justinas/nosurf"
 )
 
 //go:embed templates
@@ -103,12 +105,14 @@ func newTemplateCache() (map[string]*template.Template, error) {
 type templateData struct {
 	IsAuthenticated bool
 	CurrentPath     string
+	CSRFToken       string
 	Flash           string
 
 	Home       *HomeData
 	Books      *BooksPageData
 	BookDetail *Book
 	SimpleList *SimpleListPageData
+	Login      *LoginPageData
 }
 
 func (app *application) render(w http.ResponseWriter, r *http.Request, status int, page string, data templateData) {
@@ -120,6 +124,7 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, status in
 
 	data.CurrentPath = r.URL.Path
 	data.IsAuthenticated = app.isAuthenticated(r)
+	data.CSRFToken = nosurf.Token(r)
 
 	buf := new(bytes.Buffer)
 	if err := ts.ExecuteTemplate(buf, "base", data); err != nil {
@@ -136,7 +141,6 @@ func (app *application) serverError(w http.ResponseWriter, r *http.Request, err 
 	http.Error(w, "Error interno del servidor", http.StatusInternalServerError)
 }
 
-// isAuthenticated is wired for real in stage 3 (sessions); for now nobody is.
 func (app *application) isAuthenticated(r *http.Request) bool {
-	return false
+	return app.sessions.GetBool(r.Context(), "authenticated")
 }

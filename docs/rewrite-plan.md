@@ -72,8 +72,13 @@ go/
       `/books/{id}`, `/authors`, `/publishers`, `/tags`, `/locations`, `/about`.
       (Paridad verificada contra la app Next corriendo en paralelo: mismos
       totales y mismo orden en todos los filtros/sorts probados. 404 propio.)
-- [ ] **Etapa 3 — Auth**: `/login`, `/logout`, sesiones scs, lockout, CSRF,
-      middleware de `/dashboard`.
+- [x] **Etapa 3 — Auth**: `/login`, `/logout`, sesiones scs, lockout, CSRF,
+      middleware de `/dashboard`. (E2E verificado: redirect a login con ?next=,
+      CSRF 400 sin token, 422 con contraseña mala, lockout 5/15min, logout.
+      Login probado también con Chromium real. Nota: nosurf 1.2 exige
+      same-origin (Sec-Fetch-Site/Origin/Referer) — los curl de prueba deben
+      mandar `-H "Sec-Fetch-Site: same-origin"`; SetIsTLSFunc lee
+      X-Forwarded-Proto para funcionar detrás del proxy TLS.)
 - [ ] **Etapa 4 — Dashboard CRUD**: libros (crear/editar/borrar, find-or-create
       de autores/editoriales, campo scanned), autores, editoriales, ubicaciones.
 - [ ] **Etapa 5 — Extras**: búsqueda Google Books por ISBN, escáner de códigos

@@ -35,27 +35,42 @@ type HomeData struct {
 }
 
 func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
+	data, err := app.buildHomeData(r)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+	app.render(w, r, http.StatusOK, "home", templateData{Home: data})
+}
+
+// dashboardHandler shows the same analytics with dashboard quick links.
+func (app *application) dashboardHandler(w http.ResponseWriter, r *http.Request) {
+	data, err := app.buildHomeData(r)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+	app.render(w, r, http.StatusOK, "dashboard", templateData{Home: data})
+}
+
+func (app *application) buildHomeData(r *http.Request) (*HomeData, error) {
 	ctx := r.Context()
 
 	booksData, err := app.db.GetBooks(ctx, BookFilters{Limit: 8, Sort: "-created_at"})
 	if err != nil {
-		app.serverError(w, r, err)
-		return
+		return nil, err
 	}
 	authorsData, err := app.db.GetAuthors(ctx, "", "-book_count", 1, 10)
 	if err != nil {
-		app.serverError(w, r, err)
-		return
+		return nil, err
 	}
 	publishersData, err := app.db.GetPublishers(ctx, "", "-book_count", 1, 10)
 	if err != nil {
-		app.serverError(w, r, err)
-		return
+		return nil, err
 	}
 	categories, err := app.db.GetCategories(ctx, "", "")
 	if err != nil {
-		app.serverError(w, r, err)
-		return
+		return nil, err
 	}
 
 	data := HomeData{
@@ -126,5 +141,5 @@ func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	app.render(w, r, http.StatusOK, "home", templateData{Home: &data})
+	return &data, nil
 }

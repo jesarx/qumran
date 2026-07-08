@@ -11,12 +11,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/alexedwards/scs/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type application struct {
-	db        *DB
-	templates map[string]*template.Template
+	db            *DB
+	templates     map[string]*template.Template
+	sessions      *scs.SessionManager
+	limiter       loginLimiter
+	secureCookies bool
 }
 
 func main() {
@@ -60,9 +64,21 @@ func main() {
 		os.Exit(1)
 	}
 
+	// COOKIE_SECURE=false permite probar sobre HTTP plano (dev). En producción
+	// (detrás de HTTPS) se queda el default true.
+	secureCookies := envOr("COOKIE_SECURE", "true") != "false"
+
+	sessions := scs.New()
+	sessions.Lifetime = 30 * 24 * time.Hour // 30 días, como la app Next
+	sessions.Cookie.HttpOnly = true
+	sessions.Cookie.SameSite = http.SameSiteLaxMode
+	sessions.Cookie.Secure = secureCookies
+
 	app := &application{
-		db:        &DB{pool: pool},
-		templates: templates,
+		db:            &DB{pool: pool},
+		templates:     templates,
+		sessions:      sessions,
+		secureCookies: secureCookies,
 	}
 
 	srv := &http.Server{
