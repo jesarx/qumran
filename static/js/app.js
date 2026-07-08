@@ -53,8 +53,34 @@
     form.querySelectorAll('input[name], select[name]').forEach(function (el) {
       if (!el.value) el.removeAttribute('name');
     });
+    showLoader(); // form.submit() no dispara el evento submit
     form.submit();
   }
+
+  // --- Loader de navegación (barra de progreso superior) ---
+  var pageLoader = document.getElementById('page-loader');
+  function showLoader() {
+    if (pageLoader) pageLoader.classList.add('active');
+  }
+  document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a || a.target === '_blank' || a.hasAttribute('download')) return;
+    var url = new URL(a.href, location.href);
+    if (url.origin !== location.origin) return;
+    // Las anclas dentro de la misma página no navegan
+    if (url.pathname === location.pathname && url.search === location.search && url.hash) return;
+    showLoader();
+  });
+  document.addEventListener('submit', function (e) {
+    // data-confirm puede cancelar el envío; ese listener corre antes por
+    // estar registrado en el propio form (fase de captura del target).
+    if (!e.defaultPrevented) showLoader();
+  });
+  // Al volver con el botón atrás (bfcache) la página revive: ocultar la barra
+  window.addEventListener('pageshow', function () {
+    if (pageLoader) pageLoader.classList.remove('active');
+  });
 
   // --- Confirmación en formularios destructivos ---
   document.querySelectorAll('form[data-confirm]').forEach(function (form) {

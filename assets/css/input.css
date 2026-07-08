@@ -216,6 +216,37 @@
   background: hsl(var(--muted-foreground) / 0.5);
 }
 
+/* Transición suave entre páginas (Chrome/Edge/Safari; en Firefox simplemente
+   no aplica). La página anterior queda visible hasta que la nueva pinta,
+   con un cross-fade breve: elimina el "parpadeo" de la navegación clásica. */
+@view-transition {
+  navigation: auto;
+}
+
+/* Barra de progreso de navegación (loader). Se activa con .active desde
+   app.js al hacer click en un enlace interno o enviar un formulario. */
+#page-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: hsl(var(--primary));
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+}
+#page-loader.active {
+  opacity: 1;
+  animation: page-loading 8s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+@keyframes page-loading {
+  0% { width: 0; }
+  10% { width: 40%; }
+  50% { width: 75%; }
+  100% { width: 95%; }
+}
+
 /* Animación del escáner de códigos */
 @keyframes scan {
   0% { transform: translateY(0); }

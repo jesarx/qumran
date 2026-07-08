@@ -6,7 +6,12 @@
   <title>{{template "title" .}} | qumran.cc</title>
   <meta name="description" content="biblioteca personal de eduardo partida">
   <link rel="icon" href="/favicon.ico">
-  <link rel="stylesheet" href="/static/css/main.css">
+  <!-- Fondo inline ANTES de la hoja de estilos: evita el destello blanco
+       mientras carga el CSS. El script de tema corre antes del primer paint. -->
+  <style>
+    html { background-color: hsl(220 13% 6%); }
+    html.light { background-color: hsl(0 0% 100%); }
+  </style>
   <script>
     (function() {
       try {
@@ -20,8 +25,11 @@
       }
     })();
   </script>
+  <link rel="stylesheet" href="/static/css/main.css">
 </head>
 <body class="antialiased bg-background text-foreground font-sans">
+  <!-- Barra de progreso de navegación -->
+  <div id="page-loader" aria-hidden="true"></div>
   <div class="flex min-h-screen">
 
     <!-- Sidebar -->
