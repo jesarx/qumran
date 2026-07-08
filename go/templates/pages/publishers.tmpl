@@ -1,0 +1,40 @@
+{{define "title"}}Editoriales{{end}}
+
+{{define "main"}}
+{{with .SimpleList}}
+<div class="mx-auto max-w-2xl p-4 bg-background min-h-screen">
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-foreground mb-4">Editoriales</h1>
+    <p class="text-muted-foreground mb-4">
+      {{.Total}} {{if eq .Total 1}}editorial{{else}}editoriales{{end}} en total
+    </p>
+    {{template "simple_filters" dict "Action" "/publishers" "Search" .Search "Sort" .Sort "HasFilters" .HasFilters "Placeholder" "Buscar por nombre..."}}
+  </div>
+
+  <div class="bg-card rounded-lg shadow-sm p-6">
+    <table class="w-full caption-bottom text-sm">
+      <thead class="[&_tr]:border-b">
+        <tr class="border-b">
+          <th class="h-10 px-2 text-left align-middle font-black">Nombre</th>
+          <th class="h-10 px-2 text-left align-middle font-black">Número de Libros</th>
+        </tr>
+      </thead>
+      <tbody class="[&_tr:last-child]:border-0">
+        {{if not .Publishers}}
+        <tr class="border-b"><td colspan="2" class="p-2 align-middle text-center">No se encontraron editoriales</td></tr>
+        {{end}}
+        {{range .Publishers}}
+        <tr class="border-b transition-colors hover:bg-muted/50">
+          <td class="p-2 align-middle">
+            <a href="/books?publisherSlug={{.Slug}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors">{{.Name}}</a>
+          </td>
+          <td class="p-2 align-middle">{{.BookCount}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+    {{template "pagination" .Pagination}}
+  </div>
+</div>
+{{end}}
+{{end}}

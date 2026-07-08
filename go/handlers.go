@@ -52,7 +52,7 @@ func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 		return
 	}
-	categories, err := app.db.GetCategories(ctx)
+	categories, err := app.db.GetCategories(ctx, "", "")
 	if err != nil {
 		app.serverError(w, r, err)
 		return

@@ -1,0 +1,20 @@
+{{define "title"}}Biblioteca{{end}}
+
+{{define "main"}}
+{{with .Books}}
+<div class="mx-auto max-w-7xl p-4 bg-background min-h-screen min-w-3/4">
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-foreground">Biblioteca</h1>
+    <p class="text-muted-foreground mt-2">
+      {{.List.Total}} {{if eq .List.Total 1}}libro{{else}}libros{{end}} en total
+    </p>
+  </div>
+
+  <div class="bg-card rounded-lg shadow-sm p-6">
+    {{template "book_filters" .}}
+    {{template "books_table" .}}
+    {{template "pagination" .Pagination}}
+  </div>
+</div>
+{{end}}
+{{end}}

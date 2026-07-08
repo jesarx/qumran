@@ -1,0 +1,131 @@
+{{define "title"}}Acerca de{{end}}
+
+{{define "main"}}
+<div class="mx-auto max-w-4xl p-4 bg-background min-h-screen">
+  <div class="space-y-8">
+    <!-- Encabezado -->
+    <div class="text-center space-y-6">
+      <div class="relative">
+        <h1 class="uppercase text-5xl font-light text-foreground tracking-wide">Qumran</h1>
+        <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent"></div>
+      </div>
+      <p class="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+        Sistema de gestión de biblioteca personal.
+      </p>
+    </div>
+
+    <!-- Qué es Qumran -->
+    <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-3xl"></div>
+      <div class="p-6">
+        <h2 class="flex items-center gap-3 text-xl font-semibold">
+          <div class="p-2 bg-primary/10 rounded-lg">{{icon "book-open" "h-6 w-6 text-primary"}}</div>
+          ¿Qué es Qumran?
+        </h2>
+      </div>
+      <div class="p-6 pt-0 space-y-4 relative z-10">
+        <p class="text-foreground leading-relaxed text-lg">
+          Qumran es un sistema de gestión de biblioteca personal diseñado para organizar,
+          catalogar y administrar colecciones de libros de manera eficiente. Desarrollado
+          como una aplicación web, permite llevar un control detallado de autores,
+          editoriales, categorías y ubicaciones físicas de los libros.
+          El nombre &ldquo;Qumran&rdquo; hace referencia al sitio arqueológico donde se descubrieron
+          los famosos Manuscritos del Mar Muerto.
+        </p>
+        <div class="flex flex-wrap gap-3 pt-2">
+          <a href="https://github.com/jesarx/qumran" target="_blank" rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+            {{icon "arrow-right" "h-4 w-4"}}
+            Código Fuente
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sobre mí -->
+    <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-full blur-3xl"></div>
+      <div class="p-6">
+        <h2 class="flex items-center gap-3 text-xl font-semibold">
+          <div class="p-2 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-lg">{{icon "user" "h-6 w-6 text-blue-600 dark:text-blue-400"}}</div>
+          Sobre mí
+        </h2>
+      </div>
+      <div class="p-6 pt-0 space-y-6 relative z-10">
+        <div class="space-y-4">
+          <h3 class="text-lg font-semibold text-foreground">Eduardo Partida</h3>
+          <div class="space-y-3">
+            <div class="flex items-start gap-3">
+              {{icon "star" "h-5 w-5 text-red-500 flex-shrink-0 mt-0.5"}}
+              <p class="text-foreground leading-relaxed">
+                Los libros son una parte muy importante de mi cosmología.
+                Lo que está en este sitio web describe una buena parte de mi sistema de pensamiento.
+                Cada libro en esta biblioteca ha contribuido de alguna manera a mi forma de ver el mundo.
+              </p>
+            </div>
+            <div class="flex items-start gap-3">
+              {{icon "book" "h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5"}}
+              <p class="text-foreground leading-relaxed">
+                Qumran nació de la necesidad personal de organizar mi biblioteca física.
+                Al convertirlo en código abierto, espero que pueda ayudar a otros bibliófilos
+                a gestionar sus propias colecciones.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-3 pt-2">
+          <a href="https://edpartida.com" target="_blank" rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+            {{icon "arrow-right" "h-4 w-4"}}
+            Sitio Personal
+          </a>
+          <a href="mailto:edpartida@proton.me"
+            class="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+            {{icon "arrow-right" "h-4 w-4"}}
+            Contacto
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tecnologías -->
+    <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-36 h-36 bg-gradient-to-br from-violet-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
+      <div class="p-6">
+        <h2 class="flex items-center gap-3 text-xl font-semibold">
+          <div class="p-2 bg-violet-500/10 rounded-lg">{{icon "square-plus" "h-6 w-6 text-violet-600 dark:text-violet-400"}}</div>
+          Tecnologías Utilizadas
+        </h2>
+      </div>
+      <div class="p-6 pt-0 relative z-10">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="space-y-4">
+            <h4 class="font-semibold text-lg">Aplicación</h4>
+            <div class="space-y-2 pl-2">
+              <div class="flex items-center gap-2"><div class="w-2 h-2 bg-blue-500 rounded-full"></div><span class="text-sm">Go (net/http)</span></div>
+              <div class="flex items-center gap-2"><div class="w-2 h-2 bg-blue-500 rounded-full"></div><span class="text-sm">html/template</span></div>
+              <div class="flex items-center gap-2"><div class="w-2 h-2 bg-blue-500 rounded-full"></div><span class="text-sm">Tailwind CSS</span></div>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <h4 class="font-semibold text-lg">Datos</h4>
+            <div class="space-y-2 pl-2">
+              <div class="flex items-center gap-2"><div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-sm">PostgreSQL</span></div>
+              <div class="flex items-center gap-2"><div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-sm">pgx</span></div>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <h4 class="font-semibold text-lg">Seguridad</h4>
+            <div class="space-y-2 pl-2">
+              <div class="flex items-center gap-2"><div class="w-2 h-2 bg-purple-500 rounded-full"></div><span class="text-sm">Sesiones con cookie</span></div>
+              <div class="flex items-center gap-2"><div class="w-2 h-2 bg-purple-500 rounded-full"></div><span class="text-sm">bcrypt</span></div>
+              <div class="flex items-center gap-2"><div class="w-2 h-2 bg-purple-500 rounded-full"></div><span class="text-sm">Protección CSRF</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{{end}}

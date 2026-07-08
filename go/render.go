@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 )
 
 //go:embed templates
@@ -28,10 +29,38 @@ func icon(name, class string) template.HTML {
 		template.HTMLEscapeString(class), inner))
 }
 
+// compactDate renders dates like books-table.tsx: Hoy, Ayer, Nd, DD/MM, DD/MM/YY.
+func compactDate(t time.Time) string {
+	now := time.Now()
+	days := int(now.Sub(t).Hours() / 24)
+	switch {
+	case days == 0:
+		return "Hoy"
+	case days == 1:
+		return "Ayer"
+	case days <= 7:
+		return fmt.Sprintf("%dd", days)
+	case t.Year() == now.Year():
+		return t.Format("02/01")
+	default:
+		return t.Format("02/01/06")
+	}
+}
+
+// longDate renders "2 de enero de 2006" for the detail page.
+func longDate(t time.Time) string {
+	months := []string{"enero", "febrero", "marzo", "abril", "mayo", "junio",
+		"julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"}
+	return fmt.Sprintf("%d de %s de %d", t.Day(), months[t.Month()-1], t.Year())
+}
+
 var templateFuncs = template.FuncMap{
-	"icon": icon,
-	"add":  func(a, b int) int { return a + b },
-	"sub":  func(a, b int) int { return a - b },
+	"icon":        icon,
+	"add":         func(a, b int) int { return a + b },
+	"sub":         func(a, b int) int { return a - b },
+	"compactDate": compactDate,
+	"longDate":    longDate,
+	"deref":       deref,
 	// dict builds a map for passing several values to a sub-template.
 	"dict": func(pairs ...any) (map[string]any, error) {
 		if len(pairs)%2 != 0 {
@@ -76,7 +105,10 @@ type templateData struct {
 	CurrentPath     string
 	Flash           string
 
-	Home *HomeData
+	Home       *HomeData
+	Books      *BooksPageData
+	BookDetail *Book
+	SimpleList *SimpleListPageData
 }
 
 func (app *application) render(w http.ResponseWriter, r *http.Request, status int, page string, data templateData) {

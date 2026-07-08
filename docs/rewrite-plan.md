@@ -68,8 +68,10 @@ go/
       embebidos, Tailwind, layout (sidebar/footer/tema), home con estadísticas.
       (Verificada contra la réplica: paridad visual con la app Next, screenshot
       lado a lado. Home renderiza 1144 libros, stats y rankings reales.)
-- [ ] **Etapa 2 — Catálogo público**: `/books` (filtros, orden, paginación),
+- [x] **Etapa 2 — Catálogo público**: `/books` (filtros, orden, paginación),
       `/books/{id}`, `/authors`, `/publishers`, `/tags`, `/locations`, `/about`.
+      (Paridad verificada contra la app Next corriendo en paralelo: mismos
+      totales y mismo orden en todos los filtros/sorts probados. 404 propio.)
 - [ ] **Etapa 3 — Auth**: `/login`, `/logout`, sesiones scs, lockout, CSRF,
       middleware de `/dashboard`.
 - [ ] **Etapa 4 — Dashboard CRUD**: libros (crear/editar/borrar, find-or-create

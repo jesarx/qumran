@@ -1,0 +1,14 @@
+{{define "title"}}Página no encontrada{{end}}
+
+{{define "main"}}
+<div class="mx-auto max-w-2xl p-4 bg-background min-h-screen flex items-center justify-center">
+  <div class="text-center space-y-4">
+    <h1 class="text-6xl font-thin text-foreground">404</h1>
+    <p class="text-xl text-muted-foreground">Página no encontrada</p>
+    <a href="/" class="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">
+      {{icon "arrow-left" "h-4 w-4"}}
+      Volver al inicio
+    </a>
+  </div>
+</div>
+{{end}}

@@ -336,30 +336,94 @@ func (db *DB) GetPublishers(ctx context.Context, search, sort string, page, limi
 
 // ---- Categories & Locations ----------------------------------------------
 
-func (db *DB) GetCategories(ctx context.Context) ([]Category, error) {
-	rows, err := db.pool.Query(ctx, `
+func nameCountOrder(sort, nameCol string) string {
+	switch sort {
+	case "-name":
+		return nameCol + " DESC"
+	case "book_count":
+		return "book_count ASC, " + nameCol + " ASC"
+	case "-book_count":
+		return "book_count DESC, " + nameCol + " ASC"
+	default:
+		return nameCol + " ASC"
+	}
+}
+
+func (db *DB) GetCategories(ctx context.Context, search, sort string) ([]Category, error) {
+	where := ""
+	var params []any
+	if s := strings.TrimSpace(search); s != "" {
+		params = append(params, "%"+s+"%")
+		where = "WHERE LOWER(c.name) LIKE LOWER($1)"
+	}
+	rows, err := db.pool.Query(ctx, fmt.Sprintf(`
 		SELECT c.id, c.name, c.slug, c.created_at, c.updated_at,
 			COUNT(b.id) AS book_count
 		FROM categories c
 		LEFT JOIN books b ON c.id = b.category_id
+		%s
 		GROUP BY c.id
-		ORDER BY c.name ASC`)
+		ORDER BY %s`, where, nameCountOrder(sort, "c.name")), params...)
 	if err != nil {
 		return nil, err
 	}
 	return pgx.CollectRows(rows, pgx.RowToStructByName[Category])
 }
 
-func (db *DB) GetLocations(ctx context.Context) ([]Location, error) {
-	rows, err := db.pool.Query(ctx, `
+func (db *DB) GetLocations(ctx context.Context, search, sort string) ([]Location, error) {
+	where := ""
+	var params []any
+	if s := strings.TrimSpace(search); s != "" {
+		params = append(params, "%"+s+"%")
+		where = "WHERE LOWER(l.name) LIKE LOWER($1)"
+	}
+	rows, err := db.pool.Query(ctx, fmt.Sprintf(`
 		SELECT l.id, l.name, l.slug, l.created_at, l.updated_at,
 			COUNT(b.id) AS book_count
 		FROM locations l
 		LEFT JOIN books b ON l.id = b.location_id
+		%s
 		GROUP BY l.id
-		ORDER BY l.name ASC`)
+		ORDER BY %s`, where, nameCountOrder(sort, "l.name")), params...)
 	if err != nil {
 		return nil, err
 	}
 	return pgx.CollectRows(rows, pgx.RowToStructByName[Location])
+}
+
+// Lookups used for the "Mostrando libros de X" filter chips.
+
+func (db *DB) GetAuthorBySlug(ctx context.Context, slug string) (*Author, error) {
+	rows, err := db.pool.Query(ctx, `
+		SELECT id, first_name, last_name, slug, created_at, updated_at,
+			0 AS book_count
+		FROM authors WHERE slug = $1`, slug)
+	if err != nil {
+		return nil, err
+	}
+	a, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[Author])
+	if err == pgx.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &a, nil
+}
+
+func (db *DB) GetPublisherBySlug(ctx context.Context, slug string) (*Publisher, error) {
+	rows, err := db.pool.Query(ctx, `
+		SELECT id, name, slug, created_at, updated_at, 0 AS book_count
+		FROM publishers WHERE slug = $1`, slug)
+	if err != nil {
+		return nil, err
+	}
+	p, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[Publisher])
+	if err == pgx.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &p, nil
 }

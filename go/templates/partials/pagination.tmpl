@@ -1,0 +1,45 @@
+{{/* Paginación. Contexto: *PaginationData. Puerto de components/pagination.tsx */}}
+{{define "pagination"}}
+{{if .}}
+<div class="border-t-2 py-4 mt-4 flex-col items-center">
+  <p class="text-center mb-4 text-sm">Mostrando {{.Showing}} de {{.Total}} {{.Object}}</p>
+  <nav role="navigation" aria-label="paginación" class="mx-auto flex w-full justify-center">
+    <ul class="flex flex-row items-center gap-1">
+      <li>
+        {{if .HasPrev}}
+        <a href="{{.PrevURL}}" class="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">
+          {{icon "chevron-left" "h-4 w-4"}}<span class="hidden sm:block">Anterior</span>
+        </a>
+        {{else}}
+        <span class="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm pointer-events-none opacity-50">
+          {{icon "chevron-left" "h-4 w-4"}}<span class="hidden sm:block">Anterior</span>
+        </span>
+        {{end}}
+      </li>
+      {{range .Links}}
+      <li>
+        {{if .Ellipsis}}
+        <span class="flex h-9 w-9 items-center justify-center text-sm">…</span>
+        {{else if .Active}}
+        <a href="{{.URL}}" aria-current="page" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-sm font-medium">{{.Num}}</a>
+        {{else}}
+        <a href="{{.URL}}" class="inline-flex h-9 w-9 items-center justify-center rounded-md text-sm hover:bg-accent hover:text-accent-foreground transition-colors">{{.Num}}</a>
+        {{end}}
+      </li>
+      {{end}}
+      <li>
+        {{if .HasNext}}
+        <a href="{{.NextURL}}" class="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">
+          <span class="hidden sm:block">Siguiente</span>{{icon "chevron-right" "h-4 w-4"}}
+        </a>
+        {{else}}
+        <span class="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm pointer-events-none opacity-50">
+          <span class="hidden sm:block">Siguiente</span>{{icon "chevron-right" "h-4 w-4"}}
+        </span>
+        {{end}}
+      </li>
+    </ul>
+  </nav>
+</div>
+{{end}}
+{{end}}

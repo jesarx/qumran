@@ -17,6 +17,16 @@ func (app *application) routes() http.Handler {
 
 	// Público
 	mux.HandleFunc("GET /{$}", app.homeHandler)
+	mux.HandleFunc("GET /books", app.booksHandler)
+	mux.HandleFunc("GET /books/{id}", app.bookDetailHandler)
+	mux.HandleFunc("GET /authors", app.authorsHandler)
+	mux.HandleFunc("GET /publishers", app.publishersHandler)
+	mux.HandleFunc("GET /tags", app.tagsHandler)
+	mux.HandleFunc("GET /locations", app.locationsHandler)
+	mux.HandleFunc("GET /about", app.aboutHandler)
+
+	// Cualquier otra ruta: 404 con la página propia
+	mux.HandleFunc("/", app.notFound)
 
 	return app.securityHeaders(mux)
 }
