@@ -59,10 +59,14 @@ GOOGLE_BOOKS_API_KEY=...
 Solo hace falta si cambias clases en `templates/` o `static/js/`:
 
 ```bash
-npx @tailwindcss/cli@4 -i assets/css/input.css -o static/css/main.css --minify
+npm install --no-save tailwindcss@4 @tailwindcss/cli@4
+npx tailwindcss -i assets/css/input.css -o static/css/main.css --minify
+rm -rf node_modules package.json package-lock.json   # limpieza opcional
 ```
 
-(Node solo se usa para esto en tiempo de build; el binario no lo necesita.)
+(Node solo se usa para esto en tiempo de build; el binario no lo necesita.
+El paquete `tailwindcss` debe estar en un `node_modules` junto al proyecto
+porque el `@import "tailwindcss"` del CSS se resuelve desde ahí.)
 
 ## Deploy
 
