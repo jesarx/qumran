@@ -1,0 +1,205 @@
+{{define "title"}}{{if .BookForm.IsEdit}}Editar Libro{{else}}Agregar Nuevo Libro{{end}}{{end}}
+
+{{define "main"}}
+{{$csrf := .CSRFToken}}
+{{with .BookForm}}
+<div class="w-full max-w-4xl mx-auto p-6">
+  <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+    <div class="p-6">
+      <h1 class="flex items-center gap-2 text-2xl font-semibold">
+        <a href="/dashboard/books" class="rounded-md p-1.5 hover:bg-accent transition-colors" title="Volver">
+          {{icon "arrow-left" "h-4 w-4"}}
+        </a>
+        {{icon "book-open" "h-5 w-5"}}
+        {{if .IsEdit}}Editar Libro{{else}}Agregar Nuevo Libro{{end}}
+      </h1>
+    </div>
+
+    <div class="p-6 pt-0 space-y-6">
+      {{with .Error}}
+      <div class="rounded-md border border-red-500 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300">
+        {{.}}
+      </div>
+      {{end}}
+
+      <form method="POST" action="{{if .IsEdit}}/dashboard/books/{{.BookID}}{{else}}/dashboard/books/new{{end}}" class="space-y-6">
+        <input type="hidden" name="csrf_token" value="{{$csrf}}">
+
+        {{if .IsEdit}}
+        <div class="space-y-2">
+          <label class="text-sm font-medium">ID del Libro</label>
+          <input type="text" value="{{.BookID}}" disabled
+            class="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-sm">
+        </div>
+        {{end}}
+
+        <!-- ISBN -->
+        <div class="space-y-2">
+          <label for="isbn" class="text-sm font-medium">ISBN</label>
+          <div class="flex gap-2">
+            <input id="isbn" name="isbn" type="text" value="{{.ISBN}}" maxlength="13"
+              inputmode="numeric" placeholder="Ingresa el ISBN (solo números)"
+              class="flex-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+            <button type="button" id="scan-isbn" title="Escanear código de barras"
+              class="md:hidden inline-flex items-center justify-center rounded-md border border-border h-9 w-9 hover:bg-accent transition-colors">
+              {{icon "camera" "h-4 w-4"}}
+            </button>
+            <button type="button" id="search-isbn"
+              class="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+              {{icon "search" "h-4 w-4"}}
+              Buscar
+            </button>
+          </div>
+          <p class="text-sm text-muted-foreground">
+            Ingresa el ISBN y presiona &quot;Buscar&quot; para obtener información automáticamente<span class="md:hidden"> o usa la cámara para escanear el código de barras</span>
+          </p>
+        </div>
+
+        <!-- Título -->
+        <div class="space-y-2">
+          <label for="title" class="text-sm font-medium">Título <span class="text-destructive">*</span></label>
+          <input id="title" name="title" type="text" required value="{{.Title}}"
+            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+        </div>
+
+        <!-- Autores -->
+        <div class="rounded-lg border border-border bg-muted/30">
+          <div class="p-6">
+            <h2 class="text-base font-semibold flex items-center gap-2">
+              {{icon "user" "h-4 w-4"}}
+              Autores
+            </h2>
+          </div>
+          <div class="p-6 pt-0 space-y-4">
+            <div class="space-y-3">
+              <h4 class="text-sm font-medium text-muted-foreground">Autor Principal <span class="text-destructive">*</span></h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <label for="author1LastName" class="text-sm">Apellido <span class="text-destructive">*</span></label>
+                  <input id="author1LastName" name="author1LastName" type="text" required value="{{.Author1Last}}"
+                    list="authors-list" placeholder="Comienza a escribir..."
+                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                </div>
+                <div class="space-y-2">
+                  <label for="author1FirstName" class="text-sm">Nombre</label>
+                  <input id="author1FirstName" name="author1FirstName" type="text" value="{{.Author1First}}"
+                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                </div>
+              </div>
+              <p class="text-xs text-muted-foreground">Si el autor no existe, se creará automáticamente al guardar.</p>
+            </div>
+
+            <div class="space-y-3 pt-4 border-t border-border">
+              <h4 class="text-sm font-medium text-muted-foreground">Segundo Autor (opcional)</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <label for="author2LastName" class="text-sm">Apellido</label>
+                  <input id="author2LastName" name="author2LastName" type="text" value="{{.Author2Last}}"
+                    list="authors-list" placeholder="comienza a escribir..."
+                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                </div>
+                <div class="space-y-2">
+                  <label for="author2FirstName" class="text-sm">Nombre</label>
+                  <input id="author2FirstName" name="author2FirstName" type="text" value="{{.Author2First}}"
+                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                </div>
+              </div>
+            </div>
+
+            <datalist id="authors-list">
+              {{range .Authors}}<option value="{{.LastName}}">{{.DisplayName}}</option>{{end}}
+            </datalist>
+          </div>
+        </div>
+
+        <!-- Editorial -->
+        <div class="space-y-2">
+          <label for="publisherName" class="text-sm font-medium flex items-center gap-2">
+            {{icon "library-big" "h-4 w-4"}}
+            Editorial <span class="text-destructive">*</span>
+          </label>
+          <input id="publisherName" name="publisherName" type="text" required value="{{.PublisherName}}"
+            list="publishers-list" placeholder="Comienza a escribir..."
+            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+          <datalist id="publishers-list">
+            {{range .Publishers}}<option value="{{.Name}}"></option>{{end}}
+          </datalist>
+          <p class="text-xs text-muted-foreground">Si la editorial no existe, se creará automáticamente al guardar.</p>
+        </div>
+
+        <!-- Categoría -->
+        <div class="space-y-2">
+          <label for="categoryId" class="text-sm font-medium flex items-center gap-2">
+            {{icon "layout-list" "h-4 w-4"}}
+            Categoría <span class="text-destructive">*</span>
+          </label>
+          <select id="categoryId" name="categoryId" required
+            class="flex h-9 w-full items-center rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer">
+            <option value="">Selecciona...</option>
+            {{$cat := .CategoryID}}
+            {{range .Categories}}
+            <option value="{{.ID}}" {{if eq (printf "%d" .ID) $cat}}selected{{end}}>{{.Name}}</option>
+            {{end}}
+          </select>
+        </div>
+
+        <!-- Ubicación -->
+        <div class="space-y-2">
+          <label for="locationId" class="text-sm font-medium flex items-center gap-2">
+            {{icon "map-pin" "h-4 w-4"}}
+            Ubicación <span class="text-destructive">*</span>
+          </label>
+          <select id="locationId" name="locationId" required
+            class="flex h-9 w-full items-center rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer">
+            <option value="">Selecciona una ubicación...</option>
+            {{$loc := .LocationID}}
+            {{range .Locations}}
+            <option value="{{.ID}}" {{if eq (printf "%d" .ID) $loc}}selected{{end}}>{{.Name}}</option>
+            {{end}}
+          </select>
+        </div>
+
+        <!-- Escaneado -->
+        <div class="space-y-2">
+          <label for="scanned" class="text-sm font-medium flex items-center gap-2">
+            {{icon "scan-line" "h-4 w-4"}}
+            Escaneado?
+          </label>
+          <select id="scanned" name="scanned"
+            class="flex h-9 w-full items-center rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer">
+            <option value="not_applicable" {{if eq .Scanned "not_applicable"}}selected{{end}}>No aplica</option>
+            <option value="pending" {{if eq .Scanned "pending"}}selected{{end}}>Pendiente</option>
+            <option value="done" {{if eq .Scanned "done"}}selected{{end}}>Escaneado</option>
+          </select>
+        </div>
+
+        <!-- Acciones -->
+        <div class="flex {{if .IsEdit}}justify-between{{else}}justify-end{{end}} items-center pt-6 border-t border-border">
+          {{if .IsEdit}}
+          <button type="submit" form="delete-book-form"
+            class="inline-flex items-center gap-2 rounded-md bg-red-600 hover:bg-red-500 text-white px-4 py-2 text-sm font-medium transition-colors cursor-pointer">
+            {{icon "trash-2" "h-4 w-4"}}
+            Eliminar Libro
+          </button>
+          {{end}}
+          <div class="flex gap-3">
+            <a href="/dashboard/books" class="inline-flex items-center rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">Cancelar</a>
+            <button type="submit" class="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+              {{icon "save" "h-4 w-4"}}
+              {{if .IsEdit}}Guardar Cambios{{else}}Agregar Libro{{end}}
+            </button>
+          </div>
+        </div>
+      </form>
+
+      {{if .IsEdit}}
+      <form id="delete-book-form" method="POST" action="/dashboard/books/{{.BookID}}/delete"
+        data-confirm="¿Estás seguro de que quieres eliminar este libro?">
+        <input type="hidden" name="csrf_token" value="{{$csrf}}">
+      </form>
+      {{end}}
+    </div>
+  </div>
+</div>
+{{end}}
+{{end}}

@@ -33,10 +33,34 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("POST /login", app.loginPostHandler)
 	mux.HandleFunc("POST /logout", app.logoutHandler)
 
-	// Dashboard (protegido). El sub-mux ve el path completo; las rutas CRUD
-	// se agregan en la etapa 4.
+	// Dashboard (protegido). El sub-mux ve el path completo.
 	dashboard := http.NewServeMux()
 	dashboard.HandleFunc("GET /dashboard", app.dashboardHandler)
+
+	dashboard.HandleFunc("GET /dashboard/books", app.dashboardBooksHandler)
+	dashboard.HandleFunc("GET /dashboard/books/new", app.bookNewFormHandler)
+	dashboard.HandleFunc("POST /dashboard/books/new", app.bookCreateHandler)
+	dashboard.HandleFunc("GET /dashboard/books/{id}", app.bookEditFormHandler)
+	dashboard.HandleFunc("POST /dashboard/books/{id}", app.bookUpdateHandler)
+	dashboard.HandleFunc("POST /dashboard/books/{id}/delete", app.bookDeleteHandler)
+
+	dashboard.HandleFunc("GET /dashboard/authors", app.dashboardAuthorsHandler)
+	dashboard.HandleFunc("GET /dashboard/authors/{id}", app.authorEditFormHandler)
+	dashboard.HandleFunc("POST /dashboard/authors/{id}", app.authorUpdateHandler)
+	dashboard.HandleFunc("POST /dashboard/authors/{id}/delete", app.authorDeleteHandler)
+
+	dashboard.HandleFunc("GET /dashboard/publishers", app.dashboardPublishersHandler)
+	dashboard.HandleFunc("GET /dashboard/publishers/{id}", app.publisherEditFormHandler)
+	dashboard.HandleFunc("POST /dashboard/publishers/{id}", app.publisherUpdateHandler)
+	dashboard.HandleFunc("POST /dashboard/publishers/{id}/delete", app.publisherDeleteHandler)
+
+	dashboard.HandleFunc("GET /dashboard/locations", app.dashboardLocationsHandler)
+	dashboard.HandleFunc("GET /dashboard/locations/new", app.locationNewFormHandler)
+	dashboard.HandleFunc("POST /dashboard/locations/new", app.locationCreateHandler)
+	dashboard.HandleFunc("GET /dashboard/locations/{id}", app.locationEditFormHandler)
+	dashboard.HandleFunc("POST /dashboard/locations/{id}", app.locationUpdateHandler)
+	dashboard.HandleFunc("POST /dashboard/locations/{id}/delete", app.locationDeleteHandler)
+
 	dashboard.HandleFunc("/", app.notFound)
 	mux.Handle("/dashboard", app.requireAuth(dashboard))
 	mux.Handle("/dashboard/", app.requireAuth(dashboard))

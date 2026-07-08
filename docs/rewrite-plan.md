@@ -79,8 +79,14 @@ go/
       same-origin (Sec-Fetch-Site/Origin/Referer) — los curl de prueba deben
       mandar `-H "Sec-Fetch-Site: same-origin"`; SetIsTLSFunc lee
       X-Forwarded-Proto para funcionar detrás del proxy TLS.)
-- [ ] **Etapa 4 — Dashboard CRUD**: libros (crear/editar/borrar, find-or-create
+- [x] **Etapa 4 — Dashboard CRUD**: libros (crear/editar/borrar, find-or-create
       de autores/editoriales, campo scanned), autores, editoriales, ubicaciones.
+      (E2E: crear libro con autor nuevo + editorial existente, ISBN normalizado
+      y validado contra duplicados, editar, borrar; renombrar/borrar autor;
+      FK violation → flash "tiene libros asociados"; ubicaciones new/edit/delete.
+      Réplica quedó en estado original tras las pruebas. Los botones
+      Buscar ISBN / cámara del formulario quedan inertes hasta la etapa 5.
+      Autocompletado provisional con <datalist>; la etapa 5 lo mejora.)
 - [ ] **Etapa 5 — Extras**: búsqueda Google Books por ISBN, escáner de códigos
       (zxing vendoreado), autocompletado.
 - [ ] **Etapa 6 — Deploy**: systemd, guía de build y cutover.

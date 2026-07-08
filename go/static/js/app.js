@@ -56,6 +56,15 @@
     form.submit();
   }
 
+  // --- Confirmación en formularios destructivos ---
+  document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+      if (!window.confirm(form.getAttribute('data-confirm'))) {
+        e.preventDefault();
+      }
+    });
+  });
+
   document.querySelectorAll('form[data-filter-form]').forEach(function (form) {
     form.addEventListener('submit', function () {
       form.querySelectorAll('input[name], select[name]').forEach(function (el) {

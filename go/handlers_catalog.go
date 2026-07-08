@@ -272,15 +272,16 @@ func (app *application) bookDetailHandler(w http.ResponseWriter, r *http.Request
 // ---- Autores / Editoriales / Categorías / Ubicaciones ----------------------
 
 type SimpleListPageData struct {
-	Authors    []Author
-	Publishers []Publisher
-	Categories []Category
-	Locations  []Location
-	Total      int
-	Search     string
-	Sort       string
-	HasFilters bool
-	Pagination *PaginationData
+	Authors     []Author
+	Publishers  []Publisher
+	Categories  []Category
+	Locations   []Location
+	Total       int
+	Search      string
+	Sort        string
+	HasFilters  bool
+	ShowActions bool
+	Pagination  *PaginationData
 }
 
 func (app *application) authorsHandler(w http.ResponseWriter, r *http.Request) {

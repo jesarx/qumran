@@ -113,6 +113,8 @@ type templateData struct {
 	BookDetail *Book
 	SimpleList *SimpleListPageData
 	Login      *LoginPageData
+	BookForm   *BookFormPage
+	EntityForm *EntityFormPage
 }
 
 func (app *application) render(w http.ResponseWriter, r *http.Request, status int, page string, data templateData) {
@@ -125,6 +127,7 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, status in
 	data.CurrentPath = r.URL.Path
 	data.IsAuthenticated = app.isAuthenticated(r)
 	data.CSRFToken = nosurf.Token(r)
+	data.Flash = app.sessions.PopString(r.Context(), "flash")
 
 	buf := new(bytes.Buffer)
 	if err := ts.ExecuteTemplate(buf, "base", data); err != nil {

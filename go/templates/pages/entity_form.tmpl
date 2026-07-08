@@ -1,0 +1,81 @@
+{{define "title"}}{{with .EntityForm}}{{if eq .Kind "author"}}Editar Autor{{else if eq .Kind "publisher"}}Editar Editorial{{else if .IsEdit}}Editar Ubicación{{else}}Nueva Ubicación{{end}}{{end}}{{end}}
+
+{{define "main"}}
+{{$csrf := .CSRFToken}}
+{{with .EntityForm}}
+{{$listURL := ""}}
+{{if eq .Kind "author"}}{{$listURL = "/dashboard/authors"}}{{else if eq .Kind "publisher"}}{{$listURL = "/dashboard/publishers"}}{{else}}{{$listURL = "/dashboard/locations"}}{{end}}
+<div class="w-full max-w-2xl mx-auto p-6">
+  <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+    <div class="p-6">
+      <h1 class="flex items-center gap-2 text-2xl font-semibold">
+        <a href="{{$listURL}}" class="rounded-md p-1.5 hover:bg-accent transition-colors" title="Volver">
+          {{icon "arrow-left" "h-4 w-4"}}
+        </a>
+        {{if eq .Kind "author"}}{{icon "users" "h-5 w-5"}} Editar Autor
+        {{else if eq .Kind "publisher"}}{{icon "library-big" "h-5 w-5"}} Editar Editorial
+        {{else if .IsEdit}}{{icon "map-pin" "h-5 w-5"}} Editar Ubicación
+        {{else}}{{icon "map-pin" "h-5 w-5"}} Nueva Ubicación{{end}}
+      </h1>
+    </div>
+
+    <div class="p-6 pt-0 space-y-6">
+      {{with .Error}}
+      <div class="rounded-md border border-red-500 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300">{{.}}</div>
+      {{end}}
+
+      <form method="POST"
+        action="{{if .IsEdit}}{{$listURL}}/{{.ID}}{{else}}{{$listURL}}/new{{end}}"
+        class="space-y-6">
+        <input type="hidden" name="csrf_token" value="{{$csrf}}">
+
+        {{if eq .Kind "author"}}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label for="lastName" class="text-sm font-medium">Apellido <span class="text-destructive">*</span></label>
+            <input id="lastName" name="lastName" type="text" required value="{{.LastName}}"
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+          </div>
+          <div class="space-y-2">
+            <label for="firstName" class="text-sm font-medium">Nombre</label>
+            <input id="firstName" name="firstName" type="text" value="{{.FirstName}}"
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+          </div>
+        </div>
+        {{else}}
+        <div class="space-y-2">
+          <label for="name" class="text-sm font-medium">Nombre <span class="text-destructive">*</span></label>
+          <input id="name" name="name" type="text" required value="{{.Name}}"
+            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+        </div>
+        {{end}}
+
+        <div class="flex {{if .IsEdit}}justify-between{{else}}justify-end{{end}} items-center pt-6 border-t border-border">
+          {{if .IsEdit}}
+          <button type="submit" form="delete-entity-form"
+            class="inline-flex items-center gap-2 rounded-md bg-red-600 hover:bg-red-500 text-white px-4 py-2 text-sm font-medium transition-colors cursor-pointer">
+            {{icon "trash-2" "h-4 w-4"}}
+            Eliminar
+          </button>
+          {{end}}
+          <div class="flex gap-3">
+            <a href="{{$listURL}}" class="inline-flex items-center rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">Cancelar</a>
+            <button type="submit" class="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+              {{icon "save" "h-4 w-4"}}
+              {{if .IsEdit}}Guardar Cambios{{else}}Agregar{{end}}
+            </button>
+          </div>
+        </div>
+      </form>
+
+      {{if .IsEdit}}
+      <form id="delete-entity-form" method="POST" action="{{$listURL}}/{{.ID}}/delete"
+        data-confirm="¿Estás seguro? Esta acción no se puede deshacer.">
+        <input type="hidden" name="csrf_token" value="{{$csrf}}">
+      </form>
+      {{end}}
+    </div>
+  </div>
+</div>
+{{end}}
+{{end}}
