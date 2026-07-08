@@ -13,6 +13,7 @@ import (
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type application struct {
@@ -26,7 +27,19 @@ type application struct {
 func main() {
 	addr := flag.String("addr", ":4000", "dirección HTTP (ej. :4000)")
 	envFile := flag.String("env", ".env", "ruta del archivo .env (opcional)")
+	hashpw := flag.String("hashpw", "", "genera el hash bcrypt para ADMIN_PASSWORD_HASH y termina")
 	flag.Parse()
+
+	if *hashpw != "" {
+		hash, err := bcrypt.GenerateFromPassword([]byte(*hashpw), 12)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "error generando el hash:", err)
+			os.Exit(1)
+		}
+		fmt.Println("Línea lista para pegar en tu .env:")
+		fmt.Printf("ADMIN_PASSWORD_HASH='%s'\n", hash)
+		return
+	}
 
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	slog.SetDefault(logger)
@@ -131,6 +144,9 @@ func loadDotenv(path string) error {
 				value = value[1 : len(value)-1]
 			}
 		}
+		// Compatibilidad con .env escritos para Next.js, donde cada $ del hash
+		// bcrypt iba escapado como \$ (Next expande $VAR; aquí no se expande nada).
+		value = strings.ReplaceAll(value, `\$`, "$")
 		if os.Getenv(key) == "" {
 			os.Setenv(key, value)
 		}

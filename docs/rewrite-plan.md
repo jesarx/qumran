@@ -95,7 +95,19 @@ go/
       VPS funciona. Escáner: zxing UMD vendoreado con carga perezosa, cámara
       trasera por constraints, formatos EAN/UPC; overlay verificado con la
       cámara falsa de Chromium. Hints "se creará nuevo autor/editorial".)
-- [ ] **Etapa 6 — Deploy**: systemd, guía de build y cutover.
+- [x] **Etapa 6 — Deploy**: systemd, guía de build y cutover.
+      (Repo reestructurado: la app Go vive en la RAÍZ del repo y el código
+      Next.js fue eliminado. `db/schema.sql` preservado, `deploy/qumran.service`
+      agregado, README reescrito, `.env.example` incluido. El binario trae
+      `-hashpw` para generar el hash sin Node. El loader de .env des-escapa
+      `\$` → `$` para compatibilidad con .env escritos para Next. Smoke
+      completo desde la raíz: login con hash escapado + todas las rutas.)
+
+## Estado: reescritura COMPLETA
+
+Las referencias a la app Next en la sección "Referencias de paridad" ya no
+aplican (el código fue eliminado en la etapa 6); quedan en el historial de
+git si se necesitan (`git log -- app/ components/ lib/`).
 
 ## Cómo probar localmente (entorno de desarrollo de Claude)
 
