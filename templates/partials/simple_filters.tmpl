@@ -1,0 +1,43 @@
+{{/* Filtros nombre+orden para autores/editoriales/categorías/ubicaciones.
+     Contexto: dict con Action, Search, Sort, HasFilters, Placeholder */}}
+{{define "simple_filters"}}
+<div class="space-y-4 mb-6">
+  {{if .Search}}
+  <div class="bg-muted/50 rounded-lg p-3 border">
+    <div class="flex items-center justify-between flex-wrap gap-2">
+      <div class="text-sm text-muted-foreground">
+        <span class="font-medium">Filtros activos:</span>
+        <div class="flex flex-wrap gap-2 mt-1">
+          <span class="inline-flex items-center gap-1 bg-background rounded px-2 py-1 text-xs border">
+            Nombre: "{{.Search}}"
+            <a href="{{.Action}}" class="text-muted-foreground hover:text-foreground ml-1" title="Quitar filtro">✕</a>
+          </span>
+        </div>
+      </div>
+      <a href="{{.Action}}" class="text-xs rounded-md px-3 py-1.5 hover:bg-accent hover:text-accent-foreground transition-colors">Limpiar todos</a>
+    </div>
+  </div>
+  {{end}}
+
+  <form method="GET" action="{{.Action}}" class="flex flex-col sm:flex-row gap-4" data-filter-form>
+    <div class="flex-1">
+      <input type="text" name="name" value="{{.Search}}" placeholder="{{.Placeholder}}"
+        data-debounce
+        class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+    </div>
+
+    <select name="sort" data-autosubmit
+      class="flex h-9 w-full sm:w-[200px] items-center rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer">
+      <option value="" {{if eq .Sort ""}}selected{{end}}>Nombre (A-Z)</option>
+      <option value="-name" {{if eq .Sort "-name"}}selected{{end}}>Nombre (Z-A)</option>
+      <option value="book_count" {{if eq .Sort "book_count"}}selected{{end}}>Menos libros</option>
+      <option value="-book_count" {{if eq .Sort "-book_count"}}selected{{end}}>Más libros</option>
+    </select>
+
+    {{if .HasFilters}}
+    <a href="{{.Action}}" class="inline-flex items-center justify-center rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">Limpiar filtros</a>
+    {{end}}
+    <noscript><button type="submit" class="rounded-md border border-border px-4 py-2 text-sm">Filtrar</button></noscript>
+  </form>
+</div>
+{{end}}

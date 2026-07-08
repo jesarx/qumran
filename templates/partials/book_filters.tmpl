@@ -1,0 +1,82 @@
+{{/* Filtros de libros. Contexto: BooksPageData. Puerto de components/book-filters.tsx.
+     Los selects se auto-envían (data-autosubmit) y la búsqueda con debounce (app.js). */}}
+{{define "book_filters"}}
+<div class="space-y-4 mb-6">
+  {{with .MainChip}}
+  <div class="bg-primary/10 rounded-lg p-4 border border-primary/20">
+    <div class="flex items-center justify-between">
+      <div class="text-sm font-medium text-primary">{{.Label}}</div>
+      <a href="{{.RemoveURL}}" class="text-xs text-primary hover:bg-primary/20 rounded-md px-3 py-1.5 transition-colors">✕ Quitar filtro</a>
+    </div>
+  </div>
+  {{end}}
+
+  {{if .Chips}}
+  <div class="bg-muted/50 rounded-lg p-3 border">
+    <div class="flex items-center justify-between flex-wrap gap-2">
+      <div class="text-sm text-muted-foreground">
+        <span class="font-medium">Filtros adicionales:</span>
+        <div class="flex flex-wrap gap-2 mt-1">
+          {{range .Chips}}
+          <span class="inline-flex items-center gap-1 bg-background rounded px-2 py-1 text-xs border">
+            {{.Label}}
+            <a href="{{.RemoveURL}}" class="text-muted-foreground hover:text-foreground ml-1" title="Quitar filtro">✕</a>
+          </span>
+          {{end}}
+        </div>
+      </div>
+      <a href="{{.BasePath}}" class="text-xs rounded-md px-3 py-1.5 hover:bg-accent hover:text-accent-foreground transition-colors">Limpiar todos</a>
+    </div>
+  </div>
+  {{end}}
+
+  <form method="GET" action="{{.BasePath}}" class="flex flex-col sm:flex-row gap-4" data-filter-form>
+    <div class="flex-1">
+      <input type="text" name="search" value="{{.Search}}" placeholder="Buscar por título, autor o ISBN..."
+        data-debounce
+        class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+    </div>
+
+    <select name="categorySlug" data-autosubmit
+      class="flex h-9 w-full sm:w-[200px] items-center rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer">
+      <option value="">Todas las categorías</option>
+      {{$cur := .CategorySlug}}
+      {{range .Categories}}
+      <option value="{{.Slug}}" {{if eq .Slug $cur}}selected{{end}}>{{.Name}}</option>
+      {{end}}
+    </select>
+
+    <select name="locationSlug" data-autosubmit
+      class="flex h-9 w-full sm:w-[180px] items-center rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer">
+      <option value="">Todas las ubicaciones</option>
+      {{$curLoc := .LocationSlug}}
+      {{range .Locations}}
+      <option value="{{.Slug}}" {{if eq .Slug $curLoc}}selected{{end}}>{{.Name}}</option>
+      {{end}}
+    </select>
+
+    <select name="scanned" data-autosubmit
+      class="flex h-9 w-full sm:w-[180px] items-center rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer">
+      <option value="">Escaneado: todos</option>
+      <option value="done" {{if eq .Scanned "done"}}selected{{end}}>Escaneado</option>
+      <option value="pending" {{if eq .Scanned "pending"}}selected{{end}}>Pendiente</option>
+      <option value="not_applicable" {{if eq .Scanned "not_applicable"}}selected{{end}}>No aplica</option>
+    </select>
+
+    <select name="sort" data-autosubmit
+      class="flex h-9 w-full sm:w-[200px] items-center rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer">
+      <option value="" {{if or (eq .Sort "") (eq .Sort "-created_at")}}selected{{end}}>Más recientes</option>
+      <option value="created_at" {{if eq .Sort "created_at"}}selected{{end}}>Más antiguos</option>
+      <option value="author" {{if eq .Sort "author"}}selected{{end}}>Por Autor (A-Z)</option>
+      <option value="-author" {{if eq .Sort "-author"}}selected{{end}}>Por Autor (Z-A)</option>
+      <option value="title" {{if eq .Sort "title"}}selected{{end}}>Título (A-Z)</option>
+      <option value="-title" {{if eq .Sort "-title"}}selected{{end}}>Título (Z-A)</option>
+    </select>
+
+    {{if .HasFilters}}
+    <a href="{{.BasePath}}" class="inline-flex items-center justify-center rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">Limpiar filtros</a>
+    {{end}}
+    <noscript><button type="submit" class="rounded-md border border-border px-4 py-2 text-sm">Filtrar</button></noscript>
+  </form>
+</div>
+{{end}}

@@ -1,0 +1,94 @@
+{{/* Tabla de libros. Contexto: BooksPageData. Puerto de components/books-table.tsx */}}
+{{define "books_table"}}
+{{$base := .BasePath}}
+{{$showActions := .ShowActions}}
+<div class="w-full">
+  <table class="w-full caption-bottom text-sm">
+    <thead class="[&_tr]:border-b">
+      <tr class="border-b transition-colors hover:bg-muted/50">
+        <th class="h-10 px-2 text-left align-middle font-black block sm:hidden">Libro</th>
+        <th class="h-10 px-2 text-left align-middle font-black hidden sm:table-cell">Título</th>
+        <th class="h-10 px-2 text-left align-middle font-black hidden sm:table-cell">Autor(xs)</th>
+        <th class="h-10 px-2 text-left align-middle font-black hidden sm:table-cell">Editorial</th>
+        <th class="h-10 px-2 text-left align-middle font-black hidden sm:table-cell">Categoría</th>
+        <th class="h-10 px-2 text-left align-middle font-black hidden sm:table-cell">Ubicación</th>
+        <th class="h-10 px-2 text-left align-middle font-black hidden sm:table-cell">Agregado</th>
+        <th class="h-10 px-2 align-middle font-black hidden sm:table-cell text-center">Escaneado?</th>
+      </tr>
+    </thead>
+    <tbody class="[&_tr:last-child]:border-0">
+      {{if not .List.Books}}
+      <tr class="border-b">
+        <td colspan="8" class="p-2 align-middle text-center">No se encontraron libros</td>
+      </tr>
+      {{end}}
+      {{range .List.Books}}
+      <tr class="border-b transition-colors hover:bg-muted/50">
+        <!-- Celda móvil -->
+        <td class="p-2 align-middle block sm:hidden py-4">
+          <div class="flex items-center gap-2">
+            {{template "scandot" .Scanned}}
+            <div class="font-semibold text-sm truncate max-w-[240px]">
+              <a href="{{$base}}/{{.ID}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer">{{.Title}}</a>
+            </div>
+          </div>
+          <div class="text-xs mt-1">
+            {{if .Author1Slug}}
+            <a href="{{$base}}?authorSlug={{.Author1Slug}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer">{{.Author1Display}}</a>
+            {{else}}<span class="font-medium">{{.Author1Display}}</span>{{end}}
+            {{if .Author2LastName}}
+            <br>
+            {{if .Author2Slug}}
+            <a href="{{$base}}?authorSlug={{.Author2Slug}}" class="text-muted-foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer">{{.Author2Display}}</a>
+            {{else}}<span class="text-muted-foreground">{{.Author2Display}}</span>{{end}}
+            {{end}}
+          </div>
+        </td>
+
+        <!-- Tabla completa (sm+) -->
+        <td class="p-2 align-middle font-medium hidden sm:table-cell">
+          <div class="max-w-[450px] truncate">
+            <a href="{{$base}}/{{.ID}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer" title="{{if $showActions}}Editar: {{end}}{{.Title}}">{{.Title}}</a>
+          </div>
+        </td>
+        <td class="p-2 align-middle hidden sm:table-cell">
+          {{if .Author1Slug}}
+          <a href="{{$base}}?authorSlug={{.Author1Slug}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer">{{.Author1Display}}</a>
+          {{else}}<span class="font-medium">{{.Author1Display}}</span>{{end}}
+          {{if .Author2LastName}}
+          <br>
+          {{if .Author2Slug}}
+          <a href="{{$base}}?authorSlug={{.Author2Slug}}" class="text-muted-foreground underline hover:decoration-indigo-500 transition-colors cursor-pointer">{{.Author2Display}}</a>
+          {{else}}<span class="text-muted-foreground">{{.Author2Display}}</span>{{end}}
+          {{end}}
+        </td>
+        <td class="p-2 align-middle hidden sm:table-cell">
+          {{if .PublisherSlug}}
+          <a href="{{$base}}?publisherSlug={{.PublisherSlug}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer">{{deref .PublisherName}}</a>
+          {{else}}{{deref .PublisherName}}{{end}}
+        </td>
+        <td class="p-2 align-middle hidden sm:table-cell">
+          {{if .CategorySlug}}
+          <a href="{{$base}}?categorySlug={{.CategorySlug}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer">{{deref .CategoryName}}</a>
+          {{else}}{{deref .CategoryName}}{{end}}
+        </td>
+        <td class="p-2 align-middle hidden sm:table-cell">
+          {{if .LocationSlug}}
+          <a href="{{$base}}?locationSlug={{.LocationSlug}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer">{{if .LocationName}}{{deref .LocationName}}{{else}}Sin ubicación{{end}}</a>
+          {{else}}{{if .LocationName}}{{deref .LocationName}}{{else}}Sin ubicación{{end}}{{end}}
+        </td>
+        <td class="p-2 align-middle text-xs text-muted-foreground hidden sm:table-cell">{{compactDate .CreatedAt}}</td>
+        <td class="p-2 align-middle hidden sm:table-cell text-center">{{template "scandot" .Scanned}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}
+
+{{/* Semáforo de escaneado: verde=done, amarillo=pending, gris=not_applicable */}}
+{{define "scandot"}}
+{{if eq . "done"}}<span class="inline-flex items-center" title="Escaneado" aria-label="Escaneado"><span class="inline-block h-3 w-3 rounded-full bg-green-500"></span></span>
+{{else if eq . "pending"}}<span class="inline-flex items-center" title="Pendiente" aria-label="Pendiente"><span class="inline-block h-3 w-3 rounded-full bg-yellow-400"></span></span>
+{{else}}<span class="inline-flex items-center" title="No aplica" aria-label="No aplica"><span class="inline-block h-3 w-3 rounded-full bg-gray-400"></span></span>{{end}}
+{{end}}

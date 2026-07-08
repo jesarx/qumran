@@ -1,0 +1,47 @@
+{{define "title"}}Iniciar Sesión{{end}}
+
+{{define "main"}}
+<div class="flex items-center justify-center md:h-screen">
+  <div class="relative mx-auto flex w-full max-w-[400px] flex-col space-y-2.5 p-4 md:-mt-32">
+    <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm w-[350px]">
+      <div class="p-6">
+        <h1 class="text-2xl font-semibold leading-none tracking-tight">Iniciar Sesión</h1>
+        <p class="text-sm text-muted-foreground mt-1.5">Accede al panel de administración</p>
+      </div>
+      <div class="p-6 pt-0">
+        <form method="POST" action="/login" class="grid w-full items-center gap-4">
+          <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+          {{with .Login}}
+          {{if .Error}}
+          <div class="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-300 rounded">
+            {{.Error}}
+          </div>
+          {{end}}
+          <input type="hidden" name="next" value="{{.Next}}">
+          {{end}}
+
+          <div class="space-y-2">
+            <label for="password" class="text-sm font-medium flex items-center gap-2">
+              {{icon "key-round" "h-4 w-4"}}
+              Contraseña
+            </label>
+            <input id="password" name="password" type="password" required autofocus
+              autocomplete="current-password" placeholder="••••••••"
+              class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+          </div>
+
+          <button type="submit"
+            class="inline-flex items-center justify-center gap-2 w-full rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+            {{icon "log-in" "h-4 w-4"}}
+            Entrar
+          </button>
+
+          <p class="text-xs text-center text-muted-foreground mt-4">
+            Solo el administrador puede acceder a esta sección.
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

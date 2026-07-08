@@ -1,0 +1,29 @@
+# Unidad systemd para Qumran.
+# Instalar con:
+#   sudo cp deploy/qumran.service /etc/systemd/system/qumran.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now qumran
+#
+# La app lee /var/www/qumran/.env por sí misma (WorkingDirectory), así que
+# no hace falta EnvironmentFile. Ajusta User si tu usuario es otro.
+
+[Unit]
+Description=Qumran - biblioteca personal
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=jesarx
+WorkingDirectory=/var/www/qumran
+ExecStart=/var/www/qumran/qumran -addr 127.0.0.1:4000
+Restart=on-failure
+RestartSec=3
+
+# Endurecimiento básico
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

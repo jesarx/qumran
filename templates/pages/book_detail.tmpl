@@ -1,0 +1,106 @@
+{{define "title"}}{{.BookDetail.Title}}{{end}}
+
+{{define "main"}}
+{{with .BookDetail}}
+<div class="mx-auto max-w-3xl p-4 bg-background min-h-screen">
+  <div class="mb-6">
+    <a href="/books" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      {{icon "arrow-left" "h-4 w-4"}}
+      Volver a la biblioteca
+    </a>
+  </div>
+
+  <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+    <div class="p-6">
+      <h1 class="flex items-start gap-3 text-2xl font-semibold">
+        {{icon "book-open" "h-6 w-6 mt-1 shrink-0"}}
+        <span>{{.Title}}</span>
+      </h1>
+    </div>
+
+    <div class="p-6 pt-0 space-y-5">
+      <div class="flex items-start gap-3">
+        {{icon "user" "h-5 w-5 mt-0.5 text-muted-foreground shrink-0"}}
+        <div>
+          <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Autor(es)</p>
+          <p class="text-base">
+            {{if .Author1Slug}}
+            <a href="/books?authorSlug={{.Author1Slug}}" class="underline hover:decoration-indigo-500">{{.Author1Display}}</a>
+            {{else}}{{.Author1Display}}{{end}}
+            {{if .Author2LastName}}
+            &nbsp;·&nbsp;
+            {{if .Author2Slug}}
+            <a href="/books?authorSlug={{.Author2Slug}}" class="underline hover:decoration-indigo-500">{{.Author2Display}}</a>
+            {{else}}{{.Author2Display}}{{end}}
+            {{end}}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3">
+        {{icon "library-big" "h-5 w-5 mt-0.5 text-muted-foreground shrink-0"}}
+        <div>
+          <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Editorial</p>
+          <p class="text-base">
+            {{if .PublisherSlug}}
+            <a href="/books?publisherSlug={{.PublisherSlug}}" class="underline hover:decoration-indigo-500">{{deref .PublisherName}}</a>
+            {{else}}{{deref .PublisherName}}{{end}}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3">
+        {{icon "layout-list" "h-5 w-5 mt-0.5 text-muted-foreground shrink-0"}}
+        <div>
+          <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Categoría</p>
+          <p class="text-base">
+            {{if .CategorySlug}}
+            <a href="/books?categorySlug={{.CategorySlug}}" class="underline hover:decoration-indigo-500">{{deref .CategoryName}}</a>
+            {{else}}{{deref .CategoryName}}{{end}}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3">
+        {{icon "map-pin" "h-5 w-5 mt-0.5 text-muted-foreground shrink-0"}}
+        <div>
+          <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Ubicación</p>
+          <p class="text-base">
+            {{if .LocationSlug}}
+            <a href="/books?locationSlug={{.LocationSlug}}" class="underline hover:decoration-indigo-500">{{if .LocationName}}{{deref .LocationName}}{{else}}Sin ubicación{{end}}</a>
+            {{else}}{{if .LocationName}}{{deref .LocationName}}{{else}}Sin ubicación{{end}}{{end}}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3">
+        {{icon "book-open" "h-5 w-5 mt-0.5 text-muted-foreground shrink-0"}}
+        <div>
+          <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">ISBN</p>
+          <p class="text-base font-mono">{{if .ISBN}}{{deref .ISBN}}{{else}}-{{end}}</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3">
+        {{icon "scan-line" "h-5 w-5 mt-0.5 text-muted-foreground shrink-0"}}
+        <div>
+          <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Escaneado?</p>
+          <p class="text-base inline-flex items-center gap-2">
+            {{template "scandot" .Scanned}}
+            {{if eq .Scanned "done"}}Escaneado{{else if eq .Scanned "pending"}}Pendiente{{else}}No aplica{{end}}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3">
+        {{icon "calendar" "h-5 w-5 mt-0.5 text-muted-foreground shrink-0"}}
+        <div>
+          <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Agregado</p>
+          <p class="text-base">{{longDate .CreatedAt}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
+{{end}}
