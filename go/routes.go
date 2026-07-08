@@ -54,6 +54,8 @@ func (app *application) routes() http.Handler {
 	dashboard.HandleFunc("POST /dashboard/publishers/{id}", app.publisherUpdateHandler)
 	dashboard.HandleFunc("POST /dashboard/publishers/{id}/delete", app.publisherDeleteHandler)
 
+	dashboard.HandleFunc("GET /dashboard/api/isbn", app.isbnLookupHandler)
+
 	dashboard.HandleFunc("GET /dashboard/locations", app.dashboardLocationsHandler)
 	dashboard.HandleFunc("GET /dashboard/locations/new", app.locationNewFormHandler)
 	dashboard.HandleFunc("POST /dashboard/locations/new", app.locationCreateHandler)

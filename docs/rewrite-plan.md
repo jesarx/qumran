@@ -87,8 +87,14 @@ go/
       Réplica quedó en estado original tras las pruebas. Los botones
       Buscar ISBN / cámara del formulario quedan inertes hasta la etapa 5.
       Autocompletado provisional con <datalist>; la etapa 5 lo mejora.)
-- [ ] **Etapa 5 — Extras**: búsqueda Google Books por ISBN, escáner de códigos
+- [x] **Etapa 5 — Extras**: búsqueda Google Books por ISBN, escáner de códigos
       (zxing vendoreado), autocompletado.
+      (Endpoint /dashboard/api/isbn protegido con degradación elegante; el
+      llenado del formulario verificado en navegador con respuesta simulada
+      — Google bloquea la IP del entorno de dev por geo-restricción, en el
+      VPS funciona. Escáner: zxing UMD vendoreado con carga perezosa, cámara
+      trasera por constraints, formatos EAN/UPC; overlay verificado con la
+      cámara falsa de Chromium. Hints "se creará nuevo autor/editorial".)
 - [ ] **Etapa 6 — Deploy**: systemd, guía de build y cutover.
 
 ## Cómo probar localmente (entorno de desarrollo de Claude)
