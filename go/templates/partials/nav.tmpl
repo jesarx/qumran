@@ -1,0 +1,5 @@
+{{define "navlink"}}
+<a href="{{.Href}}" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors {{if eq .Current .Href}}bg-sidebar-accent text-sidebar-accent-foreground font-medium{{else}}hover:bg-sidebar-accent hover:text-sidebar-accent-foreground{{end}}">
+  {{icon .Icon "h-4 w-4"}}<span>{{.Label}}</span>
+</a>
+{{end}}

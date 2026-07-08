@@ -1,0 +1,128 @@
+{{define "base"}}<!DOCTYPE html>
+<html lang="es" suppressHydrationWarning>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{template "title" .}} | qumran.cc</title>
+  <meta name="description" content="biblioteca personal de eduardo partida">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/static/css/main.css">
+  <script>
+    (function() {
+      try {
+        const theme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.classList.remove('dark', 'light');
+        document.documentElement.classList.add(theme);
+        document.documentElement.style.colorScheme = theme;
+      } catch (e) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = 'dark';
+      }
+    })();
+  </script>
+</head>
+<body class="antialiased bg-background text-foreground font-sans">
+  <div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full md:translate-x-0 transition-transform duration-200 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col overflow-y-auto">
+      <div class="flex-1">
+        <!-- Logo -->
+        <div class="px-6 py-10">
+          <div class="text-center space-y-4">
+            <a href="/" class="block">
+              <div class="relative">
+                <div class="flex flex-col items-center gap-4">
+                  {{icon "scroll" "h-8 w-8 text-sidebar-primary"}}
+                  <h1 class="text-4xl font-thin text-sidebar-primary tracking-[0.2em] uppercase">Qumran</h1>
+                </div>
+                <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-px bg-gradient-to-r from-transparent via-sidebar-primary/60 to-transparent"></div>
+              </div>
+            </a>
+            <div class="space-y-3 pt-2">
+              <p class="text-xs text-sidebar-foreground/70 leading-relaxed font-medium">
+                biblioteca personal de<br>eduardo partida
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navegación pública -->
+        <div class="px-3 py-2">
+          <p class="px-2 text-xs font-medium text-sidebar-foreground/70 mb-1">Navegación</p>
+          <nav class="space-y-1">
+            {{template "navlink" dict "Href" "/" "Icon" "home" "Label" "Inicio" "Current" .CurrentPath}}
+            {{template "navlink" dict "Href" "/books" "Icon" "book-open" "Label" "Libros" "Current" .CurrentPath}}
+            {{template "navlink" dict "Href" "/authors" "Icon" "users" "Label" "Autorxs" "Current" .CurrentPath}}
+            {{template "navlink" dict "Href" "/publishers" "Icon" "library-big" "Label" "Editoriales" "Current" .CurrentPath}}
+            {{template "navlink" dict "Href" "/tags" "Icon" "layout-list" "Label" "Categorías" "Current" .CurrentPath}}
+            {{template "navlink" dict "Href" "/locations" "Icon" "map-pin" "Label" "Ubicaciones" "Current" .CurrentPath}}
+            {{template "navlink" dict "Href" "/about" "Icon" "info" "Label" "Acerca de" "Current" .CurrentPath}}
+          </nav>
+        </div>
+
+        <!-- Administración -->
+        <div class="px-3 py-2">
+          <p class="px-2 text-xs font-medium text-sidebar-foreground/70 mb-1">Administración</p>
+          <nav class="space-y-1">
+            {{if .IsAuthenticated}}
+              {{template "navlink" dict "Href" "/dashboard" "Icon" "home" "Label" "Dashboard" "Current" .CurrentPath}}
+              {{template "navlink" dict "Href" "/dashboard/books/new" "Icon" "square-plus" "Label" "Añadir libro" "Current" .CurrentPath}}
+              {{template "navlink" dict "Href" "/dashboard/books" "Icon" "book-open" "Label" "Gestionar Libros" "Current" .CurrentPath}}
+              {{template "navlink" dict "Href" "/dashboard/authors" "Icon" "users" "Label" "Gestionar Autores" "Current" .CurrentPath}}
+              {{template "navlink" dict "Href" "/dashboard/publishers" "Icon" "library-big" "Label" "Gestionar Editoriales" "Current" .CurrentPath}}
+              {{template "navlink" dict "Href" "/dashboard/locations" "Icon" "map-pin" "Label" "Gestionar Ubicaciones" "Current" .CurrentPath}}
+              <form method="POST" action="/logout">
+                <button type="submit" class="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors cursor-pointer">
+                  {{icon "log-out" "h-4 w-4"}}<span>Cerrar Sesión</span>
+                </button>
+              </form>
+            {{else}}
+              {{template "navlink" dict "Href" "/login" "Icon" "log-in" "Label" "Iniciar Sesión" "Current" .CurrentPath}}
+            {{end}}
+          </nav>
+        </div>
+      </div>
+
+      <!-- Pie del sidebar -->
+      <div class="border-t border-sidebar-border p-2">
+        <div class="flex items-center justify-between px-2 py-2">
+          <div class="flex flex-col">
+            <span class="text-xs text-sidebar-foreground/70"><a href="https://github.com/jesarx/qumran">Qumran</a></span>
+            <span class="text-xs text-sidebar-foreground/70">por <a href="https://edpartida.com/">eduardo partida</a></span>
+          </div>
+          <button id="theme-toggle" type="button" title="Cambiar tema" class="rounded-md p-2 hover:bg-sidebar-accent transition-colors cursor-pointer">
+            <span class="theme-icon-sun hidden">{{icon "sun" "h-4 w-4"}}</span>
+            <span class="theme-icon-moon">{{icon "moon" "h-4 w-4"}}</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Overlay móvil -->
+    <div id="sidebar-overlay" class="fixed inset-0 z-30 bg-black/80 hidden md:hidden"></div>
+
+    <!-- Contenido -->
+    <div class="flex flex-col flex-1 w-full md:pl-64">
+      <div class="flex items-center p-1 md:hidden">
+        <button id="sidebar-toggle" type="button" class="rounded-md p-2 hover:bg-accent transition-colors" title="Menú">
+          {{icon "menu" "h-5 w-5"}}
+        </button>
+      </div>
+      <main class="flex-1">
+        {{template "main" .}}
+      </main>
+      <footer class="border-t border-border bg-card">
+        <div class="mx-auto py-3 px-4 flex flex-col items-center space-y-1">
+          <p class="text-center text-sm text-muted-foreground">Ningún derecho reservado</p>
+          <p class="text-center text-xs text-muted-foreground">
+            <a href="https://github.com/jesarx/qumran">Qumran</a> fue desarrollado por <a href="https://edpartida.com/">eduardo partida</a>
+          </p>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>{{end}}

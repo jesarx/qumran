@@ -1,0 +1,209 @@
+{{define "title"}}Qumran.cc{{end}}
+
+{{define "main"}}
+{{with .Home}}
+<div class="mx-auto max-w-7xl p-4 bg-background min-h-screen">
+  <div class="space-y-12">
+
+    <!-- Hero -->
+    <div class="text-center space-y-8 py-12">
+      <div class="relative">
+        <div class="absolute inset-0 flex items-center justify-center opacity-5">
+          {{icon "library" "h-64 w-64"}}
+        </div>
+        <div class="relative z-10 space-y-6">
+          <div class="flex flex-col items-center gap-4">
+            {{icon "scroll" "h-12 w-12 text-primary"}}
+            <h1 class="text-6xl font-thin text-foreground tracking-[0.2em] uppercase">Qumran</h1>
+          </div>
+          <div class="w-24 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent mx-auto"></div>
+          <p class="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Biblioteca personal de Eduardo Partida
+          </p>
+          <p class="text-base text-muted-foreground/80 max-w-xl mx-auto">
+            Una colección curada de {{.TotalBooks}} libros que han moldeado mi forma de pensar y ver el mundo.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-4 pt-6">
+        <a href="/books" class="inline-flex items-center gap-2 rounded-md border border-border bg-transparent px-6 py-2.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+          {{icon "book-open" "h-5 w-5"}}
+          Explorar Biblioteca
+        </a>
+        <a href="/about" class="inline-flex items-center gap-2 rounded-md px-6 py-2.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+          Acerca de Qumran
+          {{icon "arrow-right" "h-4 w-4"}}
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {{template "statcard" dict "Href" "/books" "Title" "Libros" "Value" .TotalBooks "Icon" "book-open" "Color" "text-blue-600" "Desc" "volúmenes únicos"}}
+      {{template "statcard" dict "Href" "/authors" "Title" "Autores" "Value" .TotalAuthors "Icon" "users" "Color" "text-green-600" "Desc" (printf "%s libros/autor" .AvgBooksPerAuthor)}}
+      {{template "statcard" dict "Href" "/publishers" "Title" "Editoriales" "Value" .TotalPublishers "Icon" "library-big" "Color" "text-purple-600" "Desc" (printf "%s libros/editorial" .AvgBooksPerPublisher)}}
+      {{template "statcard" dict "Href" "/tags" "Title" "Categorías" "Value" .TotalCategories "Icon" "layout-list" "Color" "text-orange-600" "Desc" "temas diversos"}}
+    </div>
+
+    <!-- Adquisiciones recientes -->
+    <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-full blur-3xl"></div>
+      <div class="p-6 relative z-10">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-semibold flex items-center gap-2">
+            {{icon "calendar" "h-6 w-6 text-primary"}}
+            Adquisiciones Recientes
+          </h2>
+          <a href="/books" class="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">
+            Ver todos
+            {{icon "arrow-right" "h-4 w-4"}}
+          </a>
+        </div>
+      </div>
+      <div class="p-6 pt-0 relative z-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {{range .RecentBooks}}
+          <a href="/books/{{.ID}}" class="group p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors block">
+            <div class="space-y-3">
+              <div class="flex items-start gap-2">
+                {{icon "book" "h-4 w-4 text-primary mt-0.5 flex-shrink-0"}}
+                <h3 class="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">{{.Title}}</h3>
+              </div>
+              <div class="text-xs text-muted-foreground space-y-1">
+                <div class="flex items-center gap-1">
+                  {{icon "users" "h-3 w-3 flex-shrink-0"}}
+                  <span class="font-medium truncate">{{.Author1Display}}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  {{icon "library-big" "h-3 w-3 flex-shrink-0"}}
+                  <span class="truncate">{{with .PublisherName}}{{.}}{{end}}</span>
+                </div>
+                {{with .CategoryName}}
+                <div class="flex items-center gap-1">
+                  {{icon "layout-list" "h-3 w-3 flex-shrink-0"}}
+                  <span class="text-primary/70 truncate">{{.}}</span>
+                </div>
+                {{end}}
+              </div>
+            </div>
+          </a>
+          {{end}}
+        </div>
+      </div>
+    </div>
+
+    <!-- Top autores y editoriales -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-24 h-24 bg-gradient-to-br from-green-500/5 to-emerald-500/5 rounded-full blur-2xl"></div>
+        <div class="p-6 relative z-10">
+          <h2 class="text-xl font-semibold flex items-center gap-2">
+            {{icon "award" "h-5 w-5 text-green-600"}}
+            Autores Más Prolíficos
+          </h2>
+        </div>
+        <div class="p-6 pt-0 relative z-10">
+          <div class="space-y-3">
+            {{range .TopAuthors}}
+            <div class="flex items-center gap-3">
+              <div class="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-bold">{{.Rank}}</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between text-sm mb-1">
+                  <span class="font-medium truncate">{{.Name}}</span>
+                  <span class="text-muted-foreground ml-2">{{.Count}} {{if eq .Count 1}}libro{{else}}libros{{end}}</span>
+                </div>
+                <div class="w-full bg-muted rounded-full h-2">
+                  <div class="bg-green-600 h-2 rounded-full transition-all duration-300" style="width: {{.Percent}}%"></div>
+                </div>
+              </div>
+            </div>
+            {{end}}
+          </div>
+          <div class="mt-4 pt-4 border-t border-border">
+            <a href="/authors" class="w-full inline-flex items-center justify-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">
+              Ver todos los autores
+              {{icon "arrow-right" "h-4 w-4"}}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/5 to-violet-500/5 rounded-full blur-2xl"></div>
+        <div class="p-6 relative z-10">
+          <h2 class="text-xl font-semibold flex items-center gap-2">
+            {{icon "trending-up" "h-5 w-5 text-purple-600"}}
+            Editoriales destacadas
+          </h2>
+        </div>
+        <div class="p-6 pt-0 relative z-10">
+          <div class="space-y-3">
+            {{range .TopPublishers}}
+            <div class="flex items-center gap-3">
+              <div class="flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs font-bold">{{.Rank}}</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between text-sm mb-1">
+                  <span class="font-medium truncate">{{.Name}}</span>
+                  <span class="text-muted-foreground ml-2">{{.Count}} {{if eq .Count 1}}libro{{else}}libros{{end}}</span>
+                </div>
+                <div class="w-full bg-muted rounded-full h-2">
+                  <div class="bg-purple-600 h-2 rounded-full transition-all duration-300" style="width: {{.Percent}}%"></div>
+                </div>
+              </div>
+            </div>
+            {{end}}
+          </div>
+          <div class="mt-4 pt-4 border-t border-border">
+            <a href="/publishers" class="w-full inline-flex items-center justify-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">
+              Ver todas las editoriales
+              {{icon "arrow-right" "h-4 w-4"}}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Distribución por categorías -->
+    <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm relative overflow-hidden">
+      <div class="absolute top-0 w-32 h-32 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl"></div>
+      <div class="p-6 relative z-10">
+        <h2 class="text-xl font-semibold flex items-center gap-2">
+          {{icon "star" "h-5 w-5 text-orange-600"}}
+          Distribución por Categorías
+        </h2>
+      </div>
+      <div class="p-6 pt-0 relative z-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {{range .CategoryStats}}
+          <a href="/books?categorySlug={{.Slug}}" class="block">
+            <div class="p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer group">
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <h3 class="font-medium text-sm group-hover:text-primary transition-colors">{{.Name}}</h3>
+                  <span class="text-xs text-muted-foreground">{{.Percent}}%</span>
+                </div>
+                <div class="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{{.Count}} {{if eq .Count 1}}libro{{else}}libros{{end}}</span>
+                </div>
+                <div class="w-full bg-muted rounded-full h-1.5">
+                  <div class="bg-orange-600 h-1.5 rounded-full transition-all duration-300" style="width: {{.Percent}}%"></div>
+                </div>
+              </div>
+            </div>
+          </a>
+          {{end}}
+        </div>
+        <div class="mt-4 pt-4 border-t border-border">
+          <a href="/tags" class="w-full inline-flex items-center justify-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">
+            Ver todas las categorías
+            {{icon "arrow-right" "h-4 w-4"}}
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{{end}}
+{{end}}
