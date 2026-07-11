@@ -4,8 +4,11 @@
 
 @import "tailwindcss";
 
-@source "../../templates";
-@source "../../static/js";
+/* Globs explícitos: la detección automática de Tailwind no reconoce la
+   extensión .tmpl, y sin esto se pierden las clases con valores arbitrarios
+   (w-[200px], tracking-[0.2em], ...). */
+@source "../../templates/**/*.tmpl";
+@source "../../static/js/*.js";
 
 @custom-variant dark (&:is(.dark *));
 

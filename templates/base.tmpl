@@ -25,7 +25,8 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="/static/css/main.css">
+  <link rel="preload" href="/static/fonts/raleway-latin.woff2?v={{.AssetVersion}}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/static/css/main.css?v={{.AssetVersion}}">
 </head>
 <body class="antialiased bg-background text-foreground font-sans">
   <!-- Barra de progreso de navegación -->
@@ -137,6 +138,6 @@
     </div>
   </div>
 
-  <script src="/static/js/app.js"></script>
+  <script src="/static/js/app.js?v={{.AssetVersion}}"></script>
 </body>
 </html>{{end}}

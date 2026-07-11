@@ -30,8 +30,8 @@
   </div>
   {{end}}
 
-  <form method="GET" action="{{.BasePath}}" class="flex flex-col sm:flex-row gap-4" data-filter-form>
-    <div class="flex-1">
+  <form method="GET" action="{{.BasePath}}" class="flex flex-col sm:flex-row sm:flex-wrap gap-4" data-filter-form>
+    <div class="flex-1 min-w-[240px]">
       <input type="text" name="search" value="{{.Search}}" placeholder="Buscar por título, autor o ISBN..."
         data-debounce
         class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
