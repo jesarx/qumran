@@ -22,6 +22,7 @@ type application struct {
 	sessions      *scs.SessionManager
 	limiter       loginLimiter
 	secureCookies bool
+	assetVersion  string
 }
 
 func main() {
@@ -92,6 +93,7 @@ func main() {
 		templates:     templates,
 		sessions:      sessions,
 		secureCookies: secureCookies,
+		assetVersion:  computeAssetVersion(),
 	}
 
 	srv := &http.Server{

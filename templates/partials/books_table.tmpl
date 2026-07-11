@@ -28,8 +28,8 @@
         <td class="p-2 align-middle block sm:hidden py-4">
           <div class="flex items-center gap-2">
             {{template "scandot" .Scanned}}
-            <div class="font-semibold text-sm truncate max-w-[240px]">
-              <a href="{{$base}}/{{.ID}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer">{{.Title}}</a>
+            <div class="font-semibold text-sm max-w-[240px]">
+              <a href="{{$base}}/{{.ID}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer" title="{{.Title}}">{{truncate .Title 45}}</a>
             </div>
           </div>
           <div class="text-xs mt-1">
@@ -47,8 +47,8 @@
 
         <!-- Tabla completa (sm+) -->
         <td class="p-2 align-middle font-medium hidden sm:table-cell">
-          <div class="max-w-[450px] truncate">
-            <a href="{{$base}}/{{.ID}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer" title="{{if $showActions}}Editar: {{end}}{{.Title}}">{{.Title}}</a>
+          <div class="max-w-[420px]">
+            <a href="{{$base}}/{{.ID}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer" title="{{if $showActions}}Editar: {{end}}{{.Title}}">{{truncate .Title 65}}</a>
           </div>
         </td>
         <td class="p-2 align-middle hidden sm:table-cell">

@@ -13,7 +13,7 @@ func (app *application) routes() http.Handler {
 
 	// Archivos estáticos embebidos (css, js, fuentes, favicon)
 	staticContent, _ := fs.Sub(staticFS, "static")
-	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(staticContent)))
+	mux.Handle("GET /static/", cacheStatic(http.StripPrefix("/static/", http.FileServerFS(staticContent))))
 	mux.HandleFunc("GET /favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFileFS(w, r, staticContent, "favicon.ico")
 	})
@@ -88,7 +88,7 @@ func (app *application) routes() http.Handler {
 		return r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https"
 	})
 
-	return app.securityHeaders(app.sessions.LoadAndSave(csrf))
+	return app.securityHeaders(gzipMiddleware(app.sessions.LoadAndSave(csrf)))
 }
 
 func (app *application) securityHeaders(next http.Handler) http.Handler {

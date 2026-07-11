@@ -56,8 +56,18 @@ func longDate(t time.Time) string {
 	return fmt.Sprintf("%d de %s de %d", t.Day(), months[t.Month()-1], t.Year())
 }
 
+// truncate cuts a string to at most n runes, appending an ellipsis.
+func truncate(s string, n int) string {
+	r := []rune(s)
+	if len(r) <= n {
+		return s
+	}
+	return strings.TrimSpace(string(r[:n-1])) + "\u2026"
+}
+
 var templateFuncs = template.FuncMap{
 	"icon":        icon,
+	"truncate":    truncate,
 	"add":         func(a, b int) int { return a + b },
 	"sub":         func(a, b int) int { return a - b },
 	"compactDate": compactDate,
@@ -107,6 +117,7 @@ type templateData struct {
 	CurrentPath     string
 	CSRFToken       string
 	Flash           string
+	AssetVersion    string
 
 	Home       *HomeData
 	Books      *BooksPageData
@@ -128,6 +139,7 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, status in
 	data.IsAuthenticated = app.isAuthenticated(r)
 	data.CSRFToken = nosurf.Token(r)
 	data.Flash = app.sessions.PopString(r.Context(), "flash")
+	data.AssetVersion = app.assetVersion
 
 	buf := new(bytes.Buffer)
 	if err := ts.ExecuteTemplate(buf, "base", data); err != nil {
