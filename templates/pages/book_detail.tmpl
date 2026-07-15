@@ -3,11 +3,17 @@
 {{define "main"}}
 {{with .BookDetail}}
 <div class="mx-auto max-w-3xl p-4 bg-background min-h-screen">
-  <div class="mb-6">
+  <div class="mb-6 flex items-center justify-between">
     <a href="/books" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
       {{icon "arrow-left" "h-4 w-4"}}
       Volver a la biblioteca
     </a>
+    {{if $.IsAuthenticated}}
+    <a href="/dashboard/books/{{.ID}}" class="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+      {{icon "pencil" "h-4 w-4"}}
+      Editar
+    </a>
+    {{end}}
   </div>
 
   <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm">

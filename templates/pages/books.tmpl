@@ -3,11 +3,19 @@
 {{define "main"}}
 {{with .Books}}
 <div class="mx-auto max-w-7xl p-4 bg-background min-h-screen min-w-3/4">
-  <div class="mb-6">
-    <h1 class="text-3xl font-bold text-foreground">Biblioteca</h1>
-    <p class="text-muted-foreground mt-2">
-      {{.List.Total}} {{if eq .List.Total 1}}libro{{else}}libros{{end}} en total
-    </p>
+  <div class="mb-6 flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold text-foreground">Biblioteca</h1>
+      <p class="text-muted-foreground mt-2">
+        {{.List.Total}} {{if eq .List.Total 1}}libro{{else}}libros{{end}} en total
+      </p>
+    </div>
+    {{if .ShowActions}}
+    <a href="/dashboard/books/new" class="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+      {{icon "plus" "h-4 w-4"}}
+      Agregar libro
+    </a>
+    {{end}}
   </div>
 
   <div class="bg-card rounded-lg shadow-sm p-6">

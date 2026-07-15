@@ -16,10 +16,10 @@
 
   <!-- Stats -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    {{template "statcard" dict "Href" "/dashboard/books" "Title" "Total Libros" "Value" .TotalBooks "Icon" "book-open" "Color" "text-blue-600" "Desc" "volúmenes únicos"}}
-    {{template "statcard" dict "Href" "/dashboard/authors" "Title" "Autores" "Value" .TotalAuthors "Icon" "users" "Color" "text-green-600" "Desc" (printf "%s libros/autor" .AvgBooksPerAuthor)}}
-    {{template "statcard" dict "Href" "/dashboard/publishers" "Title" "Editoriales" "Value" .TotalPublishers "Icon" "library-big" "Color" "text-purple-600" "Desc" (printf "%s libros/editorial" .AvgBooksPerPublisher)}}
-    {{template "statcard" dict "Href" "/dashboard/locations" "Title" "Categorías" "Value" .TotalCategories "Icon" "layout-list" "Color" "text-orange-600" "Desc" "temas diversos"}}
+    {{template "statcard" dict "Href" "/books" "Title" "Total Libros" "Value" .TotalBooks "Icon" "book-open" "Color" "text-blue-600" "Desc" "volúmenes únicos"}}
+    {{template "statcard" dict "Href" "/authors" "Title" "Autores" "Value" .TotalAuthors "Icon" "users" "Color" "text-green-600" "Desc" (printf "%s libros/autor" .AvgBooksPerAuthor)}}
+    {{template "statcard" dict "Href" "/publishers" "Title" "Editoriales" "Value" .TotalPublishers "Icon" "library-big" "Color" "text-purple-600" "Desc" (printf "%s libros/editorial" .AvgBooksPerPublisher)}}
+    {{template "statcard" dict "Href" "/locations" "Title" "Categorías" "Value" .TotalCategories "Icon" "layout-list" "Color" "text-orange-600" "Desc" "temas diversos"}}
   </div>
 
   <!-- Adquisiciones recientes -->
@@ -30,7 +30,7 @@
           {{icon "calendar" "h-6 w-6 text-primary"}}
           Adquisiciones Recientes
         </h2>
-        <a href="/dashboard/books" class="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">
+        <a href="/books" class="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">
           Gestionar libros
           {{icon "arrow-right" "h-4 w-4"}}
         </a>

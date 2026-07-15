@@ -119,6 +119,7 @@ type templateData struct {
 	Flash           string
 	AssetVersion    string
 
+	Error      *ErrorPageData
 	Home       *HomeData
 	Books      *BooksPageData
 	BookDetail *Book
@@ -151,9 +152,51 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, status in
 	buf.WriteTo(w)
 }
 
+type ErrorPageData struct {
+	Code   int
+	Title  string
+	Detail string
+}
+
+// renderErrorPage draws the styled error page directly (never through
+// render(), so a failing template can't recurse back here).
+func (app *application) renderErrorPage(w http.ResponseWriter, r *http.Request, data ErrorPageData) {
+	ts, ok := app.templates["error"]
+	if !ok {
+		http.Error(w, data.Title, data.Code)
+		return
+	}
+	td := templateData{
+		Error:           &data,
+		CurrentPath:     r.URL.Path,
+		IsAuthenticated: app.isAuthenticatedSafe(r),
+		AssetVersion:    app.assetVersion,
+	}
+	buf := new(bytes.Buffer)
+	if err := ts.ExecuteTemplate(buf, "base", td); err != nil {
+		slog.Error("error page render failed", "err", err)
+		http.Error(w, data.Title, data.Code)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(data.Code)
+	buf.WriteTo(w)
+}
+
+// isAuthenticatedSafe tolerates requests without a loaded session (e.g. the
+// CSRF failure handler can run outside scs in edge cases).
+func (app *application) isAuthenticatedSafe(r *http.Request) bool {
+	defer func() { recover() }()
+	return app.isAuthenticated(r)
+}
+
 func (app *application) serverError(w http.ResponseWriter, r *http.Request, err error) {
 	slog.Error("server error", "method", r.Method, "url", r.URL.String(), "err", err)
-	http.Error(w, "Error interno del servidor", http.StatusInternalServerError)
+	app.renderErrorPage(w, r, ErrorPageData{
+		Code:   http.StatusInternalServerError,
+		Title:  "Error interno del servidor",
+		Detail: "Algo salió mal de nuestro lado. Intenta de nuevo en un momento.",
+	})
 }
 
 func (app *application) isAuthenticated(r *http.Request) bool {

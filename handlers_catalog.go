@@ -243,7 +243,7 @@ func (app *application) buildBooksPage(r *http.Request, basePath string, showAct
 }
 
 func (app *application) booksHandler(w http.ResponseWriter, r *http.Request) {
-	data, err := app.buildBooksPage(r, "/books", false)
+	data, err := app.buildBooksPage(r, "/books", app.isAuthenticated(r))
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -297,8 +297,9 @@ func (app *application) authorsHandler(w http.ResponseWriter, r *http.Request) {
 	data := &SimpleListPageData{
 		Authors: list.Authors, Total: list.Total,
 		Search: name, Sort: sort,
-		HasFilters: name != "" || sort != "",
-		Pagination: buildPagination(q, list.Page, list.TotalPages, len(list.Authors), list.Total, "autores"),
+		HasFilters:  name != "" || sort != "",
+		ShowActions: app.isAuthenticated(r),
+		Pagination:  buildPagination(q, list.Page, list.TotalPages, len(list.Authors), list.Total, "autores"),
 	}
 	app.render(w, r, http.StatusOK, "authors", templateData{SimpleList: data})
 }
@@ -316,8 +317,9 @@ func (app *application) publishersHandler(w http.ResponseWriter, r *http.Request
 	data := &SimpleListPageData{
 		Publishers: list.Publishers, Total: list.Total,
 		Search: name, Sort: sort,
-		HasFilters: name != "" || sort != "",
-		Pagination: buildPagination(q, list.Page, list.TotalPages, len(list.Publishers), list.Total, "editoriales"),
+		HasFilters:  name != "" || sort != "",
+		ShowActions: app.isAuthenticated(r),
+		Pagination:  buildPagination(q, list.Page, list.TotalPages, len(list.Publishers), list.Total, "editoriales"),
 	}
 	app.render(w, r, http.StatusOK, "publishers", templateData{SimpleList: data})
 }
@@ -351,7 +353,8 @@ func (app *application) locationsHandler(w http.ResponseWriter, r *http.Request)
 	data := &SimpleListPageData{
 		Locations: locations, Total: len(locations),
 		Search: name, Sort: sort,
-		HasFilters: name != "" || sort != "",
+		HasFilters:  name != "" || sort != "",
+		ShowActions: app.isAuthenticated(r),
 	}
 	app.render(w, r, http.StatusOK, "locations", templateData{SimpleList: data})
 }

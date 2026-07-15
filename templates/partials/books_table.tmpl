@@ -14,12 +14,13 @@
         <th class="h-10 px-2 text-left align-middle font-black hidden sm:table-cell">Ubicación</th>
         <th class="h-10 px-2 text-left align-middle font-black hidden sm:table-cell">Agregado</th>
         <th class="h-10 px-2 align-middle font-black hidden sm:table-cell text-center">Escaneado?</th>
+        {{if $showActions}}<th class="h-10 px-2 align-middle font-black hidden sm:table-cell text-right"></th>{{end}}
       </tr>
     </thead>
     <tbody class="[&_tr:last-child]:border-0">
       {{if not .List.Books}}
       <tr class="border-b">
-        <td colspan="8" class="p-2 align-middle text-center">No se encontraron libros</td>
+        <td colspan="{{if $showActions}}9{{else}}8{{end}}" class="p-2 align-middle text-center">No se encontraron libros</td>
       </tr>
       {{end}}
       {{range .List.Books}}
@@ -31,6 +32,11 @@
             <div class="font-semibold text-sm max-w-[240px]">
               <a href="{{$base}}/{{.ID}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer" title="{{.Title}}">{{truncate .Title 45}}</a>
             </div>
+            {{if $showActions}}
+            <a href="/dashboard/books/{{.ID}}" title="Editar" class="ml-auto inline-flex items-center justify-center rounded-md border border-border h-7 w-7 shrink-0 hover:bg-accent transition-colors">
+              {{icon "pencil" "h-3.5 w-3.5"}}
+            </a>
+            {{end}}
           </div>
           <div class="text-xs mt-1">
             {{if .Author1Slug}}
@@ -48,7 +54,7 @@
         <!-- Tabla completa (sm+) -->
         <td class="p-2 align-middle font-medium hidden sm:table-cell">
           <div class="max-w-[420px]">
-            <a href="{{$base}}/{{.ID}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer" title="{{if $showActions}}Editar: {{end}}{{.Title}}">{{truncate .Title 65}}</a>
+            <a href="{{$base}}/{{.ID}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors cursor-pointer" title="{{.Title}}">{{truncate .Title 65}}</a>
           </div>
         </td>
         <td class="p-2 align-middle hidden sm:table-cell">
@@ -79,6 +85,13 @@
         </td>
         <td class="p-2 align-middle text-xs text-muted-foreground hidden sm:table-cell">{{compactDate .CreatedAt}}</td>
         <td class="p-2 align-middle hidden sm:table-cell text-center">{{template "scandot" .Scanned}}</td>
+        {{if $showActions}}
+        <td class="p-2 align-middle hidden sm:table-cell text-right">
+          <a href="/dashboard/books/{{.ID}}" title="Editar" class="inline-flex items-center justify-center rounded-md border border-border h-7 w-7 hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+            {{icon "pencil" "h-3.5 w-3.5"}}
+          </a>
+        </td>
+        {{end}}
       </tr>
       {{end}}
     </tbody>

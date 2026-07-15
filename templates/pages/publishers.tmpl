@@ -17,18 +17,25 @@
         <tr class="border-b">
           <th class="h-10 px-2 text-left align-middle font-black">Nombre</th>
           <th class="h-10 px-2 text-left align-middle font-black">Número de Libros</th>
+          {{if .ShowActions}}<th class="h-10 px-2 text-right align-middle font-black">Acciones</th>{{end}}
         </tr>
       </thead>
       <tbody class="[&_tr:last-child]:border-0">
         {{if not .Publishers}}
-        <tr class="border-b"><td colspan="2" class="p-2 align-middle text-center">No se encontraron editoriales</td></tr>
+        <tr class="border-b"><td colspan="{{if .ShowActions}}3{{else}}2{{end}}" class="p-2 align-middle text-center">No se encontraron editoriales</td></tr>
         {{end}}
+        {{$actions := .ShowActions}}
         {{range .Publishers}}
         <tr class="border-b transition-colors hover:bg-muted/50">
           <td class="p-2 align-middle">
             <a href="/books?publisherSlug={{.Slug}}" class="font-medium text-sm underline hover:decoration-indigo-500 transition-colors">{{.Name}}</a>
           </td>
           <td class="p-2 align-middle">{{.BookCount}}</td>
+          {{if $actions}}
+          <td class="p-2 align-middle text-right">
+            <a href="/dashboard/publishers/{{.ID}}" class="inline-flex items-center rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">Editar</a>
+          </td>
+          {{end}}
         </tr>
         {{end}}
       </tbody>
