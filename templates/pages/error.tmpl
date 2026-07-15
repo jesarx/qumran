@@ -1,0 +1,23 @@
+{{define "title"}}Error{{end}}
+
+{{define "main"}}
+{{with .Error}}
+<div class="mx-auto max-w-2xl p-4 bg-background min-h-screen flex items-center justify-center">
+  <div class="text-center space-y-4">
+    <h1 class="text-6xl font-thin text-foreground">{{.Code}}</h1>
+    <p class="text-xl text-muted-foreground">{{.Title}}</p>
+    {{with .Detail}}<p class="text-sm text-muted-foreground/80 max-w-md mx-auto">{{.}}</p>{{end}}
+    <div class="flex justify-center gap-3 pt-2">
+      <a href="javascript:history.back()" class="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">
+        {{icon "arrow-left" "h-4 w-4"}}
+        Regresar
+      </a>
+      <a href="/" class="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">
+        {{icon "home" "h-4 w-4"}}
+        Ir al inicio
+      </a>
+    </div>
+  </div>
+</div>
+{{end}}
+{{end}}

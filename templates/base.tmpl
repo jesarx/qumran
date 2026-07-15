@@ -77,10 +77,6 @@
             {{if .IsAuthenticated}}
               {{template "navlink" dict "Href" "/dashboard" "Icon" "home" "Label" "Dashboard" "Current" .CurrentPath}}
               {{template "navlink" dict "Href" "/dashboard/books/new" "Icon" "square-plus" "Label" "Añadir libro" "Current" .CurrentPath}}
-              {{template "navlink" dict "Href" "/dashboard/books" "Icon" "book-open" "Label" "Gestionar Libros" "Current" .CurrentPath}}
-              {{template "navlink" dict "Href" "/dashboard/authors" "Icon" "users" "Label" "Gestionar Autores" "Current" .CurrentPath}}
-              {{template "navlink" dict "Href" "/dashboard/publishers" "Icon" "library-big" "Label" "Gestionar Editoriales" "Current" .CurrentPath}}
-              {{template "navlink" dict "Href" "/dashboard/locations" "Icon" "map-pin" "Label" "Gestionar Ubicaciones" "Current" .CurrentPath}}
               <form method="POST" action="/logout">
                 <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
                 <button type="submit" class="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors cursor-pointer">

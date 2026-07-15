@@ -3,8 +3,9 @@
 {{define "main"}}
 {{$csrf := .CSRFToken}}
 {{with .EntityForm}}
+{{$actionBase := ""}}
 {{$listURL := ""}}
-{{if eq .Kind "author"}}{{$listURL = "/dashboard/authors"}}{{else if eq .Kind "publisher"}}{{$listURL = "/dashboard/publishers"}}{{else}}{{$listURL = "/dashboard/locations"}}{{end}}
+{{if eq .Kind "author"}}{{$actionBase = "/dashboard/authors"}}{{$listURL = "/authors"}}{{else if eq .Kind "publisher"}}{{$actionBase = "/dashboard/publishers"}}{{$listURL = "/publishers"}}{{else}}{{$actionBase = "/dashboard/locations"}}{{$listURL = "/locations"}}{{end}}
 <div class="w-full max-w-2xl mx-auto p-6">
   <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
     <div class="p-6">
@@ -25,7 +26,7 @@
       {{end}}
 
       <form method="POST"
-        action="{{if .IsEdit}}{{$listURL}}/{{.ID}}{{else}}{{$listURL}}/new{{end}}"
+        action="{{if .IsEdit}}{{$actionBase}}/{{.ID}}{{else}}{{$actionBase}}/new{{end}}"
         class="space-y-6">
         <input type="hidden" name="csrf_token" value="{{$csrf}}">
 
@@ -69,7 +70,7 @@
       </form>
 
       {{if .IsEdit}}
-      <form id="delete-entity-form" method="POST" action="{{$listURL}}/{{.ID}}/delete"
+      <form id="delete-entity-form" method="POST" action="{{$actionBase}}/{{.ID}}/delete"
         data-confirm="¿Estás seguro? Esta acción no se puede deshacer.">
         <input type="hidden" name="csrf_token" value="{{$csrf}}">
       </form>

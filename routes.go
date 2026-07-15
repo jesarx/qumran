@@ -37,26 +37,26 @@ func (app *application) routes() http.Handler {
 	dashboard := http.NewServeMux()
 	dashboard.HandleFunc("GET /dashboard", app.dashboardHandler)
 
-	dashboard.HandleFunc("GET /dashboard/books", app.dashboardBooksHandler)
+	dashboard.HandleFunc("GET /dashboard/books", redirectTo("/books"))
 	dashboard.HandleFunc("GET /dashboard/books/new", app.bookNewFormHandler)
 	dashboard.HandleFunc("POST /dashboard/books/new", app.bookCreateHandler)
 	dashboard.HandleFunc("GET /dashboard/books/{id}", app.bookEditFormHandler)
 	dashboard.HandleFunc("POST /dashboard/books/{id}", app.bookUpdateHandler)
 	dashboard.HandleFunc("POST /dashboard/books/{id}/delete", app.bookDeleteHandler)
 
-	dashboard.HandleFunc("GET /dashboard/authors", app.dashboardAuthorsHandler)
+	dashboard.HandleFunc("GET /dashboard/authors", redirectTo("/authors"))
 	dashboard.HandleFunc("GET /dashboard/authors/{id}", app.authorEditFormHandler)
 	dashboard.HandleFunc("POST /dashboard/authors/{id}", app.authorUpdateHandler)
 	dashboard.HandleFunc("POST /dashboard/authors/{id}/delete", app.authorDeleteHandler)
 
-	dashboard.HandleFunc("GET /dashboard/publishers", app.dashboardPublishersHandler)
+	dashboard.HandleFunc("GET /dashboard/publishers", redirectTo("/publishers"))
 	dashboard.HandleFunc("GET /dashboard/publishers/{id}", app.publisherEditFormHandler)
 	dashboard.HandleFunc("POST /dashboard/publishers/{id}", app.publisherUpdateHandler)
 	dashboard.HandleFunc("POST /dashboard/publishers/{id}/delete", app.publisherDeleteHandler)
 
 	dashboard.HandleFunc("GET /dashboard/api/isbn", app.isbnLookupHandler)
 
-	dashboard.HandleFunc("GET /dashboard/locations", app.dashboardLocationsHandler)
+	dashboard.HandleFunc("GET /dashboard/locations", redirectTo("/locations"))
 	dashboard.HandleFunc("GET /dashboard/locations/new", app.locationNewFormHandler)
 	dashboard.HandleFunc("POST /dashboard/locations/new", app.locationCreateHandler)
 	dashboard.HandleFunc("GET /dashboard/locations/{id}", app.locationEditFormHandler)
@@ -80,7 +80,11 @@ func (app *application) routes() http.Handler {
 	})
 	csrf.SetFailureHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		slog.Warn("CSRF rechazado", "url", r.URL.Path, "reason", nosurf.Reason(r))
-		http.Error(w, "Solicitud inválida (CSRF)", http.StatusBadRequest)
+		app.renderErrorPage(w, r, ErrorPageData{
+			Code:   http.StatusBadRequest,
+			Title:  "Solicitud inválida",
+			Detail: "La sesión del formulario expiró o la petición no es válida. Regresa e intenta de nuevo.",
+		})
 	}))
 	// Detrás del proxy TLS (nginx/caddy) la conexión local es HTTP plano;
 	// nosurf necesita saber el esquema real para el chequeo de mismo origen.

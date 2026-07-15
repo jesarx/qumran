@@ -7,7 +7,7 @@
   <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
     <div class="p-6">
       <h1 class="flex items-center gap-2 text-2xl font-semibold">
-        <a href="/dashboard/books" class="rounded-md p-1.5 hover:bg-accent transition-colors" title="Volver">
+        <a href="/books" class="rounded-md p-1.5 hover:bg-accent transition-colors" title="Volver">
           {{icon "arrow-left" "h-4 w-4"}}
         </a>
         {{icon "book-open" "h-5 w-5"}}
@@ -183,7 +183,7 @@
           </button>
           {{end}}
           <div class="flex gap-3">
-            <a href="/dashboard/books" class="inline-flex items-center rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">Cancelar</a>
+            <a href="/books" class="inline-flex items-center rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">Cancelar</a>
             <button type="submit" class="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
               {{icon "save" "h-4 w-4"}}
               {{if .IsEdit}}Guardar Cambios{{else}}Agregar Libro{{end}}
@@ -230,6 +230,6 @@
   </div>
 </div>
 
-<script src="/static/js/book-form.js?v={{.AssetVersion}}" defer></script>
+<script src="/static/js/book-form.js?v={{$.AssetVersion}}" defer></script>
 {{end}}
 {{end}}

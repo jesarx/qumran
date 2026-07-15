@@ -11,13 +11,17 @@ import (
 
 // ---- Libros: listado ---------------------------------------------------------
 
-func (app *application) dashboardBooksHandler(w http.ResponseWriter, r *http.Request) {
-	data, err := app.buildBooksPage(r, "/dashboard/books", true)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
+// Los listados de administración se unificaron con los públicos (las tablas
+// muestran las acciones de edición cuando hay sesión); las rutas viejas
+// redirigen conservando los query params.
+func redirectTo(base string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		dest := base
+		if q := r.URL.RawQuery; q != "" {
+			dest += "?" + q
+		}
+		http.Redirect(w, r, dest, http.StatusSeeOther)
 	}
-	app.render(w, r, http.StatusOK, "dashboard_books", templateData{Books: data})
 }
 
 // ---- Libros: formulario nuevo/editar ------------------------------------------
@@ -194,7 +198,7 @@ func (app *application) bookCreateHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 	app.sessions.Put(r.Context(), "flash", "Libro agregado")
-	http.Redirect(w, r, "/dashboard/books", http.StatusSeeOther)
+	http.Redirect(w, r, "/books", http.StatusSeeOther)
 }
 
 func (app *application) bookEditFormHandler(w http.ResponseWriter, r *http.Request) {
@@ -261,7 +265,7 @@ func (app *application) bookUpdateHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 	app.sessions.Put(r.Context(), "flash", "Libro actualizado")
-	http.Redirect(w, r, "/dashboard/books", http.StatusSeeOther)
+	http.Redirect(w, r, "/books", http.StatusSeeOther)
 }
 
 func (app *application) bookDeleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -275,60 +279,13 @@ func (app *application) bookDeleteHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 	app.sessions.Put(r.Context(), "flash", "Libro eliminado")
-	http.Redirect(w, r, "/dashboard/books", http.StatusSeeOther)
+	http.Redirect(w, r, "/books", http.StatusSeeOther)
 }
 
 // ---- Autores / Editoriales / Ubicaciones: listados admin ----------------------
 
-func (app *application) dashboardAuthorsHandler(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-	name, sort := q.Get("name"), q.Get("sort")
-	list, err := app.db.GetAuthors(r.Context(), name, sort, queryInt(q, "page", 1), 20)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-	data := &SimpleListPageData{
-		Authors: list.Authors, Total: list.Total, Search: name, Sort: sort,
-		HasFilters: name != "" || sort != "",
-		ShowActions: true,
-		Pagination: buildPagination(q, list.Page, list.TotalPages, len(list.Authors), list.Total, "autores"),
-	}
-	app.render(w, r, http.StatusOK, "admin_authors", templateData{SimpleList: data})
-}
 
-func (app *application) dashboardPublishersHandler(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-	name, sort := q.Get("name"), q.Get("sort")
-	list, err := app.db.GetPublishers(r.Context(), name, sort, queryInt(q, "page", 1), 20)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-	data := &SimpleListPageData{
-		Publishers: list.Publishers, Total: list.Total, Search: name, Sort: sort,
-		HasFilters: name != "" || sort != "",
-		ShowActions: true,
-		Pagination: buildPagination(q, list.Page, list.TotalPages, len(list.Publishers), list.Total, "editoriales"),
-	}
-	app.render(w, r, http.StatusOK, "admin_publishers", templateData{SimpleList: data})
-}
 
-func (app *application) dashboardLocationsHandler(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-	name, sort := q.Get("name"), q.Get("sort")
-	locations, err := app.db.GetLocations(r.Context(), name, sort)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-	data := &SimpleListPageData{
-		Locations: locations, Total: len(locations), Search: name, Sort: sort,
-		HasFilters:  name != "" || sort != "",
-		ShowActions: true,
-	}
-	app.render(w, r, http.StatusOK, "admin_locations", templateData{SimpleList: data})
-}
 
 // ---- Formularios de entidades simples ------------------------------------------
 
@@ -396,7 +353,7 @@ func (app *application) authorUpdateHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	app.sessions.Put(r.Context(), "flash", "Autor actualizado")
-	http.Redirect(w, r, "/dashboard/authors", http.StatusSeeOther)
+	http.Redirect(w, r, "/authors", http.StatusSeeOther)
 }
 
 func (app *application) authorDeleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -408,14 +365,14 @@ func (app *application) authorDeleteHandler(w http.ResponseWriter, r *http.Reque
 	if err := app.db.DeleteAuthor(r.Context(), id); err != nil {
 		if isFKViolation(err) {
 			app.sessions.Put(r.Context(), "flash", "No se puede eliminar: el autor tiene libros asociados")
-			http.Redirect(w, r, "/dashboard/authors", http.StatusSeeOther)
+			http.Redirect(w, r, "/authors", http.StatusSeeOther)
 			return
 		}
 		app.serverError(w, r, err)
 		return
 	}
 	app.sessions.Put(r.Context(), "flash", "Autor eliminado")
-	http.Redirect(w, r, "/dashboard/authors", http.StatusSeeOther)
+	http.Redirect(w, r, "/authors", http.StatusSeeOther)
 }
 
 // -- Editoriales
@@ -459,7 +416,7 @@ func (app *application) publisherUpdateHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 	app.sessions.Put(r.Context(), "flash", "Editorial actualizada")
-	http.Redirect(w, r, "/dashboard/publishers", http.StatusSeeOther)
+	http.Redirect(w, r, "/publishers", http.StatusSeeOther)
 }
 
 func (app *application) publisherDeleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -471,14 +428,14 @@ func (app *application) publisherDeleteHandler(w http.ResponseWriter, r *http.Re
 	if err := app.db.DeletePublisher(r.Context(), id); err != nil {
 		if isFKViolation(err) {
 			app.sessions.Put(r.Context(), "flash", "No se puede eliminar: la editorial tiene libros asociados")
-			http.Redirect(w, r, "/dashboard/publishers", http.StatusSeeOther)
+			http.Redirect(w, r, "/publishers", http.StatusSeeOther)
 			return
 		}
 		app.serverError(w, r, err)
 		return
 	}
 	app.sessions.Put(r.Context(), "flash", "Editorial eliminada")
-	http.Redirect(w, r, "/dashboard/publishers", http.StatusSeeOther)
+	http.Redirect(w, r, "/publishers", http.StatusSeeOther)
 }
 
 // -- Ubicaciones
@@ -506,7 +463,7 @@ func (app *application) locationCreateHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 	app.sessions.Put(r.Context(), "flash", "Ubicación agregada")
-	http.Redirect(w, r, "/dashboard/locations", http.StatusSeeOther)
+	http.Redirect(w, r, "/locations", http.StatusSeeOther)
 }
 
 func (app *application) locationEditFormHandler(w http.ResponseWriter, r *http.Request) {
@@ -548,7 +505,7 @@ func (app *application) locationUpdateHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 	app.sessions.Put(r.Context(), "flash", "Ubicación actualizada")
-	http.Redirect(w, r, "/dashboard/locations", http.StatusSeeOther)
+	http.Redirect(w, r, "/locations", http.StatusSeeOther)
 }
 
 func (app *application) locationDeleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -560,12 +517,12 @@ func (app *application) locationDeleteHandler(w http.ResponseWriter, r *http.Req
 	if err := app.db.DeleteLocation(r.Context(), id); err != nil {
 		if isFKViolation(err) {
 			app.sessions.Put(r.Context(), "flash", "No se puede eliminar: la ubicación tiene libros asociados")
-			http.Redirect(w, r, "/dashboard/locations", http.StatusSeeOther)
+			http.Redirect(w, r, "/locations", http.StatusSeeOther)
 			return
 		}
 		app.serverError(w, r, err)
 		return
 	}
 	app.sessions.Put(r.Context(), "flash", "Ubicación eliminada")
-	http.Redirect(w, r, "/dashboard/locations", http.StatusSeeOther)
+	http.Redirect(w, r, "/locations", http.StatusSeeOther)
 }
