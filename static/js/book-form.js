@@ -76,44 +76,92 @@
     });
   }
 
-  // --- Hint "se creará un nuevo autor/editorial" ------------------------------
+  // --- Autores: autollenado desde el datalist y hint de "nuevo autor" ---------
+  // Las opciones del datalist son "Apellido, Nombre". Al seleccionar una, se
+  // separan en los dos campos; el hint muestra el nombre completo del autor
+  // que se crearía (como en el diseño original).
   function datalistValues(id) {
     var dl = document.getElementById(id);
     if (!dl) return [];
-    return Array.prototype.map.call(dl.options, function (o) { return o.value.toLowerCase().trim(); });
+    return Array.prototype.map.call(dl.options, function (o) { return (o.value || '').trim(); });
   }
 
-  function wireNewHint(inputId, datalistId, message) {
-    var input = document.getElementById(inputId);
+  function wireAuthorPair(lastId, firstId, datalistId) {
+    var lastInput = document.getElementById(lastId);
+    var firstInput = document.getElementById(firstId);
+    if (!lastInput || !firstInput) return;
+    var hint = document.createElement('p');
+    hint.className = 'text-xs text-red-500 mt-1 hidden';
+    lastInput.parentNode.appendChild(hint);
+    var names = null;
+    function known() {
+      if (names === null) names = datalistValues(datalistId);
+      return names;
+    }
+    function existsDisplay(display) {
+      var v = display.toLowerCase();
+      return known().some(function (n) { return n.toLowerCase() === v; });
+    }
+    function refreshHint() {
+      var last = lastInput.value.trim();
+      var first = firstInput.value.trim();
+      if (!last) { hint.classList.add('hidden'); return; }
+      var display = first ? last + ', ' + first : last;
+      if (existsDisplay(display)) {
+        hint.classList.add('hidden');
+        return;
+      }
+      hint.textContent = 'Se creará un nuevo autor: ' + (first ? first + ' ' + last : last);
+      hint.classList.remove('hidden');
+    }
+    lastInput.addEventListener('input', function () {
+      // Selección del datalist ("Apellido, Nombre"): separar en ambos campos
+      var v = lastInput.value.trim();
+      if (v.indexOf(',') !== -1 && existsDisplay(v)) {
+        var i = v.indexOf(',');
+        lastInput.value = v.slice(0, i).trim();
+        firstInput.value = v.slice(i + 1).trim();
+      }
+      refreshHint();
+    });
+    firstInput.addEventListener('input', refreshHint);
+  }
+  wireAuthorPair('author1LastName', 'author1FirstName', 'authors-list');
+  wireAuthorPair('author2LastName', 'author2FirstName', 'authors-list');
+
+  // Editorial: hint simple con el nombre
+  (function () {
+    var input = document.getElementById('publisherName');
     if (!input) return;
     var hint = document.createElement('p');
     hint.className = 'text-xs text-red-500 mt-1 hidden';
     input.parentNode.appendChild(hint);
     var known = null;
     input.addEventListener('input', function () {
-      if (known === null) known = datalistValues(datalistId);
-      var v = input.value.toLowerCase().trim();
-      if (v && known.indexOf(v) === -1) {
-        hint.textContent = message + ': ' + input.value.trim();
+      if (known === null) known = datalistValues('publishers-list').map(function (n) { return n.toLowerCase(); });
+      var v = input.value.trim();
+      if (v && known.indexOf(v.toLowerCase()) === -1) {
+        hint.textContent = 'Se creará una nueva editorial: ' + v;
         hint.classList.remove('hidden');
       } else {
         hint.classList.add('hidden');
       }
     });
-  }
-  wireNewHint('author1LastName', 'authors-list', 'Se creará un nuevo autor');
-  wireNewHint('author2LastName', 'authors-list', 'Se creará un nuevo autor');
-  wireNewHint('publisherName', 'publishers-list', 'Se creará una nueva editorial');
+  })();
 
   // --- Escáner de códigos de barras -------------------------------------------
+  // Loop de captura propio: getUserMedia + canvas + MultiFormatReader.
+  // (El BrowserCodeReader de zxing-js tiene una condición de carrera con las
+  // dimensiones del video que hacía que nunca decodificara.)
   var scanBtn = document.getElementById('scan-isbn');
   var overlay = document.getElementById('scanner-overlay');
   if (!scanBtn || !overlay) return;
 
   var video = document.getElementById('scanner-video');
   var statusEl = document.getElementById('scanner-status');
-  var reader = null;
   var zxingLoaded = false;
+  var scanStream = null;
+  var scanTimer = null;
 
   function loadZXing() {
     return new Promise(function (resolve, reject) {
@@ -127,7 +175,12 @@
   }
 
   function stopScanner() {
-    if (reader) { try { reader.reset(); } catch (e) { } reader = null; }
+    if (scanTimer) { clearInterval(scanTimer); scanTimer = null; }
+    if (scanStream) {
+      scanStream.getTracks().forEach(function (t) { t.stop(); });
+      scanStream = null;
+    }
+    video.srcObject = null;
     overlay.classList.add('hidden');
   }
 
@@ -135,7 +188,7 @@
     overlay.classList.remove('hidden');
     statusEl.textContent = 'Coloca el código de barras dentro del recuadro';
     loadZXing().then(function () {
-      // Solo formatos 1D de libros: detección más rápida y fiable en móvil
+      // Solo formatos 1D de libros: detección más rápida y fiable
       var hints = new Map();
       hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
         ZXing.BarcodeFormat.EAN_13,
@@ -144,34 +197,50 @@
         ZXing.BarcodeFormat.UPC_E
       ]);
       hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-      reader = new ZXing.BrowserMultiFormatReader(hints);
+      var reader = new ZXing.MultiFormatReader();
+      reader.setHints(hints);
 
-      // Cámara trasera forzada por constraints (las etiquetas de dispositivos
-      // están vacías antes del permiso; enumerar deviceIds elige la frontal).
-      var constraints = {
+      // Cámara trasera por constraints (las etiquetas de dispositivos están
+      // vacías antes del permiso; enumerar deviceIds elegía la frontal).
+      return navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: { ideal: 'environment' },
           width: { ideal: 1280 },
           height: { ideal: 720 }
         }
-      };
-      reader.decodeFromConstraints(constraints, video, function (result, err) {
-        if (result) {
-          var digits = result.getText().replace(/\D/g, '');
-          if (digits.length === 13 || digits.length === 10) {
-            isbnInput.value = digits;
-            stopScanner();
+      }).then(function (stream) {
+        scanStream = stream;
+        video.srcObject = stream;
+        return video.play();
+      }).then(function () {
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d', { willReadFrequently: true });
+        scanTimer = setInterval(function () {
+          if (!video.videoWidth || !video.videoHeight) return;
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0);
+          try {
+            var source = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
+            var bitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(source));
+            var result = reader.decodeWithState(bitmap);
+            var digits = result.getText().replace(/\D/g, '');
+            if (digits.length === 13 || digits.length === 10) {
+              isbnInput.value = digits;
+              isbnInput.dispatchEvent(new Event('input'));
+              stopScanner();
+            }
+          } catch (e) {
+            // NotFoundException en frames sin código: seguir intentando
+            if (!(e instanceof ZXing.NotFoundException)) {
+              console.error('Scanning error:', e);
+            }
           }
-        }
-        if (err && !(err instanceof ZXing.NotFoundException)) {
-          console.error('Scanning error:', err);
-        }
-      }).catch(function (err) {
-        console.error('Failed to start scanner:', err);
-        statusEl.textContent = 'No se pudo iniciar la cámara. Verifica los permisos y que la página use HTTPS.';
+        }, 250);
       });
-    }).catch(function () {
-      statusEl.textContent = 'No se pudo cargar el lector de códigos.';
+    }).catch(function (err) {
+      console.error('Failed to start scanner:', err);
+      statusEl.textContent = 'No se pudo iniciar la cámara. Verifica los permisos y que la página use HTTPS.';
     });
   }
 
