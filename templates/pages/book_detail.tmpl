@@ -1,7 +1,9 @@
-{{define "title"}}{{.BookDetail.Title}}{{end}}
+{{define "title"}}{{.BookDetail.Book.Title}}{{end}}
 
 {{define "main"}}
 {{with .BookDetail}}
+{{$curID := .Book.ID}}
+{{$neighbors := .Neighbors}}
 <div class="mx-auto max-w-3xl p-4 bg-background min-h-screen">
   <div class="mb-6 flex items-center justify-between">
     <a href="/books" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -9,13 +11,14 @@
       Volver a la biblioteca
     </a>
     {{if $.IsAuthenticated}}
-    <a href="/dashboard/books/{{.ID}}" class="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+    <a href="/dashboard/books/{{.Book.ID}}" class="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
       {{icon "pencil" "h-4 w-4"}}
       Editar
     </a>
     {{end}}
   </div>
 
+  {{with .Book}}
   <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
     <div class="p-6">
       <h1 class="flex items-start gap-3 text-2xl font-semibold">
@@ -107,6 +110,55 @@
       </div>
     </div>
   </div>
+  {{end}}
+
+  <!-- Ubicación en la biblioteca física -->
+  {{if gt (len $neighbors) 1}}
+  <div class="mt-6 rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+    <div class="p-6 pb-3">
+      <h2 class="flex items-center gap-2 text-lg font-semibold">
+        {{icon "map-pin" "h-5 w-5 text-primary"}}
+        Ubicación en biblioteca
+      </h2>
+      <p class="text-sm text-muted-foreground mt-1">
+        Libros contiguos en <span class="font-medium">{{if .Book.LocationName}}{{deref .Book.LocationName}}{{else}}sin ubicación{{end}}</span>,
+        categoría <span class="font-medium">{{deref .Book.CategoryName}}</span>, en orden de estante.
+      </p>
+    </div>
+    <div class="px-6 pb-6 overflow-x-auto">
+      <table class="w-full caption-bottom text-sm">
+        <tbody>
+          {{range $neighbors}}
+          {{if eq .ID $curID}}
+          <tr class="border-y-2 border-primary bg-primary/10">
+            <td class="p-3 align-middle w-8 text-center">{{icon "map-pin" "h-4 w-4 text-primary inline"}}</td>
+            <td class="p-3 align-middle">
+              <div class="font-bold text-primary">{{.Title}}</div>
+              <div class="text-xs text-muted-foreground">{{.Author1Display}}</div>
+            </td>
+            <td class="p-3 align-middle text-right whitespace-nowrap">
+              <span class="inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-primary-foreground">Este libro</span>
+            </td>
+          </tr>
+          {{else}}
+          <tr class="border-b last:border-0 hover:bg-muted/50 transition-colors">
+            <td class="p-3 align-middle w-8"></td>
+            <td class="p-3 align-middle">
+              <a href="/books/{{.ID}}" class="font-medium underline hover:decoration-indigo-500 transition-colors">{{.Title}}</a>
+              <div class="text-xs text-muted-foreground">{{.Author1Display}}</div>
+            </td>
+            <td class="p-3 align-middle text-right whitespace-nowrap">
+              {{template "scandot" .Scanned}}
+            </td>
+          </tr>
+          {{end}}
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {{end}}
+
 </div>
 {{end}}
 {{end}}

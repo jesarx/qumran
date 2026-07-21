@@ -266,7 +266,20 @@ func (app *application) bookDetailHandler(w http.ResponseWriter, r *http.Request
 		app.notFound(w, r)
 		return
 	}
-	app.render(w, r, http.StatusOK, "book_detail", templateData{BookDetail: book})
+	neighbors, err := app.db.GetBookNeighbors(r.Context(), book, 3)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+	app.render(w, r, http.StatusOK, "book_detail", templateData{
+		BookDetail: &BookDetailPage{Book: book, Neighbors: neighbors},
+	})
+}
+
+// BookDetailPage is the individual book page plus its shelf neighbors.
+type BookDetailPage struct {
+	Book      *Book
+	Neighbors []Book
 }
 
 // ---- Autores / Editoriales / Categorías / Ubicaciones ----------------------
