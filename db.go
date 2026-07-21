@@ -178,6 +178,62 @@ func (db *DB) GetBooks(ctx context.Context, f BookFilters) (BookList, error) {
 	}, nil
 }
 
+// bookColumnsBare are the output column names of bookSelectColumns once it
+// runs inside a CTE (used to project neighbor rows without the extra rn col).
+const bookColumnsBare = `id, title, isbn, author1_id, author2_id, publisher_id,
+	category_id, location_id, scanned, created_at, updated_at,
+	author1_first_name, author1_last_name, author1_slug,
+	author2_first_name, author2_last_name, author2_slug,
+	publisher_name, publisher_slug, category_name, category_slug,
+	location_name, location_slug`
+
+// physicalOrder is the shelf order: the same author-priority + normalized
+// ordering the tables use by default, with id as a stable tie-breaker.
+const physicalOrder = `get_author_sort_priority(a1.last_name) ASC,
+	normalize_author_lastname_for_sorting(a1.last_name) ASC,
+	a1.first_name ASC,
+	normalize_title_for_sorting(b.title) ASC,
+	b.id ASC`
+
+// GetBookNeighbors returns the books shelved immediately before and after the
+// given book — same location and same category — in physical (shelf) order.
+// radius books on each side; the given book is included in the result.
+func (db *DB) GetBookNeighbors(ctx context.Context, book *Book, radius int) ([]Book, error) {
+	var params []any
+	var locCond string
+	if book.LocationID != nil {
+		params = append(params, *book.LocationID)
+		locCond = fmt.Sprintf("b.location_id = $%d", len(params))
+	} else {
+		locCond = "b.location_id IS NULL"
+	}
+	params = append(params, book.CategoryID)
+	catParam := len(params)
+	params = append(params, book.ID)
+	idParam := len(params)
+
+	sql := fmt.Sprintf(`
+		WITH ordered AS (
+			SELECT %s,
+				ROW_NUMBER() OVER (ORDER BY %s) AS rn
+			%s
+			WHERE %s AND b.category_id = $%d
+		),
+		cur AS (SELECT rn FROM ordered WHERE id = $%d)
+		SELECT %s
+		FROM ordered o CROSS JOIN cur
+		WHERE o.rn BETWEEN cur.rn - %d AND cur.rn + %d
+		ORDER BY o.rn`,
+		bookSelectColumns, physicalOrder, bookJoins, locCond, catParam,
+		idParam, bookColumnsBare, radius, radius)
+
+	rows, err := db.pool.Query(ctx, sql, params...)
+	if err != nil {
+		return nil, fmt.Errorf("book neighbors: %w", err)
+	}
+	return pgx.CollectRows(rows, pgx.RowToStructByName[Book])
+}
+
 func (db *DB) GetBookByID(ctx context.Context, id int) (*Book, error) {
 	sql := "SELECT " + bookSelectColumns + bookJoins + " WHERE b.id = $1"
 	rows, err := db.pool.Query(ctx, sql, id)

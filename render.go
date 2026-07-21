@@ -122,7 +122,7 @@ type templateData struct {
 	Error      *ErrorPageData
 	Home       *HomeData
 	Books      *BooksPageData
-	BookDetail *Book
+	BookDetail *BookDetailPage
 	SimpleList *SimpleListPageData
 	Login      *LoginPageData
 	BookForm   *BookFormPage
